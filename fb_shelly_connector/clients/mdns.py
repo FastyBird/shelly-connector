@@ -155,7 +155,7 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
                         device_type,
                         device_identifier,
                         ip_address,
-                        context={
+                        extra={
                             "client": {
                                 "type": ClientType.MDNS.value,
                             },

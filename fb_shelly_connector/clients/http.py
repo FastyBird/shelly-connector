@@ -290,7 +290,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
                 "http://%s%s",
                 host,
                 url,
-                context={
+                extra={
                     "client": {
                         "type": ClientType.HTTP.value,
                     },
@@ -326,7 +326,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
                     "http://%s%s - OK",
                     host,
                     url,
-                    context={
+                    extra={
                         "client": {
                             "type": ClientType.HTTP.value,
                         },
@@ -338,7 +338,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
                 self.__logger.warning(
                     res,
-                    context={
+                    extra={
                         "client": {
                             "type": ClientType.HTTP.value,
                         },
@@ -360,7 +360,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
                 self.__logger.error(
                     msg,
-                    context={
+                    extra={
                         "client": {
                             "type": ClientType.HTTP.value,
                         },
@@ -375,7 +375,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
                         "Error http GET: http://%s%s",
                         host,
                         url,
-                        context={
+                        extra={
                             "client": {
                                 "type": ClientType.HTTP.value,
                             },
@@ -392,7 +392,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
                         host,
                         url,
                         ex,
-                        context={
+                        extra={
                             "client": {
                                 "type": ClientType.HTTP.value,
                             },

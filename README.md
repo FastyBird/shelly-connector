@@ -19,9 +19,29 @@
 
 Shelly connector is a combined [Nette framework](https://nette.org) extension and [Python](https://www.python.org) module which is integrating [Shelly](https://shelly.cloud) devices into [FastyBird](https://www.fastybird.com) IoT system
 
+[FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) shelly connector is
+an [Apache2 licensed](http://www.apache.org/licenses/LICENSE-2.0) distributed extension, developed
+in [PHP](https://www.php.net) with [Nette framework](https://nette.org) and in [Python](https://python.org).
+
+### Features:
+
+- Shelly v1 devices support
+- Shelly connector integration
+- Shelly device management
+- [{JSON:API}](https://jsonapi.org/) schemas for full api access
+- Integrated connector Python worker
+
+## Requirements
+
+PHP part of [FastyBird](https://www.fastybird.com) shelly connector is tested against PHP 7.4
+and [ReactPHP http](https://github.com/reactphp/http) 0.8 event-driven, streaming plaintext HTTP server
+and [Nette framework](https://nette.org/en/) 3.0 PHP framework for real programmers
+
+Python part of [FastyBird](https://www.fastybird.com) devices module is tested against [Python 3.7](http://python.org)
+
 ## Installation
 
-### PHP part implementation:
+#### Application backend in PHP
 
 The best way to install **fastybird/shelly-connector** is using [Composer](http://getcomposer.org/):
 
@@ -29,7 +49,7 @@ The best way to install **fastybird/shelly-connector** is using [Composer](http:
 composer require fastybird/shelly-connector
 ```
 
-### Python part implementation:
+#### Application workers in Python
 
 The best way to install **fastybird-shelly-connector** is using [Pip](https://pip.pypa.io/en/stable/):
 

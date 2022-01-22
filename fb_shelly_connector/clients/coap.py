@@ -135,7 +135,7 @@ class CoapClient(IClient, Thread):
         if self.__socket is not None:
             self.__logger.debug(
                 "Sending CoAP discover UDP",
-                context={
+                extra={
                     "client": {
                         "type": ClientType.COAP.value,
                     },
@@ -173,7 +173,7 @@ class CoapClient(IClient, Thread):
             except Exception as ex:  # pylint: disable=broad-except
                 self.__logger.error(
                     "Error receiving CoAP UDP",
-                    context={
+                    extra={
                         "client": {
                             "type": ClientType.COAP.value,
                         },
@@ -201,7 +201,7 @@ class CoapClient(IClient, Thread):
             except Exception as ex:  # pylint: disable=broad-except
                 self.__logger.error(
                     "CoAP client can't be created",
-                    context={
+                    extra={
                         "client": {
                             "type": ClientType.COAP.value,
                         },
@@ -296,7 +296,7 @@ class CoapClient(IClient, Thread):
                     except Exception as ex:  # pylint: disable=broad-except
                         self.__logger.error(
                             "Can't convert received payload",
-                            context={
+                            extra={
                                 "client": {
                                     "type": ClientType.COAP.value,
                                 },
@@ -317,7 +317,7 @@ class CoapClient(IClient, Thread):
                         device_type,
                         device_identifier,
                         payload.replace(" ", ""),
-                        context={
+                        extra={
                             "client": {
                                 "type": ClientType.COAP.value,
                             },

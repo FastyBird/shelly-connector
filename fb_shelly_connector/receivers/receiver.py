@@ -128,7 +128,7 @@ class Receiver:
         except (LogicException, FileNotFoundException) as ex:
             self.__logger.error(
                 "Received message validation against schema failed",
-                context={
+                extra={
                     "device": {
                         "identifier": device_identifier,
                         "type": device_type,
@@ -154,7 +154,7 @@ class Receiver:
         except (FileNotFoundException, LogicException, ParsePayloadException) as ex:
             self.__logger.error(
                 "Received message could not be successfully parsed to entity",
-                context={
+                extra={
                     "device": {
                         "identifier": device_identifier,
                         "type": device_type,
@@ -228,7 +228,7 @@ class Receiver:
         except (LogicException, FileNotFoundException) as ex:
             self.__logger.error(
                 "Received message validation against schema failed",
-                context={
+                extra={
                     "device": {
                         "identifier": device_identifier,
                         "ip_address": device_ip_address,
@@ -252,7 +252,7 @@ class Receiver:
         except (FileNotFoundException, LogicException, ParsePayloadException) as ex:
             self.__logger.error(
                 "Received message could not be successfully parsed to entity",
-                context={
+                extra={
                     "device": {
                         "identifier": device_identifier,
                         "ip_address": device_ip_address,
@@ -292,7 +292,7 @@ class Receiver:
         except InvalidStateException as ex:
             self.__logger.error(
                 "Receiver queue item couldn't be handled",
-                context={
+                extra={
                     "exception": {
                         "message": str(ex),
                         "code": type(ex).__name__,

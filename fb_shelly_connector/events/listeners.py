@@ -234,7 +234,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
             self.__logger.debug(
                 "Creating new device",
-                context={
+                extra={
                     "device": {
                         "id": device.id.__str__(),
                     },
@@ -246,7 +246,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
             self.__logger.debug(
                 "Updating existing device",
-                context={
+                extra={
                     "device": {
                         "id": device.id.__str__(),
                     },
@@ -275,7 +275,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
             self.__logger.debug(
                 "Creating new channel",
-                context={
+                extra={
                     "device": {
                         "id": channel.device.id.__str__(),
                     },
@@ -293,7 +293,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
             self.__logger.debug(
                 "Updating existing channel",
-                context={
+                extra={
                     "device": {
                         "id": channel.device.id.__str__(),
                     },
@@ -334,7 +334,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
             self.__logger.debug(
                 "Creating new channel property",
-                context={
+                extra={
                     "device": {
                         "id": channel_property.channel.device.id.__str__(),
                     },
@@ -358,7 +358,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
             self.__logger.debug(
                 "Updating existing channel property",
-                context={
+                extra={
                     "device": {
                         "id": channel_property.channel.device.id.__str__(),
                     },
@@ -402,7 +402,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
             self.__logger.debug(
                 "Creating new device property",
-                context={
+                extra={
                     "device": {
                         "id": device_property.device.id.__str__(),
                     },
@@ -423,7 +423,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
             self.__logger.debug(
                 "Updating existing device property",
-                context={
+                extra={
                     "device": {
                         "id": device_property.device.id.__str__(),
                     },
@@ -464,7 +464,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
             self.__logger.debug(
                 "Updating existing device property",
-                context={
+                extra={
                     "device": {
                         "id": device_property.device.id.__str__(),
                     },
@@ -497,7 +497,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
                 self.__logger.debug(
                     "Creating new channel property state",
-                    context={
+                    extra={
                         "device": {
                             "id": channel_property.channel.device.id.__str__(),
                         },
@@ -525,7 +525,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
                 self.__logger.debug(
                     "Updating existing channel property state",
-                    context={
+                    extra={
                         "device": {
                             "id": channel_property.channel.device.id.__str__(),
                         },

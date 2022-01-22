@@ -60,45 +60,49 @@ class Logger:
 
     def debug(self, msg: str, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Log debugging message"""
-        if "context" in kwargs:
-            kwargs["context"] = {**kwargs["context"], **self.__get_connector_context()}
-        else:
-            kwargs["context"] = self.__get_connector_context()
+        extra = self.__get_connector_extra()
 
-        self.__logger.debug(msg, *args, **kwargs)
+        if "extra" in kwargs:
+            extra = {**extra, **kwargs.get("extra", {})}
+            del kwargs["extra"]
+
+        self.__logger.debug(msg, extra=extra, *args, **kwargs)
 
     # -----------------------------------------------------------------------------
 
     def info(self, msg: str, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Log information message"""
-        if "context" in kwargs:
-            kwargs["context"] = {**kwargs["context"], **self.__get_connector_context()}
-        else:
-            kwargs["context"] = self.__get_connector_context()
+        extra = self.__get_connector_extra()
 
-        self.__logger.info(msg, *args, **kwargs)
+        if "extra" in kwargs:
+            extra = {**extra, **kwargs.get("extra", {})}
+            del kwargs["extra"]
+
+        self.__logger.info(msg, extra=extra, *args, **kwargs)
 
     # -----------------------------------------------------------------------------
 
     def warning(self, msg: str, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Log warning message"""
-        if "context" in kwargs:
-            kwargs["context"] = {**kwargs["context"], **self.__get_connector_context()}
-        else:
-            kwargs["context"] = self.__get_connector_context()
+        extra = self.__get_connector_extra()
 
-        self.__logger.warning(msg, *args, **kwargs)
+        if "extra" in kwargs:
+            extra = {**extra, **kwargs.get("extra", {})}
+            del kwargs["extra"]
+
+        self.__logger.warning(msg, extra=extra, *args, **kwargs)
 
     # -----------------------------------------------------------------------------
 
     def error(self, msg: str, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Log error message"""
-        if "context" in kwargs:
-            kwargs["context"] = {**kwargs["context"], **self.__get_connector_context()}
-        else:
-            kwargs["context"] = self.__get_connector_context()
+        extra = self.__get_connector_extra()
 
-        self.__logger.error(msg, *args, **kwargs)
+        if "extra" in kwargs:
+            extra = {**extra, **kwargs.get("extra", {})}
+            del kwargs["extra"]
+
+        self.__logger.error(msg, extra=extra, *args, **kwargs)
 
     # -----------------------------------------------------------------------------
 
@@ -108,7 +112,7 @@ class Logger:
 
     # -----------------------------------------------------------------------------
 
-    def __get_connector_context(self) -> Dict:
+    def __get_connector_extra(self) -> Dict:
         return {
             "connector": {
                 "type": CONNECTOR_NAME,

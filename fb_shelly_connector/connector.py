@@ -208,7 +208,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         if parsed_channel_identifier is None:
             self.__logger.warning(
                 "Device's channel couldn't be initialized",
-                context={
+                extra={
                     "device": {
                         "id": channel.device.id.__str__(),
                     },
@@ -257,7 +257,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         ):
             self.__logger.warning(
                 "Device's channel's property couldn't be initialized",
-                context={
+                extra={
                     "device": {
                         "id": channel_property.channel.device.id.__str__(),
                     },
