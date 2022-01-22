@@ -42,7 +42,7 @@ class Client:
     Plugin clients proxy
 
     @package        FastyBird:ShellyConnector!
-    @module         client
+    @module         clients/client
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

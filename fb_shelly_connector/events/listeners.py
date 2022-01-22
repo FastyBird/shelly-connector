@@ -58,7 +58,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
     Plugin events listener
 
     @package        FastyBird:ShellyConnector!
-    @module         listeners
+    @module         events/listeners
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

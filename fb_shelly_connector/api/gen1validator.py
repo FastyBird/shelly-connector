@@ -37,7 +37,7 @@ class Gen1Validator:
     Gen 1 Shelly device message validator
 
     @package        FastyBird:ShellyConnector!
-    @module         api
+    @module         api/gen1validator
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

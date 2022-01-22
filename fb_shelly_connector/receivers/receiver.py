@@ -45,7 +45,7 @@ class IReceiver(ABC):  # pylint: disable=too-few-public-methods
     Plugin messages receiver interface
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers
+    @module         receivers/receiver
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -60,7 +60,7 @@ class Receiver:
     Plugin messages receivers proxy
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers
+    @module         receivers/receiver
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

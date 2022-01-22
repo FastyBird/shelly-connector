@@ -38,7 +38,7 @@ class DeviceRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-publi
     New device record was created in registry
 
     @package        FastyBird:ShellyConnectorPlugin!
-    @module         events
+    @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -65,7 +65,7 @@ class BlockRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-public
     New block record was created in registry
 
     @package        FastyBird:ShellyConnectorPlugin!
-    @module         events
+    @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -92,7 +92,7 @@ class SensorRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-publi
     New sensor record was created in registry
 
     @package        FastyBird:ShellyConnectorPlugin!
-    @module         events
+    @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -119,7 +119,7 @@ class AttributeRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-pu
     New attribute record was created in registry
 
     @package        FastyBird:ShellyConnectorPlugin!
-    @module         events
+    @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -146,7 +146,7 @@ class AttributeActualValueEvent(Event):
     Attribute record actual value was updated in registry
 
     @package        FastyBird:ShellyConnector!
-    @module         events
+    @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -182,7 +182,7 @@ class SensorActualValueEvent(Event):
     Sensor&State record actual value was updated in registry
 
     @package        FastyBird:ShellyConnector!
-    @module         events
+    @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -218,7 +218,7 @@ class WriteSensorExpectedValue(Event):  # pylint: disable=too-few-public-methods
     Write expected value to device sensor&state
 
     @package        FastyBird:ShellyConnector!
-    @module         events
+    @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

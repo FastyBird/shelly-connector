@@ -43,7 +43,7 @@ class DeviceRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     Shelly device record
 
     @package        FastyBird:ShellyConnector!
-    @module         registry
+    @module         registry/records
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -224,7 +224,7 @@ class BlockRecord:  # pylint: disable=too-many-public-methods,too-many-instance-
     Device block record
 
     @package        FastyBird:ShellyConnector!
-    @module         registry
+    @module         registry/records
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -303,7 +303,7 @@ class SensorRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     Block sensor & state record
 
     @package        FastyBird:ShellyConnector!
-    @module         registry
+    @module         registry/records
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -532,7 +532,7 @@ class AttributeRecord:  # pylint: disable=too-many-public-methods,too-many-insta
     Device attribute record
 
     @package        FastyBird:ShellyConnector!
-    @module         registry
+    @module         registry/records
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -649,7 +649,7 @@ class CommandRecord:  # pylint: disable=too-many-public-methods,too-many-instanc
     Device processed command record
 
     @package        FastyBird:ShellyConnector!
-    @module         registry
+    @module         registry/records
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

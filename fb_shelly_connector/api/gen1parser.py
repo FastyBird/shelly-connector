@@ -65,7 +65,7 @@ class Gen1Parser(Gen1Validator):
     Gen 1 Shelly device message parser
 
     @package        FastyBird:ShellyConnector!
-    @module         api
+    @module         api/gen1parser
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

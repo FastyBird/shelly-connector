@@ -39,7 +39,7 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
     mDNS client
 
     @package        FastyBird:ShellyConnector!
-    @module         clients
+    @module         clients/mdns
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

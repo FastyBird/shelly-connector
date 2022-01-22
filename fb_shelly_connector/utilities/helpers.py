@@ -52,7 +52,7 @@ class Timer:
     Loop timer
 
     @package        FastyBird:ShellyConnector!
-    @module         utilities
+    @module         utilities/helpers
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -93,7 +93,7 @@ class DataTransformHelpers:
     Sensor&State value transformers helper
 
     @package        FastyBird:ShellyConnector!
-    @module         utilities
+    @module         utilities/helpers
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

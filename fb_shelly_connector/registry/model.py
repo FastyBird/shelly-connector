@@ -65,7 +65,7 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
     Devices registry
 
     @package        FastyBird:ShellyConnector!
-    @module         registry
+    @module         registry/model
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -340,7 +340,7 @@ class BlocksRegistry:
     Blocks registry
 
     @package        FastyBird:ShellyConnector!
-    @module         registry
+    @module         registry/model
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -487,7 +487,7 @@ class SensorsRegistry:
     Sensors&States registry
 
     @package        FastyBird:ShellyConnector!
-    @module         registry
+    @module         registry/model
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -786,7 +786,7 @@ class AttributesRegistry:
     Attributes registry
 
     @package        FastyBird:ShellyConnector!
-    @module         registry
+    @module         registry/model
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -978,7 +978,7 @@ class CommandsRegistry:
     Commands registry
 
     @package        FastyBird:ShellyConnector!
-    @module         registry
+    @module         registry/model
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

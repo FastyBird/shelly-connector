@@ -52,7 +52,7 @@ class DeviceDescriptionReceiver(IReceiver):  # pylint: disable=too-few-public-me
     Device description message receiver
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers
+    @module         receivers/device
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

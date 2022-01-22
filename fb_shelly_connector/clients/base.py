@@ -31,7 +31,7 @@ class IClient(ABC):
     Client interface
 
     @package        FastyBird:ShellyConnector!
-    @module         clients
+    @module         clients/base
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

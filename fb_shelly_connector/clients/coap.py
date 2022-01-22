@@ -52,7 +52,7 @@ class CoapClient(IClient, Thread):
     CoAP client
 
     @package        FastyBird:ShellyConnector!
-    @module         clients
+    @module         clients/coap
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

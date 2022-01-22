@@ -54,7 +54,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
     Basic HTTP API client
 
     @package        FastyBird:ShellyConnector!
-    @module         clients
+    @module         clients/http
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
