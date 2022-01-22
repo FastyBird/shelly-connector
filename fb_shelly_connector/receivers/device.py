@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector plugin receivers module receiver for device messages
+Shelly connector receivers module receiver for device messages
 """
 
 # Python base dependencies

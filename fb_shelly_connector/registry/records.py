@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector plugin registry module records
+Shelly connector registry module records
 """
 
 # Python base dependencies

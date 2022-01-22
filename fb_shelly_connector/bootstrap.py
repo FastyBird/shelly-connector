@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector plugin DI container
+Shelly connector DI container module
 """
 
 # pylint: disable=no-value-for-parameter

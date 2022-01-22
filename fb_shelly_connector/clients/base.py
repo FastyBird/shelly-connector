@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector plugin clients module base client
+Shelly connector clients module base client
 """
 
 # Python base dependencies

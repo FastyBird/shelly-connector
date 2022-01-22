@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector plugin api module parser for Gen 1 devices
+Shelly connector api module parser for Gen 1 devices
 """
 
 # Python base dependencies

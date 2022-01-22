@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 #     Copyright 2021. FastyBird s.r.o.
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector plugin events module listeners
+Shelly connector events module listeners
 """
 
 # Library dependencies

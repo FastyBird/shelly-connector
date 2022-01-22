@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector plugin clients module mDNS client
+Shelly connector clients module mDNS client
 """
 
 # Python base dependencies

@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector plugin exceptions
+Shelly connector exceptions module
 """
 
 

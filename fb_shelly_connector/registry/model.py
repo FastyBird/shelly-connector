@@ -17,7 +17,7 @@
 # pylint: disable=too-many-lines
 
 """
-Shelly connector plugin registry module models
+Shelly connector registry module models
 """
 
 # Python base dependencies

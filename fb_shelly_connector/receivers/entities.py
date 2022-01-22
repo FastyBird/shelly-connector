@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector plugin receivers module entities
+Shelly connector receivers module entities
 """
 
 # Python base dependencies

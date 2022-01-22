@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector
+Shelly connector module
 """
 
 from .bootstrap import create_connector

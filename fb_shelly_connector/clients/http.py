@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector plugin clients module CoAP client
+Shelly connector clients module CoAP client
 """
 
 # Python base dependencies

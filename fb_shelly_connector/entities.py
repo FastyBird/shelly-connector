@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector
+Shelly connector entities module
 """
 
 # Library dependencies
