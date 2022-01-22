@@ -60,7 +60,6 @@ from fb_shelly_connector.types import (
 )
 
 
-@inject
 class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
     """
     Devices registry
@@ -85,6 +84,7 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
+    @inject
     def __init__(  # pylint: disable=too-many-arguments
         self,
         commands_registry: "CommandsRegistry",
@@ -335,7 +335,6 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
         raise StopIteration
 
 
-@inject
 class BlocksRegistry:
     """
     Blocks registry
@@ -354,6 +353,7 @@ class BlocksRegistry:
 
     # -----------------------------------------------------------------------------
 
+    @inject
     def __init__(
         self,
         sensors_registry: "SensorsRegistry",
@@ -482,7 +482,6 @@ class BlocksRegistry:
             self.__items = {}
 
 
-@inject
 class SensorsRegistry:
     """
     Sensors&States registry
@@ -501,6 +500,7 @@ class SensorsRegistry:
 
     # -----------------------------------------------------------------------------
 
+    @inject
     def __init__(
         self,
         event_dispatcher: EventDispatcher,
@@ -781,7 +781,6 @@ class SensorsRegistry:
         raise StopIteration
 
 
-@inject
 class AttributesRegistry:
     """
     Attributes registry
@@ -798,6 +797,7 @@ class AttributesRegistry:
 
     # -----------------------------------------------------------------------------
 
+    @inject
     def __init__(
         self,
         event_dispatcher: EventDispatcher,

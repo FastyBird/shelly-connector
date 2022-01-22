@@ -53,7 +53,6 @@ from fb_shelly_connector.events.events import (
 from fb_shelly_connector.logger import Logger
 
 
-@inject
 class EventsListener:  # pylint: disable=too-many-instance-attributes
     """
     Plugin events listener
@@ -88,6 +87,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
+    @inject
     def __init__(  # pylint: disable=too-many-arguments
         self,
         connector: ShellyConnectorEntity,
