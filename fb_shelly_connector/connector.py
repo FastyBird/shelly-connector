@@ -34,7 +34,6 @@ from fb_devices_module.entities.channel import (
 from fb_devices_module.entities.connector import ConnectorControlEntity
 from fb_devices_module.entities.device import (
     DeviceControlEntity,
-    DeviceEntity,
     DevicePropertyEntity,
     DeviceStaticPropertyEntity,
 )
@@ -46,7 +45,7 @@ from kink import inject
 
 # Library libs
 from fb_shelly_connector.clients.client import Client
-from fb_shelly_connector.entities import ShellyConnectorEntity
+from fb_shelly_connector.entities import ShellyConnectorEntity, ShellyDeviceEntity
 from fb_shelly_connector.events.listeners import EventsListener
 from fb_shelly_connector.logger import Logger
 from fb_shelly_connector.receivers.receiver import Receiver
@@ -139,7 +138,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def initialize_device(self, device: DeviceEntity) -> None:
+    def initialize_device(self, device: ShellyDeviceEntity) -> None:
         """Initialize device in connector registry"""
         self.__devices_registry.append(
             description_source=DeviceDescriptionSource.MANUAL,
@@ -195,7 +194,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def reset_devices_properties(self, device: DeviceEntity) -> None:
+    def reset_devices_properties(self, device: ShellyDeviceEntity) -> None:
         """Reset devices properties registry to initial state"""
         self.__attributes_registry.reset(device_id=device.id)
 
@@ -240,7 +239,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def reset_devices_channels(self, device: DeviceEntity) -> None:
+    def reset_devices_channels(self, device: ShellyDeviceEntity) -> None:
         """Reset devices channels registry to initial state"""
         self.__blocks_registry.reset(device_id=device.id)
 
@@ -315,7 +314,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
     # -----------------------------------------------------------------------------
 
     def stop(self) -> None:
-        """Close all opened connections & stop connector thread"""
+        """Close all opened connections & stop connector"""
         self.__client.stop()
 
         for state_attribute_record in self.__attributes_registry.get_all_by_type(attribute_type=DeviceAttribute.STATE):
@@ -381,8 +380,6 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
                 self.__sensors_registry.set_expected_value(sensor=sensor_record, value=value_to_write)
 
                 return
-
-        return
 
     # -----------------------------------------------------------------------------
 
