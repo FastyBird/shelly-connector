@@ -64,7 +64,6 @@ setup(
         "fastybird-metadata",
         "inflection",
         "kink",
-        "mysqlclient",
         "setuptools",
         "whistle",
         "zeroconf",
