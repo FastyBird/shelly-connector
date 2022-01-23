@@ -25,12 +25,12 @@ from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 
 # Library dependencies
 from fastnumbers import fast_float, fast_int
-from fb_metadata.types import DataType, SwitchPayload
+from fastybird_metadata.types import DataType, SwitchPayload
 
 # Library libs
-from fb_shelly_connector.api.gen1validator import Gen1Validator
-from fb_shelly_connector.exceptions import LogicException, ParsePayloadException
-from fb_shelly_connector.receivers.entities import (
+from fastybird_shelly_connector.api.gen1validator import Gen1Validator
+from fastybird_shelly_connector.exceptions import LogicException, ParsePayloadException
+from fastybird_shelly_connector.receivers.entities import (
     BaseEntity,
     BlockDescriptionEntity,
     DeviceDescriptionEntity,
@@ -42,12 +42,12 @@ from fb_shelly_connector.receivers.entities import (
     SensorStateDescriptionEntity,
     SensorStateStatusEntity,
 )
-from fb_shelly_connector.registry.model import (
+from fastybird_shelly_connector.registry.model import (
     BlocksRegistry,
     DevicesRegistry,
     SensorsRegistry,
 )
-from fb_shelly_connector.types import (
+from fastybird_shelly_connector.types import (
     ClientMessageType,
     LightSwitchPayload,
     RelayPayload,
@@ -55,7 +55,7 @@ from fb_shelly_connector.types import (
     SensorUnit,
     WritableSensor,
 )
-from fb_shelly_connector.utilities.helpers import DataTransformHelpers
+from fastybird_shelly_connector.utilities.helpers import DataTransformHelpers
 
 T = TypeVar("T", bound=DeviceDescriptionEntity)  # pylint: disable=invalid-name
 

@@ -19,11 +19,11 @@ Shelly connector entities module
 """
 
 # Library dependencies
-from fb_devices_module.entities.connector import ConnectorEntity
-from fb_devices_module.entities.device import DeviceEntity
+from fastybird_devices_module.entities.connector import ConnectorEntity
+from fastybird_devices_module.entities.device import DeviceEntity
 
 # Library libs
-from fb_shelly_connector.types import CONNECTOR_NAME, DEVICE_NAME
+from fastybird_shelly_connector.types import CONNECTOR_NAME, DEVICE_NAME
 
 
 class ShellyConnectorEntity(ConnectorEntity):  # pylint: disable=too-few-public-methods

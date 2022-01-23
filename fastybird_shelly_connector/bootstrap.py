@@ -28,23 +28,23 @@ from kink import di
 from whistle import EventDispatcher
 
 # Library libs
-from fb_shelly_connector.api.gen1parser import Gen1Parser
-from fb_shelly_connector.api.gen1validator import Gen1Validator
-from fb_shelly_connector.clients.client import Client
-from fb_shelly_connector.connector import ShellyConnector
-from fb_shelly_connector.entities import (  # pylint: disable=unused-import
+from fastybird_shelly_connector.api.gen1parser import Gen1Parser
+from fastybird_shelly_connector.api.gen1validator import Gen1Validator
+from fastybird_shelly_connector.clients.client import Client
+from fastybird_shelly_connector.connector import ShellyConnector
+from fastybird_shelly_connector.entities import (  # pylint: disable=unused-import
     ShellyConnectorEntity,
     ShellyDeviceEntity,
 )
-from fb_shelly_connector.events.listeners import EventsListener
-from fb_shelly_connector.logger import Logger
-from fb_shelly_connector.receivers.device import (
+from fastybird_shelly_connector.events.listeners import EventsListener
+from fastybird_shelly_connector.logger import Logger
+from fastybird_shelly_connector.receivers.device import (
     DeviceDescriptionReceiver,
     DeviceFoundReceiver,
     DeviceStateReceiver,
 )
-from fb_shelly_connector.receivers.receiver import Receiver
-from fb_shelly_connector.registry.model import (
+from fastybird_shelly_connector.receivers.receiver import Receiver
+from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
     BlocksRegistry,
     CommandsRegistry,
@@ -59,38 +59,38 @@ def create_connector(
 ) -> ShellyConnector:
     """Create Shelly connector services"""
     di[Logger] = Logger(connector=connector, logger=logger)
-    di["shelly-connector-plugin_logger"] = di[Logger]
+    di["shelly-connector_logger"] = di[Logger]
 
     di[EventDispatcher] = EventDispatcher()
-    di["shelly-connector-plugin_events-dispatcher"] = di[EventDispatcher]
+    di["shelly-connector_events-dispatcher"] = di[EventDispatcher]
 
     # Registers
     di[SensorsRegistry] = SensorsRegistry(event_dispatcher=di[EventDispatcher])
-    di["shelly-connector-plugin_sensors-registry"] = di[SensorsRegistry]
+    di["shelly-connector_sensors-registry"] = di[SensorsRegistry]
     di[BlocksRegistry] = BlocksRegistry(sensors_registry=di[SensorsRegistry], event_dispatcher=di[EventDispatcher])
-    di["shelly-connector-plugin_blocks-registry"] = di[BlocksRegistry]
+    di["shelly-connector_blocks-registry"] = di[BlocksRegistry]
     di[CommandsRegistry] = CommandsRegistry()
-    di["shelly-connector-plugin_devices-commands-registry"] = di[CommandsRegistry]
+    di["shelly-connector_devices-commands-registry"] = di[CommandsRegistry]
     di[AttributesRegistry] = AttributesRegistry(event_dispatcher=di[EventDispatcher])
-    di["shelly-connector-plugin_devices-attributes-registry"] = di[AttributesRegistry]
+    di["shelly-connector_devices-attributes-registry"] = di[AttributesRegistry]
     di[DevicesRegistry] = DevicesRegistry(
         commands_registry=di[CommandsRegistry],
         attributes_registry=di[AttributesRegistry],
         blocks_registry=di[BlocksRegistry],
         event_dispatcher=di[EventDispatcher],
     )
-    di["shelly-connector-plugin_devices-registry"] = di[DevicesRegistry]
+    di["shelly-connector_devices-registry"] = di[DevicesRegistry]
 
     # API utils
     di[Gen1Validator] = Gen1Validator()
-    di["shelly-connector-plugin_api-gen-1-parser"] = di[Gen1Validator]
+    di["shelly-connector_api-gen-1-parser"] = di[Gen1Validator]
 
     di[Gen1Parser] = Gen1Parser(
         devices_registry=di[DevicesRegistry],
         blocks_registry=di[BlocksRegistry],
         sensors_registry=di[SensorsRegistry],
     )
-    di["shelly-connector-plugin_api-gen-1-parser"] = di[Gen1Parser]
+    di["shelly-connector_api-gen-1-parser"] = di[Gen1Parser]
 
     # Connector messages receivers
     di[DeviceDescriptionReceiver] = DeviceDescriptionReceiver(
@@ -99,13 +99,13 @@ def create_connector(
         blocks_registry=di[BlocksRegistry],
         sensors_registry=di[SensorsRegistry],
     )
-    di["shelly-connector-plugin_device-description-receiver"] = di[DeviceDescriptionReceiver]
+    di["shelly-connector_device-description-receiver"] = di[DeviceDescriptionReceiver]
 
     di[DeviceFoundReceiver] = DeviceFoundReceiver(
         devices_registry=di[DevicesRegistry],
         attributes_registry=di[AttributesRegistry],
     )
-    di["shelly-connector-plugin_device-description-receiver"] = di[DeviceFoundReceiver]
+    di["shelly-connector_device-description-receiver"] = di[DeviceFoundReceiver]
 
     di[DeviceStateReceiver] = DeviceStateReceiver(
         devices_registry=di[DevicesRegistry],
@@ -113,7 +113,7 @@ def create_connector(
         blocks_registry=di[BlocksRegistry],
         sensors_registry=di[SensorsRegistry],
     )
-    di["shelly-connector-plugin_device-state-receiver"] = di[DeviceStateReceiver]
+    di["shelly-connector_device-state-receiver"] = di[DeviceStateReceiver]
 
     di[Receiver] = Receiver(
         validator=di[Gen1Validator],
@@ -126,7 +126,7 @@ def create_connector(
         devices_registry=di[DevicesRegistry],
         logger=di[Logger],
     )
-    di["shelly-connector-plugin_receivers-proxy"] = di[Receiver]
+    di["shelly-connector_receivers-proxy"] = di[Receiver]
 
     # Connector clients
     di[Client] = Client(
@@ -137,7 +137,7 @@ def create_connector(
         blocks_registry=di[BlocksRegistry],
         logger=di[Logger],
     )
-    di["shelly-connector-plugin_clients-proxy"] = di[Client]
+    di["shelly-connector_clients-proxy"] = di[Client]
 
     # Inner events system
     di[EventsListener] = EventsListener(
@@ -146,7 +146,7 @@ def create_connector(
         event_dispatcher=di[EventDispatcher],
         logger=di[Logger],
     )
-    di["shelly-connector-plugin_clients-proxy"] = di[EventsListener]
+    di["shelly-connector_clients-proxy"] = di[EventsListener]
 
     # Plugin main connector service
     connector_service = ShellyConnector(  # type: ignore[call-arg]
@@ -161,6 +161,6 @@ def create_connector(
         logger=di[Logger],
     )
     di[ShellyConnector] = connector_service
-    di["shelly-connector-plugin_connector"] = connector_service
+    di["shelly-connector_connector"] = connector_service
 
     return connector_service

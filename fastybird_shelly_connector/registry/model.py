@@ -27,13 +27,13 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
-from fb_metadata.devices_module import DeviceConnectionState
-from fb_metadata.types import ButtonPayload, DataType, SwitchPayload
+from fastybird_metadata.devices_module import ConnectionState
+from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 from kink import inject
 from whistle import EventDispatcher
 
 # Library libs
-from fb_shelly_connector.events.events import (
+from fastybird_shelly_connector.events.events import (
     AttributeActualValueEvent,
     AttributeRecordCreatedOrUpdatedEvent,
     BlockRecordCreatedOrUpdatedEvent,
@@ -42,15 +42,15 @@ from fb_shelly_connector.events.events import (
     SensorRecordCreatedOrUpdatedEvent,
     WriteSensorExpectedValue,
 )
-from fb_shelly_connector.exceptions import InvalidStateException
-from fb_shelly_connector.registry.records import (
+from fastybird_shelly_connector.exceptions import InvalidStateException
+from fastybird_shelly_connector.registry.records import (
     AttributeRecord,
     BlockRecord,
     CommandRecord,
     DeviceRecord,
     SensorRecord,
 )
-from fb_shelly_connector.types import (
+from fastybird_shelly_connector.types import (
     ClientType,
     DeviceAttribute,
     DeviceCommandType,
@@ -265,11 +265,11 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
 
                 if (
                     state_attribute_record is not None
-                    and state_attribute_record.value != DeviceConnectionState.LOST.value
+                    and state_attribute_record.value != ConnectionState.LOST.value
                 ):
                     self.__attributes_registry.set_value(
                         attribute=state_attribute_record,
-                        value=DeviceConnectionState.LOST.value,
+                        value=ConnectionState.LOST.value,
                     )
 
             elif (
@@ -283,11 +283,11 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
 
                 if (
                     state_attribute_record is not None
-                    and state_attribute_record.value != DeviceConnectionState.CONNECTED.value
+                    and state_attribute_record.value != ConnectionState.CONNECTED.value
                 ):
                     self.__attributes_registry.set_value(
                         attribute=state_attribute_record,
-                        value=DeviceConnectionState.CONNECTED.value,
+                        value=ConnectionState.CONNECTED.value,
                     )
 
     # -----------------------------------------------------------------------------

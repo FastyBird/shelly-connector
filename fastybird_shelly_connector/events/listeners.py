@@ -20,28 +20,28 @@ Shelly connector events module listeners
 
 # Library dependencies
 import inflection
-from fb_devices_module.entities.channel import ChannelDynamicPropertyEntity
-from fb_devices_module.entities.device import DeviceStaticPropertyEntity
-from fb_devices_module.managers.channel import ChannelPropertiesManager, ChannelsManager
-from fb_devices_module.managers.device import DevicePropertiesManager, DevicesManager
-from fb_devices_module.managers.state import IChannelPropertiesStatesManager
-from fb_devices_module.repositories.channel import (
+from fastybird_devices_module.entities.channel import ChannelDynamicPropertyEntity
+from fastybird_devices_module.entities.device import DeviceStaticPropertyEntity
+from fastybird_devices_module.managers.channel import ChannelPropertiesManager, ChannelsManager
+from fastybird_devices_module.managers.device import DevicePropertiesManager, DevicesManager
+from fastybird_devices_module.managers.state import IChannelPropertiesStatesManager
+from fastybird_devices_module.repositories.channel import (
     ChannelsPropertiesRepository,
     ChannelsRepository,
 )
-from fb_devices_module.repositories.device import (
+from fastybird_devices_module.repositories.device import (
     DevicesPropertiesRepository,
     DevicesRepository,
 )
-from fb_devices_module.repositories.state import IChannelPropertyStateRepository
-from fb_metadata.devices_module import FirmwareManufacturer, HardwareManufacturer
+from fastybird_devices_module.repositories.state import IChannelPropertyStateRepository
+from fastybird_metadata.devices_module import FirmwareManufacturer, HardwareManufacturer
 from kink import inject
 from whistle import Event, EventDispatcher
 
 # Library libs
-from fb_shelly_connector.clients.client import Client
-from fb_shelly_connector.entities import ShellyConnectorEntity, ShellyDeviceEntity
-from fb_shelly_connector.events.events import (
+from fastybird_shelly_connector.clients.client import Client
+from fastybird_shelly_connector.entities import ShellyConnectorEntity, ShellyDeviceEntity
+from fastybird_shelly_connector.events.events import (
     AttributeActualValueEvent,
     AttributeRecordCreatedOrUpdatedEvent,
     BlockRecordCreatedOrUpdatedEvent,
@@ -50,7 +50,7 @@ from fb_shelly_connector.events.events import (
     SensorRecordCreatedOrUpdatedEvent,
     WriteSensorExpectedValue,
 )
-from fb_shelly_connector.logger import Logger
+from fastybird_shelly_connector.logger import Logger
 
 
 class EventsListener:  # pylint: disable=too-many-instance-attributes

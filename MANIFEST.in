@@ -1,3 +1,3 @@
 include *.md
 
-recursive-include fb_shelly_connector *.json
+recursive-include fastybird_shelly_connector *.json

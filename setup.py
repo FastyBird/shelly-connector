@@ -43,7 +43,7 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 
-VERSION: str = find_version("fb_shelly_connector", "__init__.py")
+VERSION: str = find_version("fastybird_shelly_connector", "__init__.py")
 
 setup(
     version=VERSION,
@@ -57,7 +57,7 @@ setup(
     long_description_content_type="text/markdown",
     python_requires=">=3.7",
     packages=find_packages(),
-    package_data={"fb_shelly_connector": ["py.typed"]},
+    package_data={"fastybird_shelly_connector": ["py.typed"]},
     install_requires=[
         "fastnumbers",
         "fastybird-devices-module",

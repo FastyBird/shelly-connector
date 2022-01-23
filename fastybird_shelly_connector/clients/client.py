@@ -22,19 +22,19 @@ Shelly connector clients module clients proxy
 from typing import Set
 
 # Library libs
-from fb_shelly_connector.clients.base import IClient
-from fb_shelly_connector.clients.coap import CoapClient
-from fb_shelly_connector.clients.http import HttpClient
-from fb_shelly_connector.clients.mdns import MdnsClient
-from fb_shelly_connector.logger import Logger
-from fb_shelly_connector.receivers.receiver import Receiver
-from fb_shelly_connector.registry.model import (
+from fastybird_shelly_connector.clients.base import IClient
+from fastybird_shelly_connector.clients.coap import CoapClient
+from fastybird_shelly_connector.clients.http import HttpClient
+from fastybird_shelly_connector.clients.mdns import MdnsClient
+from fastybird_shelly_connector.logger import Logger
+from fastybird_shelly_connector.receivers.receiver import Receiver
+from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
     BlocksRegistry,
     CommandsRegistry,
     DevicesRegistry,
 )
-from fb_shelly_connector.registry.records import SensorRecord
+from fastybird_shelly_connector.registry.records import SensorRecord
 
 
 class Client:

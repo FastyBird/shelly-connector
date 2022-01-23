@@ -15,5 +15,5 @@
 #     limitations under the License.
 
 """
-Shelly connector plugin utilities
+Shelly connector api module
 """

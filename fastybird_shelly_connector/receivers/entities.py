@@ -24,10 +24,10 @@ from abc import ABC
 from typing import List, Optional, Set, Tuple, Union
 
 # Library dependencies
-from fb_metadata.types import DataType, SwitchPayload
+from fastybird_metadata.types import DataType, SwitchPayload
 
 # Library libs
-from fb_shelly_connector.types import SensorType, SensorUnit
+from fastybird_shelly_connector.types import SensorType, SensorUnit
 
 
 class BaseEntity(ABC):  # pylint: disable=too-few-public-methods

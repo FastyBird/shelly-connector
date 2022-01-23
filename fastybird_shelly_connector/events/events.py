@@ -25,7 +25,7 @@ from typing import Optional
 from whistle import Event
 
 # Library libs
-from fb_shelly_connector.registry.records import (
+from fastybird_shelly_connector.registry.records import (
     AttributeRecord,
     BlockRecord,
     DeviceRecord,
@@ -35,7 +35,7 @@ from fb_shelly_connector.registry.records import (
 
 class DeviceRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-public-methods
     """
-    New device record was created in registry
+    Device record was created or updated in registry
 
     @package        FastyBird:ShellyConnectorPlugin!
     @module         events/events
@@ -62,7 +62,7 @@ class DeviceRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-publi
 
 class BlockRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-public-methods
     """
-    New block record was created in registry
+    Device's block record was created or updated in registry
 
     @package        FastyBird:ShellyConnectorPlugin!
     @module         events/events
@@ -89,7 +89,7 @@ class BlockRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-public
 
 class SensorRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-public-methods
     """
-    New sensor record was created in registry
+    Block's sensor record was created or updated in registry
 
     @package        FastyBird:ShellyConnectorPlugin!
     @module         events/events
@@ -116,7 +116,7 @@ class SensorRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-publi
 
 class AttributeRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-public-methods
     """
-    New attribute record was created in registry
+    Device's attribute record was created or updated in registry
 
     @package        FastyBird:ShellyConnectorPlugin!
     @module         events/events

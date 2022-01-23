@@ -28,17 +28,17 @@ from socket import gethostbyaddr, timeout  # pylint: disable=no-name-in-module
 from typing import Optional, Tuple
 
 # Library libs
-from fb_shelly_connector.clients.base import IClient
-from fb_shelly_connector.logger import Logger
-from fb_shelly_connector.receivers.receiver import Receiver
-from fb_shelly_connector.registry.model import (
+from fastybird_shelly_connector.clients.base import IClient
+from fastybird_shelly_connector.logger import Logger
+from fastybird_shelly_connector.receivers.receiver import Receiver
+from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
     BlocksRegistry,
     CommandsRegistry,
     DevicesRegistry,
 )
-from fb_shelly_connector.registry.records import DeviceRecord, SensorRecord
-from fb_shelly_connector.types import (
+from fastybird_shelly_connector.registry.records import DeviceRecord, SensorRecord
+from fastybird_shelly_connector.types import (
     ClientMessageType,
     ClientType,
     DeviceAttribute,
@@ -46,7 +46,7 @@ from fb_shelly_connector.types import (
     DeviceDescriptionSource,
     WritableSensor,
 )
-from fb_shelly_connector.utilities.helpers import DataTransformHelpers
+from fastybird_shelly_connector.utilities.helpers import DataTransformHelpers
 
 
 class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes

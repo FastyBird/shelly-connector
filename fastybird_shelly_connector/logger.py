@@ -23,8 +23,8 @@ import logging
 from typing import Dict
 
 # Library libs
-from fb_shelly_connector.entities import ShellyConnectorEntity
-from fb_shelly_connector.types import CONNECTOR_NAME
+from fastybird_shelly_connector.entities import ShellyConnectorEntity
+from fastybird_shelly_connector.types import CONNECTOR_NAME
 
 
 class Logger:

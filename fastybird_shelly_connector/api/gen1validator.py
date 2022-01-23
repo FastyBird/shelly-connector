@@ -28,8 +28,8 @@ from fastjsonschema import JsonSchemaDefinitionException, JsonSchemaValueExcepti
 from fastjsonschema import compile as json_compile
 
 # Library libs
-from fb_shelly_connector.exceptions import FileNotFoundException, LogicException
-from fb_shelly_connector.types import ClientMessageType
+from fastybird_shelly_connector.exceptions import FileNotFoundException, LogicException
+from fastybird_shelly_connector.types import ClientMessageType
 
 
 class Gen1Validator:

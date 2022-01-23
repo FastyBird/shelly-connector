@@ -22,8 +22,8 @@ Shelly connector types module
 from enum import Enum, unique
 
 # Library dependencies
-from fb_metadata.devices_module import DevicePropertyName
-from fb_metadata.enum import ExtendedEnum
+from fastybird_metadata.devices_module import DevicePropertyName
+from fastybird_metadata.enum import ExtendedEnum
 
 CONNECTOR_NAME: str = "shelly"
 DEVICE_NAME: str = "shelly"

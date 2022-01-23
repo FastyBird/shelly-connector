@@ -23,10 +23,10 @@ import uuid
 from typing import Set
 
 # Library dependencies
-from fb_metadata.devices_module import DeviceConnectionState
+from fastybird_metadata.devices_module import ConnectionState
 
 # Library libs
-from fb_shelly_connector.receivers.entities import (
+from fastybird_shelly_connector.receivers.entities import (
     BaseEntity,
     DeviceDescriptionEntity,
     DeviceDescriptionFromCoapEntity,
@@ -36,15 +36,15 @@ from fb_shelly_connector.receivers.entities import (
     DeviceInfoEntity,
     DeviceStatusEntity,
 )
-from fb_shelly_connector.receivers.receiver import IReceiver
-from fb_shelly_connector.registry.model import (
+from fastybird_shelly_connector.receivers.receiver import IReceiver
+from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
     BlocksRegistry,
     DevicesRegistry,
     SensorsRegistry,
 )
-from fb_shelly_connector.registry.records import DeviceRecord, SensorRecord
-from fb_shelly_connector.types import DeviceAttribute, DeviceDescriptionSource
+from fastybird_shelly_connector.registry.records import DeviceRecord, SensorRecord
+from fastybird_shelly_connector.types import DeviceAttribute, DeviceDescriptionSource
 
 
 class DeviceDescriptionReceiver(IReceiver):  # pylint: disable=too-few-public-methods
@@ -101,10 +101,10 @@ class DeviceDescriptionReceiver(IReceiver):  # pylint: disable=too-few-public-me
             attribute_type=DeviceAttribute.STATE,
         )
 
-        if state_attribute_record is not None and state_attribute_record.value != DeviceConnectionState.CONNECTED.value:
+        if state_attribute_record is not None and state_attribute_record.value != ConnectionState.CONNECTED.value:
             self.__attributes_registry.set_value(
                 attribute=state_attribute_record,
-                value=DeviceConnectionState.CONNECTED.value,
+                value=ConnectionState.CONNECTED.value,
             )
 
     # -----------------------------------------------------------------------------
@@ -370,10 +370,10 @@ class DeviceFoundReceiver(IReceiver):  # pylint: disable=too-few-public-methods
             attribute_type=DeviceAttribute.STATE,
         )
 
-        if state_attribute_record is not None and state_attribute_record.value != DeviceConnectionState.RUNNING.value:
+        if state_attribute_record is not None and state_attribute_record.value != ConnectionState.RUNNING.value:
             self.__attributes_registry.set_value(
                 attribute=state_attribute_record,
-                value=DeviceConnectionState.CONNECTED.value,
+                value=ConnectionState.CONNECTED.value,
             )
 
 
@@ -450,8 +450,8 @@ class DeviceStateReceiver(IReceiver):  # pylint: disable=too-few-public-methods
             attribute_type=DeviceAttribute.STATE,
         )
 
-        if state_attribute_record is not None and state_attribute_record.value != DeviceConnectionState.CONNECTED.value:
+        if state_attribute_record is not None and state_attribute_record.value != ConnectionState.CONNECTED.value:
             self.__attributes_registry.set_value(
                 attribute=state_attribute_record,
-                value=DeviceConnectionState.CONNECTED.value,
+                value=ConnectionState.CONNECTED.value,
             )

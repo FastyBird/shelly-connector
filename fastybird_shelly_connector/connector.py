@@ -24,38 +24,38 @@ import uuid
 from typing import Dict, Optional, Union
 
 # Library dependencies
-from fb_devices_module.connectors.connector import IConnector
-from fb_devices_module.entities.channel import (
+from fastybird_devices_module.connectors.connector import IConnector
+from fastybird_devices_module.entities.channel import (
     ChannelControlEntity,
     ChannelDynamicPropertyEntity,
     ChannelEntity,
     ChannelPropertyEntity,
 )
-from fb_devices_module.entities.connector import ConnectorControlEntity
-from fb_devices_module.entities.device import (
+from fastybird_devices_module.entities.connector import ConnectorControlEntity
+from fastybird_devices_module.entities.device import (
     DeviceControlEntity,
     DevicePropertyEntity,
     DeviceStaticPropertyEntity,
 )
-from fb_devices_module.repositories.device import DevicesRepository
-from fb_metadata.devices_module import DeviceConnectionState
-from fb_metadata.helpers import normalize_value
-from fb_metadata.types import ButtonPayload, SwitchPayload
+from fastybird_devices_module.repositories.device import DevicesRepository
+from fastybird_metadata.devices_module import ConnectionState
+from fastybird_metadata.helpers import normalize_value
+from fastybird_metadata.types import ButtonPayload, SwitchPayload
 from kink import inject
 
 # Library libs
-from fb_shelly_connector.clients.client import Client
-from fb_shelly_connector.entities import ShellyConnectorEntity, ShellyDeviceEntity
-from fb_shelly_connector.events.listeners import EventsListener
-from fb_shelly_connector.logger import Logger
-from fb_shelly_connector.receivers.receiver import Receiver
-from fb_shelly_connector.registry.model import (
+from fastybird_shelly_connector.clients.client import Client
+from fastybird_shelly_connector.entities import ShellyConnectorEntity, ShellyDeviceEntity
+from fastybird_shelly_connector.events.listeners import EventsListener
+from fastybird_shelly_connector.logger import Logger
+from fastybird_shelly_connector.receivers.receiver import Receiver
+from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
     BlocksRegistry,
     DevicesRegistry,
     SensorsRegistry,
 )
-from fb_shelly_connector.types import (
+from fastybird_shelly_connector.types import (
     ControlAction,
     DeviceAttribute,
     DeviceDescriptionSource,
@@ -184,7 +184,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         )
 
         if device_property.identifier == DeviceAttribute.STATE.value:
-            self.__attributes_registry.set_value(attribute=attribute_record, value=DeviceConnectionState.UNKNOWN.value)
+            self.__attributes_registry.set_value(attribute=attribute_record, value=ConnectionState.UNKNOWN.value)
 
     # -----------------------------------------------------------------------------
 
@@ -320,7 +320,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         for state_attribute_record in self.__attributes_registry.get_all_by_type(attribute_type=DeviceAttribute.STATE):
             self.__attributes_registry.set_value(
                 attribute=state_attribute_record,
-                value=DeviceConnectionState.DISCONNECTED.value,
+                value=ConnectionState.DISCONNECTED.value,
             )
 
         self.__events_listener.close()

@@ -1,6 +1,6 @@
 fastnumbers>=3.2
-fastybird-devices-module>=0.19
-fastybird-metadata>=0.34
+fastybird-devices-module>=0.20
+fastybird-metadata>=0.36
 inflection>=0.5
 kink>=0.6
 setuptools>=57.4

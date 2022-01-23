@@ -39,12 +39,12 @@ from threading import Thread
 from typing import Optional
 
 # Library libs
-from fb_shelly_connector.clients.base import IClient
-from fb_shelly_connector.logger import Logger
-from fb_shelly_connector.receivers.receiver import Receiver
-from fb_shelly_connector.registry.records import SensorRecord
-from fb_shelly_connector.types import ClientMessageType, ClientType
-from fb_shelly_connector.utilities.helpers import Timer
+from fastybird_shelly_connector.clients.base import IClient
+from fastybird_shelly_connector.logger import Logger
+from fastybird_shelly_connector.receivers.receiver import Receiver
+from fastybird_shelly_connector.registry.records import SensorRecord
+from fastybird_shelly_connector.types import ClientMessageType, ClientType
+from fastybird_shelly_connector.utilities.helpers import Timer
 
 
 class CoapClient(IClient, Thread):

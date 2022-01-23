@@ -22,8 +22,8 @@ Shelly connector clients module base client
 from abc import ABC, abstractmethod
 
 # Library libs
-from fb_shelly_connector.registry.records import SensorRecord
-from fb_shelly_connector.types import ClientType
+from fastybird_shelly_connector.registry.records import SensorRecord
+from fastybird_shelly_connector.types import ClientType
 
 
 class IClient(ABC):

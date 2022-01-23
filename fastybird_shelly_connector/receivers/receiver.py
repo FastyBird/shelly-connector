@@ -26,18 +26,18 @@ from queue import Queue
 from typing import List, Set
 
 # Library libs
-from fb_shelly_connector.api.gen1parser import Gen1Parser
-from fb_shelly_connector.api.gen1validator import Gen1Validator
-from fb_shelly_connector.exceptions import (
+from fastybird_shelly_connector.api.gen1parser import Gen1Parser
+from fastybird_shelly_connector.api.gen1validator import Gen1Validator
+from fastybird_shelly_connector.exceptions import (
     FileNotFoundException,
     InvalidStateException,
     LogicException,
     ParsePayloadException,
 )
-from fb_shelly_connector.logger import Logger
-from fb_shelly_connector.receivers.entities import BaseEntity, DeviceFoundEntity
-from fb_shelly_connector.registry.model import DevicesRegistry
-from fb_shelly_connector.types import ClientMessageType
+from fastybird_shelly_connector.logger import Logger
+from fastybird_shelly_connector.receivers.entities import BaseEntity, DeviceFoundEntity
+from fastybird_shelly_connector.registry.model import DevicesRegistry
+from fastybird_shelly_connector.types import ClientMessageType
 
 
 class IReceiver(ABC):  # pylint: disable=too-few-public-methods
