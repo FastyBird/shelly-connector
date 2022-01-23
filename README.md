@@ -37,7 +37,7 @@ PHP part of [FastyBird](https://www.fastybird.com) shelly connector is tested ag
 and [ReactPHP http](https://github.com/reactphp/http) 0.8 event-driven, streaming plaintext HTTP server
 and [Nette framework](https://nette.org/en/) 3.0 PHP framework for real programmers
 
-Python part of [FastyBird](https://www.fastybird.com) devices module is tested against [Python 3.7](http://python.org)
+Python part of [FastyBird](https://www.fastybird.com) shelly connector is tested against [Python 3.7](http://python.org)
 
 ## Installation
 
