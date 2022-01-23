@@ -51,7 +51,7 @@ setup(
     author="FastyBird",
     author_email="code@fastybird.com",
     license="Apache Software License (Apache Software License 2.0)",
-    description="FastyBird Shelly devices connector.",
+    description="FastyBird IoT connector for Shelly devices",
     url="https://github.com/FastyBird/shelly-connector",
     long_description=long_description,
     long_description_content_type="text/markdown",
