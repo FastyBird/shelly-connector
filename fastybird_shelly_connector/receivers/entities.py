@@ -219,7 +219,7 @@ class SensorStateDescriptionEntity:  # pylint: disable=too-many-arguments,too-ma
     __type: SensorType
     __description: str
     __unit: Optional[SensorUnit] = None
-    __data_type: Optional[DataType] = None
+    __data_type: DataType
     __value_format: Union[
         Tuple[Optional[int], Optional[int]],
         Tuple[Optional[float], Optional[float]],
@@ -237,15 +237,15 @@ class SensorStateDescriptionEntity:  # pylint: disable=too-many-arguments,too-ma
         sensor_identifier: int,
         sensor_type: SensorType,
         sensor_description: str,
-        sensor_unit: Optional[SensorUnit],
-        sensor_data_type: Optional[DataType],
+        sensor_data_type: DataType,
+        sensor_unit: Optional[SensorUnit] = None,
         sensor_value_format: Union[
             Tuple[Optional[int], Optional[int]],
             Tuple[Optional[float], Optional[float]],
             List[Union[str, Tuple[str, Optional[str], Optional[str]]]],
             None,
-        ],
-        sensor_value_invalid: Union[str, int, float, bool, None],
+        ] = None,
+        sensor_value_invalid: Union[str, int, float, bool, None] = None,
         sensor_queryable: bool = False,
         sensor_settable: bool = False,
     ) -> None:
@@ -290,7 +290,7 @@ class SensorStateDescriptionEntity:  # pylint: disable=too-many-arguments,too-ma
     # -----------------------------------------------------------------------------
 
     @property
-    def data_type(self) -> Optional[DataType]:
+    def data_type(self) -> DataType:
         """Sensor&State value data type"""
         return self.__data_type
 

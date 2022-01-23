@@ -248,15 +248,11 @@ class Gen1Parser(Gen1Validator):
                     if sensor_record is None:
                         continue
 
-                    if sensor_record.data_type is None:
-                        actual_value = sensor_value
-
-                    else:
-                        actual_value = DataTransformHelpers.transform_from_device(
-                            data_type=sensor_record.data_type,
-                            value_format=sensor_record.format,
-                            value=sensor_value,
-                        )
+                    actual_value = DataTransformHelpers.transform_from_device(
+                        data_type=sensor_record.data_type,
+                        value_format=sensor_record.format,
+                        value=sensor_value,
+                    )
 
                     if sensor_record is not None:
                         device_state.add_sensor_state(
@@ -504,14 +500,17 @@ class Gen1Parser(Gen1Validator):
     # -----------------------------------------------------------------------------
 
     @staticmethod
-    def __adjust_data_type(channel: str, description: str, data_type: Optional[DataType]) -> Optional[DataType]:
+    def __adjust_data_type(channel: str, description: str, data_type: Optional[DataType]) -> DataType:
         if channel.startswith("relay") and description == "output":
             return DataType.SWITCH
 
         if channel.startswith("light") and description == "output":
             return DataType.SWITCH
 
-        return data_type
+        if data_type is not None:
+            return data_type
+
+        return DataType.UNKNOWN
 
     # -----------------------------------------------------------------------------
 

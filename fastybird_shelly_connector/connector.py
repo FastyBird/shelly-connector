@@ -366,15 +366,11 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
             if sensor_record is None:
                 return
 
-            if property_item.data_type is not None:
-                value_to_write = normalize_value(
-                    data_type=property_item.data_type,
-                    value=data.get("expected_value", None),
-                    value_format=property_item.format,
-                )
-
-            else:
-                value_to_write = data.get("expected_value", None)
+            value_to_write = normalize_value(
+                data_type=property_item.data_type,
+                value=data.get("expected_value", None),
+                value_format=property_item.format,
+            )
 
             if (
                 isinstance(value_to_write, (str, int, float, bool, ButtonPayload, SwitchPayload))

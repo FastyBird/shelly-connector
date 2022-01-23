@@ -195,15 +195,11 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
         if test is None:
             return
 
-        if sensor_record.data_type is None:
-            expected_value = sensor_record.expected_value
-
-        else:
-            expected_value = DataTransformHelpers.transform_to_device(
-                data_type=sensor_record.data_type,
-                value_format=sensor_record.format,
-                value=sensor_record.expected_value,
-            )
+        expected_value = DataTransformHelpers.transform_to_device(
+            data_type=sensor_record.data_type,
+            value_format=sensor_record.format,
+            value=sensor_record.expected_value,
+        )
 
         if expected_value is None:
             return

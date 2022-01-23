@@ -551,8 +551,8 @@ class SensorsRegistry:
         sensor_identifier: int,
         sensor_type: SensorType,
         sensor_description: str,
+        sensor_data_type: DataType,
         sensor_unit: Optional[SensorUnit] = None,
-        sensor_data_type: Optional[DataType] = None,
         sensor_value_format: Union[
             Tuple[Optional[int], Optional[int]],
             Tuple[Optional[float], Optional[float]],
@@ -591,8 +591,8 @@ class SensorsRegistry:
         sensor_identifier: int,
         sensor_type: SensorType,
         sensor_description: str,
+        sensor_data_type: DataType,
         sensor_unit: Optional[SensorUnit] = None,
-        sensor_data_type: Optional[DataType] = None,
         sensor_value_format: Union[
             Tuple[Optional[int], Optional[int]],
             Tuple[Optional[float], Optional[float]],
