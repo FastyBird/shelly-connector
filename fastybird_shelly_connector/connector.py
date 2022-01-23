@@ -45,7 +45,10 @@ from kink import inject
 
 # Library libs
 from fastybird_shelly_connector.clients.client import Client
-from fastybird_shelly_connector.entities import ShellyConnectorEntity, ShellyDeviceEntity
+from fastybird_shelly_connector.entities import (
+    ShellyConnectorEntity,
+    ShellyDeviceEntity,
+)
 from fastybird_shelly_connector.events.listeners import EventsListener
 from fastybird_shelly_connector.logger import Logger
 from fastybird_shelly_connector.receivers.receiver import Receiver

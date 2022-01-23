@@ -263,10 +263,7 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
                     attribute_type=DeviceAttribute.STATE,
                 )
 
-                if (
-                    state_attribute_record is not None
-                    and state_attribute_record.value != ConnectionState.LOST.value
-                ):
+                if state_attribute_record is not None and state_attribute_record.value != ConnectionState.LOST.value:
                     self.__attributes_registry.set_value(
                         attribute=state_attribute_record,
                         value=ConnectionState.LOST.value,
