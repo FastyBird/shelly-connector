@@ -18,6 +18,9 @@
 Shelly connector events module listeners
 """
 
+# Python base dependencies
+import uuid
+
 # Library dependencies
 import inflection
 from fastybird_devices_module.entities.channel import ChannelDynamicPropertyEntity
@@ -46,10 +49,7 @@ from whistle import Event, EventDispatcher
 
 # Library libs
 from fastybird_shelly_connector.clients.client import Client
-from fastybird_shelly_connector.entities import (
-    ShellyConnectorEntity,
-    ShellyDeviceEntity,
-)
+from fastybird_shelly_connector.entities import ShellyDeviceEntity
 from fastybird_shelly_connector.events.events import (
     AttributeActualValueEvent,
     AttributeRecordCreatedOrUpdatedEvent,
@@ -75,7 +75,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
     __client: Client
 
-    __connector: ShellyConnectorEntity
+    __connector_id: uuid.UUID
 
     __devices_repository: DevicesRepository
     __devices_manager: DevicesManager
@@ -99,7 +99,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        connector: ShellyConnectorEntity,
+        connector_id: uuid.UUID,
         # Connector services
         client: Client,
         event_dispatcher: EventDispatcher,
@@ -116,7 +116,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         channels_properties_states_repository: IChannelPropertyStateRepository,
         channels_properties_states_manager: IChannelPropertiesStatesManager,
     ) -> None:
-        self.__connector = connector
+        self.__connector_id = connector_id
 
         self.__devices_repository = devices_repository
         self.__devices_manager = devices_manager
@@ -238,7 +238,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
         if device is None:
             # Define relation between device and it's connector
-            device_data["connector_id"] = self.__connector.id
+            device_data["connector_id"] = self.__connector_id
 
             device = self.__devices_manager.create(
                 data=device_data,

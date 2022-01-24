@@ -58,7 +58,7 @@ def create_connector(
     logger: logging.Logger = logging.getLogger("dummy"),
 ) -> ShellyConnector:
     """Create Shelly connector services"""
-    di[Logger] = Logger(connector=connector, logger=logger)
+    di[Logger] = Logger(connector_id=connector.id, logger=logger)
     di["shelly-connector_logger"] = di[Logger]
 
     di[EventDispatcher] = EventDispatcher()
@@ -141,7 +141,7 @@ def create_connector(
 
     # Inner events system
     di[EventsListener] = EventsListener(  # type: ignore[call-arg]
-        connector=connector,
+        connector_id=connector.id,
         client=di[Client],
         event_dispatcher=di[EventDispatcher],
         logger=di[Logger],
@@ -150,7 +150,7 @@ def create_connector(
 
     # Plugin main connector service
     connector_service = ShellyConnector(  # type: ignore[call-arg]
-        connector=connector,
+        connector_id=connector.id,
         receiver=di[Receiver],
         devices_registry=di[DevicesRegistry],
         attributes_registry=di[AttributesRegistry],

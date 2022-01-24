@@ -45,10 +45,7 @@ from kink import inject
 
 # Library libs
 from fastybird_shelly_connector.clients.client import Client
-from fastybird_shelly_connector.entities import (
-    ShellyConnectorEntity,
-    ShellyDeviceEntity,
-)
+from fastybird_shelly_connector.entities import ShellyDeviceEntity
 from fastybird_shelly_connector.events.listeners import EventsListener
 from fastybird_shelly_connector.logger import Logger
 from fastybird_shelly_connector.receivers.receiver import Receiver
@@ -80,7 +77,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     __stopped: bool = False
 
-    __connector: ShellyConnectorEntity
+    __connector_id: uuid.UUID
 
     __devices_repository: DevicesRepository
 
@@ -101,7 +98,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        connector: ShellyConnectorEntity,
+        connector_id: uuid.UUID,
         devices_repository: DevicesRepository,
         receiver: Receiver,
         devices_registry: DevicesRegistry,
@@ -112,7 +109,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         events_listener: EventsListener,
         logger: Logger,
     ) -> None:
-        self.__connector = connector
+        self.__connector_id = connector_id
 
         self.__devices_repository = devices_repository
 
@@ -136,7 +133,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         self.__client.initialize()
         self.__devices_registry.reset()
 
-        for device in self.__devices_repository.get_all_by_connector(connector_id=self.__connector.id):
+        for device in self.__devices_repository.get_all_by_connector(connector_id=self.__connector_id):
             self.initialize_device(device=device)
 
     # -----------------------------------------------------------------------------
