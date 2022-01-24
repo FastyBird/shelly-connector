@@ -140,7 +140,7 @@ def create_connector(
     di["shelly-connector_clients-proxy"] = di[Client]
 
     # Inner events system
-    di[EventsListener] = EventsListener(
+    di[EventsListener] = EventsListener(  # type: ignore[call-arg]
         connector=connector,
         client=di[Client],
         event_dispatcher=di[EventDispatcher],
