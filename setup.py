@@ -55,6 +55,7 @@ setup(
     url="https://github.com/FastyBird/shelly-connector",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    include_package_data=True,
     python_requires=">=3.7",
     packages=find_packages(),
     package_data={"fastybird_shelly_connector": ["py.typed"]},
