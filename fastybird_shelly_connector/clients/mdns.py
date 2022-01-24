@@ -101,7 +101,11 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
         """Stop communication"""
         if self.__zeroconf:
             if not self.__common_zeroconf:
-                self.__zeroconf.close()
+                try:
+                    self.__zeroconf.close()
+
+                except Exception:  # pylint: disable=broad-except
+                    pass
 
             self.__zeroconf = None
 
