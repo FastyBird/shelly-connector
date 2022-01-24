@@ -29,7 +29,6 @@ from typing import Dict, List, Optional, Tuple, Union
 # Library dependencies
 from fastybird_metadata.devices_module import ConnectionState
 from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
-from kink import inject
 from whistle import EventDispatcher
 
 # Library libs
@@ -84,7 +83,6 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    @inject
     def __init__(  # pylint: disable=too-many-arguments
         self,
         commands_registry: "CommandsRegistry",
@@ -350,7 +348,6 @@ class BlocksRegistry:
 
     # -----------------------------------------------------------------------------
 
-    @inject
     def __init__(
         self,
         sensors_registry: "SensorsRegistry",
@@ -497,7 +494,6 @@ class SensorsRegistry:
 
     # -----------------------------------------------------------------------------
 
-    @inject
     def __init__(
         self,
         event_dispatcher: EventDispatcher,
@@ -794,7 +790,6 @@ class AttributesRegistry:
 
     # -----------------------------------------------------------------------------
 
-    @inject
     def __init__(
         self,
         event_dispatcher: EventDispatcher,

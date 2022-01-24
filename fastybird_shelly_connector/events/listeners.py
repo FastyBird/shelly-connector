@@ -62,6 +62,7 @@ from fastybird_shelly_connector.events.events import (
 from fastybird_shelly_connector.logger import Logger
 
 
+@inject
 class EventsListener:  # pylint: disable=too-many-instance-attributes
     """
     Plugin events listener
@@ -96,10 +97,14 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    @inject
     def __init__(  # pylint: disable=too-many-arguments
         self,
         connector: ShellyConnectorEntity,
+        # Connector services
+        client: Client,
+        event_dispatcher: EventDispatcher,
+        logger: Logger,
+        # Devices module services
         devices_repository: DevicesRepository,
         devices_manager: DevicesManager,
         devices_properties_repository: DevicesPropertiesRepository,
@@ -110,9 +115,6 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         channels_properties_manager: ChannelPropertiesManager,
         channels_properties_states_repository: IChannelPropertyStateRepository,
         channels_properties_states_manager: IChannelPropertiesStatesManager,
-        client: Client,
-        event_dispatcher: EventDispatcher,
-        logger: Logger,
     ) -> None:
         self.__connector = connector
 
