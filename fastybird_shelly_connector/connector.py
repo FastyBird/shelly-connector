@@ -128,7 +128,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def initialize(self) -> None:
+    def initialize(self, settings: Optional[Dict] = None) -> None:
         """Set connector to initial state"""
         self.__client.initialize()
         self.__devices_registry.reset()
