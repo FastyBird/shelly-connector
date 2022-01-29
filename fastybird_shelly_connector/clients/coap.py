@@ -19,6 +19,7 @@ Shelly connector clients module CoAP client
 """
 
 # Python base dependencies
+import logging
 import select
 import struct
 from socket import (  # pylint: disable=no-name-in-module
@@ -36,7 +37,7 @@ from socket import (  # pylint: disable=no-name-in-module
     socket,
 )
 from threading import Thread
-from typing import Optional
+from typing import Optional, Union
 
 # Library libs
 from fastybird_shelly_connector.clients.base import IClient
@@ -63,7 +64,7 @@ class CoapClient(IClient, Thread):
 
     __receiver: Receiver
 
-    __logger: Logger
+    __logger: Union[Logger, logging.Logger]
 
     __timer: Optional[Timer] = None
 
@@ -78,7 +79,7 @@ class CoapClient(IClient, Thread):
     def __init__(
         self,
         receiver: Receiver,
-        logger: Logger,
+        logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
     ) -> None:
         Thread.__init__(self, name="CoAP server thread", daemon=True)
 

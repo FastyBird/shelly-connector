@@ -23,7 +23,7 @@ import logging
 import uuid
 
 # Library dependencies
-from typing import Union, Optional
+from typing import Optional, Union
 
 import inflection
 from fastybird_devices_module.entities.channel import ChannelDynamicPropertyEntity

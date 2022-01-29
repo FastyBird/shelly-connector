@@ -20,8 +20,9 @@ Shelly connector clients module mDNS client
 
 # Python base dependencies
 import ipaddress
+import logging
 import re
-from typing import Optional
+from typing import Optional, Union
 
 # Library dependencies
 from zeroconf import ServiceBrowser, Zeroconf
@@ -46,7 +47,7 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
 
     __receiver: Receiver
 
-    __logger: Logger
+    __logger: Union[Logger, logging.Logger]
 
     __common_zeroconf: Optional[Zeroconf]
     __zeroconf: Optional[Zeroconf]
@@ -60,7 +61,7 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
     def __init__(  # pylint: disable=too-many-arguments
         self,
         receiver: Receiver,
-        logger: Logger,
+        logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
         zeroconf: Optional[Zeroconf] = None,
     ) -> None:
         self.__receiver = receiver

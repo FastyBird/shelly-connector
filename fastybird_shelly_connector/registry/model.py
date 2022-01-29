@@ -477,6 +477,7 @@ class BlocksRegistry:
 
             self.__items = {}
 
+
 @inject(
     bind={
         "channel_property_state_repository": IChannelPropertyStateRepository,

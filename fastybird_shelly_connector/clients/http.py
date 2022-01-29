@@ -21,11 +21,12 @@ Shelly connector clients module CoAP client
 # Python base dependencies
 import base64
 import json
+import logging
 import re
 import time
 from http import client
 from socket import gethostbyaddr, timeout  # pylint: disable=no-name-in-module
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 # Library libs
 from fastybird_shelly_connector.clients.base import IClient
@@ -66,7 +67,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
     __commands_registry: CommandsRegistry
     __blocks_registry: BlocksRegistry
 
-    __logger: Logger
+    __logger: Union[Logger, logging.Logger]
 
     __SHELLY_INFO_ENDPOINT: str = "/shelly"
     __STATUS_ENDPOINT: str = "/status"
@@ -84,7 +85,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
         attributes_registry: AttributesRegistry,
         commands_registry: CommandsRegistry,
         blocks_registry: BlocksRegistry,
-        logger: Logger,
+        logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
     ) -> None:
         self.__receiver = receiver
 
