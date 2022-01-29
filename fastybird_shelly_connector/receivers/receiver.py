@@ -19,11 +19,12 @@ Shelly connector receivers module receivers proxy
 """
 
 # Python base dependencies
+import logging
 import time
 from abc import ABC, abstractmethod
 from queue import Full as QueueFull
 from queue import Queue
-from typing import List, Set
+from typing import List, Set, Union
 
 # Library libs
 from fastybird_shelly_connector.api.gen1parser import Gen1Parser
@@ -72,7 +73,7 @@ class Receiver:
     __devices_registry: DevicesRegistry
     __queue: Queue
 
-    __logger: Logger
+    __logger: Union[Logger, logging.Logger]
 
     # -----------------------------------------------------------------------------
 
@@ -82,7 +83,7 @@ class Receiver:
         parser: Gen1Parser,
         receivers: List[IReceiver],
         devices_registry: DevicesRegistry,
-        logger: Logger,
+        logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
     ) -> None:
         self.__receivers = set(receivers)
         self.__devices_registry = devices_registry

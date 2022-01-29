@@ -58,8 +58,14 @@ def create_connector(
     logger: logging.Logger = logging.getLogger("dummy"),
 ) -> ShellyConnector:
     """Create Shelly connector services"""
-    di[Logger] = Logger(connector_id=connector.id, logger=logger)
-    di["shelly-connector_logger"] = di[Logger]
+    if isinstance(logger, logging.Logger):
+        connector_logger = Logger(connector_id=connector.id, logger=logger)
+
+        di[Logger] = connector_logger
+        di["shelly-connector_logger"] = di[Logger]
+
+    else:
+        connector_logger = logger
 
     di[EventDispatcher] = EventDispatcher()
     di["shelly-connector_events-dispatcher"] = di[EventDispatcher]
@@ -124,7 +130,7 @@ def create_connector(
             di[DeviceStateReceiver],
         ],
         devices_registry=di[DevicesRegistry],
-        logger=di[Logger],
+        logger=connector_logger,
     )
     di["shelly-connector_receivers-proxy"] = di[Receiver]
 
@@ -135,7 +141,7 @@ def create_connector(
         attributes_registry=di[AttributesRegistry],
         commands_registry=di[CommandsRegistry],
         blocks_registry=di[BlocksRegistry],
-        logger=di[Logger],
+        logger=connector_logger,
     )
     di["shelly-connector_clients-proxy"] = di[Client]
 
@@ -144,7 +150,7 @@ def create_connector(
         connector_id=connector.id,
         client=di[Client],
         event_dispatcher=di[EventDispatcher],
-        logger=di[Logger],
+        logger=connector_logger,
     )
     di["shelly-connector_clients-proxy"] = di[EventsListener]
 
@@ -158,7 +164,7 @@ def create_connector(
         sensors_registry=di[SensorsRegistry],
         client=di[Client],
         events_listener=di[EventsListener],
-        logger=di[Logger],
+        logger=connector_logger,
     )
     di[ShellyConnector] = connector_service
     di["shelly-connector_connector"] = connector_service

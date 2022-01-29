@@ -19,9 +19,12 @@ Shelly connector events module listeners
 """
 
 # Python base dependencies
+import logging
 import uuid
 
 # Library dependencies
+from typing import Union, Optional
+
 import inflection
 from fastybird_devices_module.entities.channel import ChannelDynamicPropertyEntity
 from fastybird_devices_module.entities.device import DeviceStaticPropertyEntity
@@ -62,7 +65,12 @@ from fastybird_shelly_connector.events.events import (
 from fastybird_shelly_connector.logger import Logger
 
 
-@inject
+@inject(
+    bind={
+        "channels_properties_states_repository": IChannelPropertyStateRepository,
+        "channels_properties_states_manager": IChannelPropertiesStatesManager,
+    }
+)
 class EventsListener:  # pylint: disable=too-many-instance-attributes
     """
     Plugin events listener
@@ -88,12 +96,12 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
     __channels_properties_repository: ChannelsPropertiesRepository
     __channels_properties_manager: ChannelPropertiesManager
-    __channels_properties_states_repository: IChannelPropertyStateRepository
-    __channels_properties_states_manager: IChannelPropertiesStatesManager
+    __channels_properties_states_repository: Optional[IChannelPropertyStateRepository]
+    __channels_properties_states_manager: Optional[IChannelPropertiesStatesManager]
 
     __event_dispatcher: EventDispatcher
 
-    __logger: Logger
+    __logger: Union[Logger, logging.Logger]
 
     # -----------------------------------------------------------------------------
 
@@ -103,7 +111,6 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         # Connector services
         client: Client,
         event_dispatcher: EventDispatcher,
-        logger: Logger,
         # Devices module services
         devices_repository: DevicesRepository,
         devices_manager: DevicesManager,
@@ -113,8 +120,9 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         channels_manager: ChannelsManager,
         channels_properties_repository: ChannelsPropertiesRepository,
         channels_properties_manager: ChannelPropertiesManager,
-        channels_properties_states_repository: IChannelPropertyStateRepository,
-        channels_properties_states_manager: IChannelPropertiesStatesManager,
+        channels_properties_states_repository: Optional[IChannelPropertyStateRepository] = None,
+        channels_properties_states_manager: Optional[IChannelPropertiesStatesManager] = None,
+        logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
     ) -> None:
         self.__connector_id = connector_id
 
@@ -491,6 +499,9 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
     def __handle_write_sensor_actual_value(self, event: Event) -> None:
         if not isinstance(event, SensorActualValueEvent):
+            return
+
+        if self.__channels_properties_states_repository is None or self.__channels_properties_states_manager is None:
             return
 
         channel_property = self.__channels_properties_repository.get_by_id(property_id=event.updated_record.id)

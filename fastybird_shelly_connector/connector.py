@@ -19,6 +19,7 @@ Shelly connector module
 """
 
 # Python base dependencies
+import logging
 import re
 import uuid
 from typing import Dict, Optional, Union
@@ -92,7 +93,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     __events_listener: EventsListener
 
-    __logger: Logger
+    __logger: Union[Logger, logging.Logger]
 
     # -----------------------------------------------------------------------------
 
@@ -107,7 +108,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         sensors_registry: SensorsRegistry,
         client: Client,
         events_listener: EventsListener,
-        logger: Logger,
+        logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
     ) -> None:
         self.__connector_id = connector_id
 

@@ -27,8 +27,10 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
+from fastybird_devices_module.repositories.state import IChannelPropertyStateRepository
 from fastybird_metadata.devices_module import ConnectionState
 from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
+from kink import inject
 from whistle import EventDispatcher
 
 # Library libs
@@ -475,7 +477,11 @@ class BlocksRegistry:
 
             self.__items = {}
 
-
+@inject(
+    bind={
+        "channel_property_state_repository": IChannelPropertyStateRepository,
+    }
+)
 class SensorsRegistry:
     """
     Sensors&States registry
@@ -492,15 +498,20 @@ class SensorsRegistry:
 
     __event_dispatcher: EventDispatcher
 
+    __channel_property_state_repository: Optional[IChannelPropertyStateRepository] = None
+
     # -----------------------------------------------------------------------------
 
     def __init__(
         self,
         event_dispatcher: EventDispatcher,
+        channel_property_state_repository: Optional[IChannelPropertyStateRepository] = None,
     ) -> None:
         self.__items = {}
 
         self.__event_dispatcher = event_dispatcher
+
+        self.__channel_property_state_repository = channel_property_state_repository
 
     # -----------------------------------------------------------------------------
 
@@ -560,6 +571,8 @@ class SensorsRegistry:
         sensor_settable: bool = False,
     ) -> SensorRecord:
         """Append sensor&state record into registry"""
+        existing_sensor = self.get_by_id(sensor_id=sensor_id)
+
         sensor_record: SensorRecord = SensorRecord(
             block_id=block_id,
             sensor_id=sensor_id,
@@ -573,6 +586,14 @@ class SensorsRegistry:
             sensor_queryable=sensor_queryable,
             sensor_settable=sensor_settable,
         )
+
+        if existing_sensor is None and self.__channel_property_state_repository is not None:
+            stored_state = self.__channel_property_state_repository.get_by_id(property_id=sensor_id)
+
+            if stored_state is not None:
+                sensor_record.actual_value = stored_state.actual_value
+                sensor_record.expected_value = stored_state.expected_value
+                sensor_record.expected_pending = stored_state.pending
 
         self.__items[sensor_record.id.__str__()] = sensor_record
 

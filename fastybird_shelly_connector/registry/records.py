@@ -25,6 +25,7 @@ from typing import List, Optional, Set, Tuple, Union
 
 # Library dependencies
 from fastybird_metadata.devices_module import ConnectionState
+from fastybird_metadata.helpers import normalize_value
 from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 
 # Library libs
@@ -457,7 +458,7 @@ class SensorRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     @property
     def actual_value(self) -> Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None]:
         """Sensor&State actual value"""
-        return self.__actual_value
+        return normalize_value(data_type=self.data_type, value=self.__actual_value, value_format=self.format)
 
     # -----------------------------------------------------------------------------
 
@@ -475,7 +476,7 @@ class SensorRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     @property
     def expected_value(self) -> Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None]:
         """Sensor&State expected value"""
-        return self.__expected_value
+        return normalize_value(data_type=self.data_type, value=self.__expected_value, value_format=self.format)
 
     # -----------------------------------------------------------------------------
 

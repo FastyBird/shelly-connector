@@ -19,7 +19,8 @@ Shelly connector clients module clients proxy
 """
 
 # Python base dependencies
-from typing import Set
+import logging
+from typing import Set, Union
 
 # Library libs
 from fastybird_shelly_connector.clients.base import IClient
@@ -56,7 +57,7 @@ class Client:
     __commands_registry: CommandsRegistry
     __blocks_registry: BlocksRegistry
 
-    __logger: Logger
+    __logger: Union[Logger, logging.Logger]
 
     # -----------------------------------------------------------------------------
 
@@ -67,7 +68,7 @@ class Client:
         attributes_registry: AttributesRegistry,
         commands_registry: CommandsRegistry,
         blocks_registry: BlocksRegistry,
-        logger: Logger,
+        logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
     ) -> None:
         self.__clients = set()
 
