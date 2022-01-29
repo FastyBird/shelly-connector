@@ -29,6 +29,7 @@ from fastybird_metadata.types import DataType, SwitchPayload
 
 # Library libs
 from fastybird_shelly_connector.api.gen1validator import Gen1Validator
+from fastybird_shelly_connector.api.transformers import DataTransformHelpers
 from fastybird_shelly_connector.exceptions import LogicException, ParsePayloadException
 from fastybird_shelly_connector.receivers.entities import (
     BaseEntity,
@@ -55,12 +56,11 @@ from fastybird_shelly_connector.types import (
     SensorUnit,
     WritableSensor,
 )
-from fastybird_shelly_connector.utilities.helpers import DataTransformHelpers
 
 T = TypeVar("T", bound=DeviceDescriptionEntity)  # pylint: disable=invalid-name
 
 
-class Gen1Parser(Gen1Validator):
+class Gen1Parser:
     """
     Gen 1 Shelly device message parser
 
@@ -70,6 +70,8 @@ class Gen1Parser(Gen1Validator):
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
 
+    __validator: Gen1Validator
+
     __devices_registry: DevicesRegistry
     __blocks_registry: BlocksRegistry
     __sensors_registry: SensorsRegistry
@@ -78,10 +80,13 @@ class Gen1Parser(Gen1Validator):
 
     def __init__(
         self,
+        validator: Gen1Validator,
         devices_registry: DevicesRegistry,
         blocks_registry: BlocksRegistry,
         sensors_registry: SensorsRegistry,
     ) -> None:
+        self.__validator = validator
+
         self.__devices_registry = devices_registry
         self.__blocks_registry = blocks_registry
         self.__sensors_registry = sensors_registry
@@ -97,13 +102,13 @@ class Gen1Parser(Gen1Validator):
         message_type: ClientMessageType,
     ) -> BaseEntity:
         """Parse message received via CoAP client and transform it to entity"""
-        if not self.validate_coap_message(
+        if not self.__validator.validate_coap_message(
             message_payload=message_payload,
             message_type=message_type,
         ):
             raise ParsePayloadException("Provided payload is not valid")
 
-        if self.validate_device_description_from_coap(message_payload=message_payload):
+        if self.__validator.validate_device_description_from_coap(message_payload=message_payload):
             return self.parse_device_description_coap(
                 device_identifier=device_identifier,
                 device_type=device_type,
@@ -111,7 +116,7 @@ class Gen1Parser(Gen1Validator):
                 message_payload=message_payload,
             )
 
-        if self.validate_device_status_from_coap(message_payload=message_payload):
+        if self.__validator.validate_device_status_from_coap(message_payload=message_payload):
             return self.parse_device_status_coap(
                 device_identifier=device_identifier,
                 device_ip_address=device_ip_address,
@@ -130,27 +135,27 @@ class Gen1Parser(Gen1Validator):
         message_type: ClientMessageType,
     ) -> BaseEntity:
         """Parse message received via HTTP client and transform it to entity"""
-        if not self.validate_http_message(
+        if not self.__validator.validate_http_message(
             message_payload=message_payload,
             message_type=message_type,
         ):
             raise ParsePayloadException("Provided payload is not valid")
 
-        if self.validate_device_info_from_http(message_payload=message_payload):
+        if self.__validator.validate_device_info_from_http(message_payload=message_payload):
             return self.parse_device_info_http(
                 device_identifier=device_identifier,
                 device_ip_address=device_ip_address,
                 message_payload=message_payload,
             )
 
-        if self.validate_device_status_from_http(message_payload=message_payload):
+        if self.__validator.validate_device_status_from_http(message_payload=message_payload):
             return self.parse_device_status_http(
                 device_identifier=device_identifier,
                 device_ip_address=device_ip_address,
                 message_payload=message_payload,
             )
 
-        if self.validate_device_description_from_http(message_payload=message_payload):
+        if self.__validator.validate_device_description_from_http(message_payload=message_payload):
             return self.parse_device_description_http(
                 device_identifier=device_identifier,
                 device_ip_address=device_ip_address,
@@ -169,13 +174,15 @@ class Gen1Parser(Gen1Validator):
         message_payload: str,
     ) -> DeviceDescriptionFromCoapEntity:
         """Parse device description message received via CoAP client"""
-        validation_schema = self.get_validation_schema(self._COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME)
+        validation_schema = self.__validator.get_validation_schema(
+            filename=Gen1Validator.COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME,
+        )
 
         if validation_schema is None:
             raise LogicException("Message validation schema could not be loaded")
 
         try:
-            parsed_message = self.validate_data_against_schema(
+            parsed_message = self.__validator.validate_data_against_schema(
                 data=json.loads(message_payload),
                 schema=validation_schema,
             )
@@ -206,13 +213,15 @@ class Gen1Parser(Gen1Validator):
         message_payload: str,
     ) -> DeviceStatusEntity:
         """Parse device status message received via CoAP client"""
-        validation_schema = self.get_validation_schema(self._COAP_STATUS_MESSAGE_SCHEMA_FILENAME)
+        validation_schema = self.__validator.get_validation_schema(
+            filename=Gen1Validator.COAP_STATUS_MESSAGE_SCHEMA_FILENAME,
+        )
 
         if validation_schema is None:
             raise LogicException("Message validation schema could not be loaded")
 
         try:
-            parsed_message = self.validate_data_against_schema(
+            parsed_message = self.__validator.validate_data_against_schema(
                 data=json.loads(message_payload),
                 schema=validation_schema,
             )
@@ -275,13 +284,15 @@ class Gen1Parser(Gen1Validator):
         message_payload: str,
     ) -> DeviceInfoEntity:
         """Parse device info message received via HTTP client"""
-        validation_schema = self.get_validation_schema(self._HTTP_SHELLY_MESSAGE_SCHEMA_FILENAME)
+        validation_schema = self.__validator.get_validation_schema(
+            filename=Gen1Validator.HTTP_SHELLY_MESSAGE_SCHEMA_FILENAME,
+        )
 
         if validation_schema is None:
             raise LogicException("Message validation schema could not be loaded")
 
         try:
-            parsed_message = self.validate_data_against_schema(
+            parsed_message = self.__validator.validate_data_against_schema(
                 data=json.loads(message_payload),
                 schema=validation_schema,
             )
@@ -312,13 +323,15 @@ class Gen1Parser(Gen1Validator):
         message_payload: str,
     ) -> DeviceExtendedStatusEntity:
         """Parse device status message received via HTTP client"""
-        validation_schema = self.get_validation_schema(self._HTTP_STATUS_MESSAGE_SCHEMA_FILENAME)
+        validation_schema = self.__validator.get_validation_schema(
+            filename=Gen1Validator.HTTP_STATUS_MESSAGE_SCHEMA_FILENAME,
+        )
 
         if validation_schema is None:
             raise LogicException("Message validation schema could not be loaded")
 
         try:
-            parsed_message = self.validate_data_against_schema(
+            parsed_message = self.__validator.validate_data_against_schema(
                 data=json.loads(message_payload),
                 schema=validation_schema,
             )
@@ -347,13 +360,15 @@ class Gen1Parser(Gen1Validator):
         message_payload: str,
     ) -> DeviceDescriptionFromHttpEntity:
         """Parse device description message received via HTTP client"""
-        validation_schema = self.get_validation_schema(self._HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME)
+        validation_schema = self.__validator.get_validation_schema(
+            filename=Gen1Validator.HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME,
+        )
 
         if validation_schema is None:
             raise LogicException("Message validation schema could not be loaded")
 
         try:
-            parsed_message = self.validate_data_against_schema(
+            parsed_message = self.__validator.validate_data_against_schema(
                 data=json.loads(message_payload),
                 schema=validation_schema,
             )

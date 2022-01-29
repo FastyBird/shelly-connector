@@ -211,30 +211,3 @@ class SensorActualValueEvent(Event):
     def updated_record(self) -> SensorRecord:
         """Updated sensor&state record"""
         return self.__updated_record
-
-
-class WriteSensorExpectedValue(Event):  # pylint: disable=too-few-public-methods
-    """
-    Write expected value to device sensor&state
-
-    @package        FastyBird:ShellyConnector!
-    @module         events/events
-
-    @author         Adam Kadlec <adam.kadlec@fastybird.com>
-    """
-
-    __sensor_record: SensorRecord
-
-    EVENT_NAME: str = "registry.writeSensorExpectedValue"
-
-    # -----------------------------------------------------------------------------
-
-    def __init__(self, sensor_record: SensorRecord) -> None:
-        self.__sensor_record = sensor_record
-
-    # -----------------------------------------------------------------------------
-
-    @property
-    def sensor_record(self) -> SensorRecord:
-        """Sensor&State to write expected value"""
-        return self.__sensor_record

@@ -31,7 +31,11 @@ from zeroconf import ServiceBrowser, Zeroconf
 from fastybird_shelly_connector.clients.base import IClient
 from fastybird_shelly_connector.logger import Logger
 from fastybird_shelly_connector.receivers.receiver import Receiver
-from fastybird_shelly_connector.registry.records import SensorRecord
+from fastybird_shelly_connector.registry.records import (
+    BlockRecord,
+    DeviceRecord,
+    SensorRecord,
+)
 from fastybird_shelly_connector.types import ClientType
 
 
@@ -131,7 +135,13 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def write_sensor(self, sensor_record: SensorRecord) -> None:
+    def write_sensor(
+        self,
+        device_record: DeviceRecord,
+        block_record: BlockRecord,
+        sensor_record: SensorRecord,
+        write_value: Union[str, int, float, bool, None],
+    ) -> None:
         """Write value to device sensor"""
 
     # -----------------------------------------------------------------------------

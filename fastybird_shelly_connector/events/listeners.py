@@ -51,7 +51,6 @@ from kink import inject
 from whistle import Event, EventDispatcher
 
 # Library libs
-from fastybird_shelly_connector.clients.client import Client
 from fastybird_shelly_connector.entities import ShellyDeviceEntity
 from fastybird_shelly_connector.events.events import (
     AttributeActualValueEvent,
@@ -60,7 +59,6 @@ from fastybird_shelly_connector.events.events import (
     DeviceRecordCreatedOrUpdatedEvent,
     SensorActualValueEvent,
     SensorRecordCreatedOrUpdatedEvent,
-    WriteSensorExpectedValue,
 )
 from fastybird_shelly_connector.logger import Logger
 
@@ -80,8 +78,6 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
-
-    __client: Client
 
     __connector_id: uuid.UUID
 
@@ -109,7 +105,6 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         self,
         connector_id: uuid.UUID,
         # Connector services
-        client: Client,
         event_dispatcher: EventDispatcher,
         # Devices module services
         devices_repository: DevicesRepository,
@@ -139,8 +134,6 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         self.__channels_properties_manager = channels_properties_manager
         self.__channels_properties_states_repository = channels_properties_states_repository
         self.__channels_properties_states_manager = channels_properties_states_manager
-
-        self.__client = client
 
         self.__event_dispatcher = event_dispatcher
 
@@ -180,11 +173,6 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
             listener=self.__handle_write_sensor_actual_value,
         )
 
-        self.__event_dispatcher.add_listener(
-            event_id=WriteSensorExpectedValue.EVENT_NAME,
-            listener=self.__handle_write_sensor_expected_value_updated,
-        )
-
     # -----------------------------------------------------------------------------
 
     def close(self) -> None:
@@ -217,11 +205,6 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         self.__event_dispatcher.remove_listener(
             event_id=SensorActualValueEvent.EVENT_NAME,
             listener=self.__handle_write_sensor_actual_value,
-        )
-
-        self.__event_dispatcher.remove_listener(
-            event_id=WriteSensorExpectedValue.EVENT_NAME,
-            listener=self.__handle_write_sensor_expected_value_updated,
         )
 
     # -----------------------------------------------------------------------------
@@ -567,11 +550,3 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
                         },
                     },
                 )
-
-    # -----------------------------------------------------------------------------
-
-    def __handle_write_sensor_expected_value_updated(self, event: Event) -> None:
-        if not isinstance(event, WriteSensorExpectedValue):
-            return
-
-        self.__client.write_sensor(sensor_record=event.sensor_record)

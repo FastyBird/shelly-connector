@@ -49,6 +49,7 @@ from fastybird_shelly_connector.clients.client import Client
 from fastybird_shelly_connector.entities import ShellyDeviceEntity
 from fastybird_shelly_connector.events.listeners import EventsListener
 from fastybird_shelly_connector.logger import Logger
+from fastybird_shelly_connector.publishers.publisher import Publisher
 from fastybird_shelly_connector.receivers.receiver import Receiver
 from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
@@ -83,6 +84,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
     __devices_repository: DevicesRepository
 
     __receiver: Receiver
+    __publisher: Publisher
 
     __devices_registry: DevicesRegistry
     __attributes_registry: AttributesRegistry
@@ -102,6 +104,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         connector_id: uuid.UUID,
         devices_repository: DevicesRepository,
         receiver: Receiver,
+        publisher: Publisher,
         devices_registry: DevicesRegistry,
         attributes_registry: AttributesRegistry,
         blocks_registry: BlocksRegistry,
@@ -115,6 +118,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         self.__devices_repository = devices_repository
 
         self.__receiver = receiver
+        self.__publisher = publisher
 
         self.__devices_registry = devices_registry
         self.__attributes_registry = attributes_registry
@@ -345,14 +349,15 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
             return
 
-        self.__receiver.loop()
+        self.__receiver.handle()
 
         if self.__stopped:
             return
 
         self.__client.handle()
-        self.__devices_registry.check_timeout()
-        self.__sensors_registry.check_write()
+
+        # Continue processing devices
+        self.__publisher.handle()
 
     # -----------------------------------------------------------------------------
 

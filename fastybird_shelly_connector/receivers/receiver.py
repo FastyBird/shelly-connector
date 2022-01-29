@@ -97,6 +97,45 @@ class Receiver:
 
     # -----------------------------------------------------------------------------
 
+    def append(self, entity: BaseEntity) -> None:
+        """Append new entity for handle"""
+        try:
+            self.__queue.put(item=entity)
+
+        except QueueFull:
+            self.__logger.error("Receiver queue is full. New messages could not be added")
+
+    # -----------------------------------------------------------------------------
+
+    def handle(self) -> None:
+        """Handle received message"""
+        try:
+            if not self.__queue.empty():
+                entity = self.__queue.get()
+
+                if isinstance(entity, BaseEntity):
+                    for receiver in self.__receivers:
+                        receiver.receive(entity=entity)
+
+        except InvalidStateException as ex:
+            self.__logger.error(
+                "Receiver queue item couldn't be handled",
+                extra={
+                    "exception": {
+                        "message": str(ex),
+                        "code": type(ex).__name__,
+                    },
+                },
+            )
+
+    # -----------------------------------------------------------------------------
+
+    def is_empty(self) -> bool:
+        """Check if all messages were handled"""
+        return self.__queue.empty()
+
+    # -----------------------------------------------------------------------------
+
     def on_coap_message(  # pylint: disable=too-many-arguments
         self,
         device_identifier: str,
@@ -267,42 +306,3 @@ class Receiver:
             return
 
         self.append(entity=entity)
-
-    # -----------------------------------------------------------------------------
-
-    def append(self, entity: BaseEntity) -> None:
-        """Append new entity for handle"""
-        try:
-            self.__queue.put(item=entity)
-
-        except QueueFull:
-            self.__logger.error("Receiver queue is full. New messages could not be added")
-
-    # -----------------------------------------------------------------------------
-
-    def loop(self) -> None:
-        """Handle received message"""
-        try:
-            if not self.__queue.empty():
-                entity = self.__queue.get()
-
-                if isinstance(entity, BaseEntity):
-                    for receiver in self.__receivers:
-                        receiver.receive(entity=entity)
-
-        except InvalidStateException as ex:
-            self.__logger.error(
-                "Receiver queue item couldn't be handled",
-                extra={
-                    "exception": {
-                        "message": str(ex),
-                        "code": type(ex).__name__,
-                    },
-                },
-            )
-
-    # -----------------------------------------------------------------------------
-
-    def is_empty(self) -> bool:
-        """Check if all messages were handled"""
-        return self.__queue.empty()

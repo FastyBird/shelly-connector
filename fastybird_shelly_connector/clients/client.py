@@ -31,11 +31,14 @@ from fastybird_shelly_connector.logger import Logger
 from fastybird_shelly_connector.receivers.receiver import Receiver
 from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
-    BlocksRegistry,
     CommandsRegistry,
     DevicesRegistry,
 )
-from fastybird_shelly_connector.registry.records import SensorRecord
+from fastybird_shelly_connector.registry.records import (
+    BlockRecord,
+    DeviceRecord,
+    SensorRecord,
+)
 
 
 class Client:
@@ -55,7 +58,6 @@ class Client:
     __devices_registry: DevicesRegistry
     __attributes_registry: AttributesRegistry
     __commands_registry: CommandsRegistry
-    __blocks_registry: BlocksRegistry
 
     __logger: Union[Logger, logging.Logger]
 
@@ -67,7 +69,6 @@ class Client:
         devices_registry: DevicesRegistry,
         attributes_registry: AttributesRegistry,
         commands_registry: CommandsRegistry,
-        blocks_registry: BlocksRegistry,
         logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
     ) -> None:
         self.__clients = set()
@@ -77,7 +78,6 @@ class Client:
         self.__devices_registry = devices_registry
         self.__attributes_registry = attributes_registry
         self.__commands_registry = commands_registry
-        self.__blocks_registry = blocks_registry
 
         self.__logger = logger
 
@@ -105,7 +105,6 @@ class Client:
                 devices_registry=self.__devices_registry,
                 attributes_registry=self.__attributes_registry,
                 commands_registry=self.__commands_registry,
-                blocks_registry=self.__blocks_registry,
                 logger=self.__logger,
             )
         )
@@ -113,14 +112,14 @@ class Client:
     # -----------------------------------------------------------------------------
 
     def start(self) -> None:
-        """Start clients loop"""
+        """Start clients"""
         for client in self.__clients:
             client.start()
 
     # -----------------------------------------------------------------------------
 
     def stop(self) -> None:
-        """Stop clients loop"""
+        """Stop clients"""
         for client in self.__clients:
             client.stop()
 
@@ -141,13 +140,24 @@ class Client:
     # -----------------------------------------------------------------------------
 
     def handle(self) -> None:
-        """Handle clients loop actions"""
+        """Handle clients actions"""
         for client in self.__clients:
             client.handle()
 
     # -----------------------------------------------------------------------------
 
-    def write_sensor(self, sensor_record: SensorRecord) -> None:
+    def write_sensor(
+        self,
+        device_record: DeviceRecord,
+        block_record: BlockRecord,
+        sensor_record: SensorRecord,
+        write_value: Union[str, int, float, bool, None],
+    ) -> None:
         """Write value to device sensor"""
         for client in self.__clients:
-            client.write_sensor(sensor_record=sensor_record)
+            client.write_sensor(
+                device_record=device_record,
+                block_record=block_record,
+                sensor_record=sensor_record,
+                write_value=write_value,
+            )

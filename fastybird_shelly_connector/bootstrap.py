@@ -38,6 +38,8 @@ from fastybird_shelly_connector.entities import (  # pylint: disable=unused-impo
 )
 from fastybird_shelly_connector.events.listeners import EventsListener
 from fastybird_shelly_connector.logger import Logger
+from fastybird_shelly_connector.publishers.gen1 import Gen1Publisher
+from fastybird_shelly_connector.publishers.publisher import Publisher
 from fastybird_shelly_connector.receivers.device import (
     DeviceDescriptionReceiver,
     DeviceFoundReceiver,
@@ -92,11 +94,27 @@ def create_connector(
     di["shelly-connector_api-gen-1-parser"] = di[Gen1Validator]
 
     di[Gen1Parser] = Gen1Parser(
+        validator=di[Gen1Validator],
         devices_registry=di[DevicesRegistry],
         blocks_registry=di[BlocksRegistry],
         sensors_registry=di[SensorsRegistry],
     )
     di["shelly-connector_api-gen-1-parser"] = di[Gen1Parser]
+
+    # Data publishers
+    di[Gen1Publisher] = Gen1Publisher(
+        attributes_registry=di[AttributesRegistry],
+        blocks_registry=di[BlocksRegistry],
+        sensors_registry=di[SensorsRegistry],
+        client=di[Client],
+    )
+    di["shelly-connector_gen1-publisher"] = di[Gen1Publisher]
+
+    di[Publisher] = Publisher(
+        publishers=[di[Gen1Publisher]],
+        devices_registry=di[DevicesRegistry],
+    )
+    di["shelly-connector_publisher-proxy"] = di[Publisher]
 
     # Connector messages receivers
     di[DeviceDescriptionReceiver] = DeviceDescriptionReceiver(
@@ -140,7 +158,6 @@ def create_connector(
         devices_registry=di[DevicesRegistry],
         attributes_registry=di[AttributesRegistry],
         commands_registry=di[CommandsRegistry],
-        blocks_registry=di[BlocksRegistry],
         logger=connector_logger,
     )
     di["shelly-connector_clients-proxy"] = di[Client]
@@ -148,7 +165,6 @@ def create_connector(
     # Inner events system
     di[EventsListener] = EventsListener(  # type: ignore[call-arg]
         connector_id=connector.id,
-        client=di[Client],
         event_dispatcher=di[EventDispatcher],
         logger=connector_logger,
     )
@@ -158,6 +174,7 @@ def create_connector(
     connector_service = ShellyConnector(  # type: ignore[call-arg]
         connector_id=connector.id,
         receiver=di[Receiver],
+        publisher=di[Publisher],
         devices_registry=di[DevicesRegistry],
         attributes_registry=di[AttributesRegistry],
         blocks_registry=di[BlocksRegistry],

@@ -22,7 +22,13 @@ Shelly connector clients module base client
 from abc import ABC, abstractmethod
 
 # Library libs
-from fastybird_shelly_connector.registry.records import SensorRecord
+from typing import Union
+
+from fastybird_shelly_connector.registry.records import (
+    BlockRecord,
+    DeviceRecord,
+    SensorRecord,
+)
 from fastybird_shelly_connector.types import ClientType
 
 
@@ -76,5 +82,11 @@ class IClient(ABC):
     # -----------------------------------------------------------------------------
 
     @abstractmethod
-    def write_sensor(self, sensor_record: SensorRecord) -> None:
+    def write_sensor(
+        self,
+        device_record: DeviceRecord,
+        block_record: BlockRecord,
+        sensor_record: SensorRecord,
+        write_value: Union[str, int, float, bool, None],
+    ) -> None:
         """Write value to device sensor"""

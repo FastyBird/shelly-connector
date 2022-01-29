@@ -34,11 +34,14 @@ from fastybird_shelly_connector.logger import Logger
 from fastybird_shelly_connector.receivers.receiver import Receiver
 from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
-    BlocksRegistry,
     CommandsRegistry,
     DevicesRegistry,
 )
-from fastybird_shelly_connector.registry.records import DeviceRecord, SensorRecord
+from fastybird_shelly_connector.registry.records import (
+    BlockRecord,
+    DeviceRecord,
+    SensorRecord,
+)
 from fastybird_shelly_connector.types import (
     ClientMessageType,
     ClientType,
@@ -47,7 +50,6 @@ from fastybird_shelly_connector.types import (
     DeviceDescriptionSource,
     WritableSensor,
 )
-from fastybird_shelly_connector.utilities.helpers import DataTransformHelpers
 
 
 class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
@@ -65,7 +67,6 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
     __devices_registry: DevicesRegistry
     __attributes_registry: AttributesRegistry
     __commands_registry: CommandsRegistry
-    __blocks_registry: BlocksRegistry
 
     __logger: Union[Logger, logging.Logger]
 
@@ -84,7 +85,6 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
         devices_registry: DevicesRegistry,
         attributes_registry: AttributesRegistry,
         commands_registry: CommandsRegistry,
-        blocks_registry: BlocksRegistry,
         logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
     ) -> None:
         self.__receiver = receiver
@@ -92,7 +92,6 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
         self.__devices_registry = devices_registry
         self.__attributes_registry = attributes_registry
         self.__commands_registry = commands_registry
-        self.__blocks_registry = blocks_registry
 
         self.__logger = logger
 
@@ -169,18 +168,14 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def write_sensor(self, sensor_record: SensorRecord) -> None:
+    def write_sensor(
+        self,
+        device_record: DeviceRecord,
+        block_record: BlockRecord,
+        sensor_record: SensorRecord,
+        write_value: Union[str, int, float, bool, None],
+    ) -> None:
         """Write value to device sensor"""
-        block_record = self.__blocks_registry.get_by_id(block_id=sensor_record.block_id)
-
-        if block_record is None:
-            return
-
-        device_record = self.__devices_registry.get_by_id(device_id=block_record.device_id)
-
-        if device_record is None:
-            return
-
         ip_address_attribute = self.__attributes_registry.get_by_attribute(
             device_id=device_record.id,
             attribute_type=DeviceAttribute.IP_ADDRESS,
@@ -196,13 +191,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
         if test is None:
             return
 
-        expected_value = DataTransformHelpers.transform_to_device(
-            data_type=sensor_record.data_type,
-            value_format=sensor_record.format,
-            value=sensor_record.expected_value,
-        )
-
-        if expected_value is None:
+        if write_value is None:
             return
 
         success, _ = self.__send_http_get(
@@ -210,7 +199,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
             url=self.__SET_CHANNEL_SENSOR_ENDPOINT.replace("{channel}", test.group("channelName"))
             .replace("{index}", test.group("channelIndex"))
             .replace("{action}", self.__build_action(sensor_record=sensor_record))
-            .replace("{value}", str(expected_value)),
+            .replace("{value}", str(write_value)),
             username=device_record.username,
             password=device_record.password,
         )

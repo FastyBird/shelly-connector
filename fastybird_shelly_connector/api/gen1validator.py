@@ -44,12 +44,12 @@ class Gen1Validator:
 
     __coap_schema: Dict[str, Dict[str, Any]] = {}
 
-    _COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME: str = "gen1_coap_description.json"
-    _COAP_STATUS_MESSAGE_SCHEMA_FILENAME: str = "gen1_coap_status.json"
+    COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME: str = "gen1_coap_description.json"
+    COAP_STATUS_MESSAGE_SCHEMA_FILENAME: str = "gen1_coap_status.json"
 
-    _HTTP_SHELLY_MESSAGE_SCHEMA_FILENAME: str = "gen1_http_shelly.json"
-    _HTTP_STATUS_MESSAGE_SCHEMA_FILENAME: str = "gen1_http_status.json"
-    _HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME: str = "gen1_http_description.json"
+    HTTP_SHELLY_MESSAGE_SCHEMA_FILENAME: str = "gen1_http_shelly.json"
+    HTTP_STATUS_MESSAGE_SCHEMA_FILENAME: str = "gen1_http_status.json"
+    HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME: str = "gen1_http_description.json"
 
     # -----------------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ class Gen1Validator:
             # Invalid message format
             return False
 
-        validation_schema = self.get_validation_schema(self._COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME)
+        validation_schema = self.get_validation_schema(self.COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME)
 
         if validation_schema is None:
             return False
@@ -96,7 +96,7 @@ class Gen1Validator:
             # Invalid message format
             return False
 
-        validation_schema = self.get_validation_schema(self._COAP_STATUS_MESSAGE_SCHEMA_FILENAME)
+        validation_schema = self.get_validation_schema(self.COAP_STATUS_MESSAGE_SCHEMA_FILENAME)
 
         if validation_schema is None:
             return False
@@ -133,7 +133,7 @@ class Gen1Validator:
             # Invalid message format
             return False
 
-        validation_schema = self.get_validation_schema(self._HTTP_SHELLY_MESSAGE_SCHEMA_FILENAME)
+        validation_schema = self.get_validation_schema(self.HTTP_SHELLY_MESSAGE_SCHEMA_FILENAME)
 
         if validation_schema is None:
             return False
@@ -151,7 +151,7 @@ class Gen1Validator:
             # Invalid message format
             return False
 
-        validation_schema = self.get_validation_schema(self._HTTP_STATUS_MESSAGE_SCHEMA_FILENAME)
+        validation_schema = self.get_validation_schema(self.HTTP_STATUS_MESSAGE_SCHEMA_FILENAME)
 
         if validation_schema is None:
             return False
@@ -169,7 +169,7 @@ class Gen1Validator:
             # Invalid message format
             return False
 
-        validation_schema = self.get_validation_schema(self._HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME)
+        validation_schema = self.get_validation_schema(self.HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME)
 
         if validation_schema is None:
             return False

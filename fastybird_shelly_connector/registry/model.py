@@ -28,7 +28,6 @@ from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
 from fastybird_devices_module.repositories.state import IChannelPropertyStateRepository
-from fastybird_metadata.devices_module import ConnectionState
 from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 from kink import inject
 from whistle import EventDispatcher
@@ -41,7 +40,6 @@ from fastybird_shelly_connector.events.events import (
     DeviceRecordCreatedOrUpdatedEvent,
     SensorActualValueEvent,
     SensorRecordCreatedOrUpdatedEvent,
-    WriteSensorExpectedValue,
 )
 from fastybird_shelly_connector.exceptions import InvalidStateException
 from fastybird_shelly_connector.registry.records import (
@@ -80,8 +78,6 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
     __blocks_registry: "BlocksRegistry"
 
     __event_dispatcher: EventDispatcher
-
-    __DEVICE_COMMUNICATION_TIMEOUT: float = 120.0
 
     # -----------------------------------------------------------------------------
 
@@ -248,44 +244,6 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
             raise InvalidStateException("Device record could not be re-fetched from registry after update")
 
         return updated_device
-
-    # -----------------------------------------------------------------------------
-
-    def check_timeout(self) -> None:
-        """Check devices communications timeouts"""
-        for device in self.__items.values():
-            if (
-                device.last_communication_timestamp is None
-                or time.time() - device.last_communication_timestamp > self.__DEVICE_COMMUNICATION_TIMEOUT
-            ):
-                state_attribute_record = self.__attributes_registry.get_by_attribute(
-                    device_id=device.id,
-                    attribute_type=DeviceAttribute.STATE,
-                )
-
-                if state_attribute_record is not None and state_attribute_record.value != ConnectionState.LOST.value:
-                    self.__attributes_registry.set_value(
-                        attribute=state_attribute_record,
-                        value=ConnectionState.LOST.value,
-                    )
-
-            elif (
-                device.last_communication_timestamp is not None
-                and time.time() - device.last_communication_timestamp <= self.__DEVICE_COMMUNICATION_TIMEOUT
-            ):
-                state_attribute_record = self.__attributes_registry.get_by_attribute(
-                    device_id=device.id,
-                    attribute_type=DeviceAttribute.STATE,
-                )
-
-                if (
-                    state_attribute_record is not None
-                    and state_attribute_record.value != ConnectionState.CONNECTED.value
-                ):
-                    self.__attributes_registry.set_value(
-                        attribute=state_attribute_record,
-                        value=ConnectionState.CONNECTED.value,
-                    )
 
     # -----------------------------------------------------------------------------
 
@@ -735,21 +693,6 @@ class SensorsRegistry:
             raise InvalidStateException("Sensor&State record could not be re-fetched from registry after update")
 
         return updated_sensor
-
-    # -----------------------------------------------------------------------------
-
-    def check_write(self) -> None:
-        """Check sensors if there are some data to write"""
-        for sensor in self.__items.values():
-            if sensor.expected_value is not None and (
-                sensor.expected_pending is None or time.time() - sensor.expected_pending >= 5
-            ):
-                self.__event_dispatcher.dispatch(
-                    event_id=WriteSensorExpectedValue.EVENT_NAME,
-                    event=WriteSensorExpectedValue(sensor_record=sensor),
-                )
-
-                self.set_expected_pending(sensor=sensor, timestamp=time.time())
 
     # -----------------------------------------------------------------------------
 
