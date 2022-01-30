@@ -308,13 +308,19 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     def start(self) -> None:
         """Start connector services"""
-        self.__stopped = False
+        self.__events_listener.open()
+
+        for state_attribute_record in self.__attributes_registry.get_all_by_type(attribute_type=DeviceAttribute.STATE):
+            self.__attributes_registry.set_value(
+                attribute=state_attribute_record,
+                value=ConnectionState.UNKNOWN.value,
+            )
 
         self.__client.start()
 
-        self.__events_listener.open()
-
         self.__logger.info("Connector has been started")
+
+        self.__stopped = False
 
     # -----------------------------------------------------------------------------
 
