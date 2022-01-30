@@ -43,7 +43,7 @@ from fastybird_shelly_connector.registry.records import (
 
 class Client:
     """
-    Plugin clients proxy
+    Clients proxy
 
     @package        FastyBird:ShellyConnector!
     @module         clients/client

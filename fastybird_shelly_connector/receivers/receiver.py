@@ -43,7 +43,7 @@ from fastybird_shelly_connector.types import ClientMessageType
 
 class IReceiver(ABC):  # pylint: disable=too-few-public-methods
     """
-    Plugin messages receiver interface
+    Messages receiver interface
 
     @package        FastyBird:ShellyConnector!
     @module         receivers/receiver
@@ -58,7 +58,7 @@ class IReceiver(ABC):  # pylint: disable=too-few-public-methods
 
 class Receiver:
     """
-    Plugin messages receivers proxy
+    Messages receivers proxy
 
     @package        FastyBird:ShellyConnector!
     @module         receivers/receiver

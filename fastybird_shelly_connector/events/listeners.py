@@ -71,7 +71,7 @@ from fastybird_shelly_connector.logger import Logger
 )
 class EventsListener:  # pylint: disable=too-many-instance-attributes
     """
-    Plugin events listener
+    Events listener
 
     @package        FastyBird:ShellyConnector!
     @module         events/listeners

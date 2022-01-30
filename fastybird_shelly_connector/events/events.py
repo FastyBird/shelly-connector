@@ -37,7 +37,7 @@ class DeviceRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-publi
     """
     Device record was created or updated in registry
 
-    @package        FastyBird:ShellyConnectorPlugin!
+    @package        FastyBird:ShellyConnector!
     @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -64,7 +64,7 @@ class BlockRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-public
     """
     Device's block record was created or updated in registry
 
-    @package        FastyBird:ShellyConnectorPlugin!
+    @package        FastyBird:ShellyConnector!
     @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -91,7 +91,7 @@ class SensorRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-publi
     """
     Block's sensor record was created or updated in registry
 
-    @package        FastyBird:ShellyConnectorPlugin!
+    @package        FastyBird:ShellyConnector!
     @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -118,7 +118,7 @@ class AttributeRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-pu
     """
     Device's attribute record was created or updated in registry
 
-    @package        FastyBird:ShellyConnectorPlugin!
+    @package        FastyBird:v!
     @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>

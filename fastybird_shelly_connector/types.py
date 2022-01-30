@@ -32,7 +32,7 @@ DEVICE_NAME: str = "shelly"
 @unique
 class ClientType(ExtendedEnum, Enum):
     """
-    Plugin client type
+    Connector client type
 
     @package        FastyBird:ShellyConnector!
     @module         types

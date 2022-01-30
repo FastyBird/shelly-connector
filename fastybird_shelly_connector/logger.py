@@ -29,7 +29,7 @@ from fastybird_shelly_connector.types import CONNECTOR_NAME
 
 class Logger:
     """
-    Plugin logger
+    Connector logger
 
     @package        FastyBird:ShellyConnector!
     @module         logger
