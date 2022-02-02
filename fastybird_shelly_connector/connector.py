@@ -41,7 +41,7 @@ from fastybird_devices_module.entities.device import (
 from fastybird_devices_module.repositories.device import DevicesRepository
 from fastybird_metadata.devices_module import ConnectionState
 from fastybird_metadata.helpers import normalize_value
-from fastybird_metadata.types import ButtonPayload, SwitchPayload, ControlAction
+from fastybird_metadata.types import ButtonPayload, ControlAction, SwitchPayload
 from kink import inject
 
 # Library libs
