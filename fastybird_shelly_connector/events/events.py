@@ -118,7 +118,7 @@ class AttributeRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-pu
     """
     Device's attribute record was created or updated in registry
 
-    @package        FastyBird:v!
+    @package        FastyBird:ShellyConnector!
     @module         events/events
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>

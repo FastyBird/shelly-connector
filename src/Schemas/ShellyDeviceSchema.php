@@ -21,10 +21,10 @@ use FastyBird\ShellyConnector\Entities;
 /**
  * Shelly connector entity schema
  *
- * @package         FastyBird:ShellyConnector!
- * @subpackage      Schemas
+ * @package        FastyBird:ShellyConnector!
+ * @subpackage     Schemas
  *
- * @author          Adam Kadlec <adam.kadlec@fastybird.com>
+ * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  *
  * @phpstan-extends DevicesModuleSchemas\Devices\DeviceSchema<Entities\IShellyDevice>
  */
