@@ -135,7 +135,7 @@ class DataTransformHelpers:
 
                 if isinstance(filtered, list) and len(filtered) == 1:
                     if isinstance(filtered[0], tuple):
-                        return str(filtered[0][0])
+                        return str(filtered[0][0]) if str(filtered[0][1]) == str(value) else None
 
                     return str(filtered[0])
 
@@ -147,6 +147,7 @@ class DataTransformHelpers:
                     isinstance(filtered, list)
                     and len(filtered) == 1
                     and isinstance(filtered[0], tuple)
+                    and str(filtered[0][1]) == str(value)
                     and SwitchPayload.has_value(filtered[0][0])
                 ):
                     return SwitchPayload(filtered[0][0])
@@ -170,7 +171,13 @@ class DataTransformHelpers:
         if value is None:
             return None
 
-        if data_type == DataType.SWITCH:
+        if data_type == DataType.BOOLEAN:
+            if isinstance(value, bool):
+                return 1 if value is True else 0
+
+            return None
+
+        if data_type == DataType.ENUM:
             if value_format is not None and isinstance(value_format, list):
                 filtered = [item for item in value_format if filter_enum_format(item=item, value=value)]
 
@@ -178,13 +185,27 @@ class DataTransformHelpers:
                     isinstance(filtered, list)
                     and len(filtered) == 1
                     and isinstance(filtered[0], tuple)
-                    and SwitchPayload.has_value(filtered[0][0])
+                    and str(filtered[0][0]) == str(value)
                 ):
-                    return filtered[0][2]
+                    return str(filtered[0][2])
 
-        if data_type == DataType.BOOLEAN:
-            if isinstance(value, bool):
-                return 1 if value is True else 0
+                elif len(filtered) == 1 and not isinstance(filtered[0], tuple):
+                    return str(filtered[0])
+
+                else:
+                    return None
+
+        if data_type == DataType.SWITCH:
+            if value_format is not None and isinstance(value_format, list) and isinstance(value, SwitchPayload):
+                filtered = [item for item in value_format if filter_enum_format(item=item, value=value)]
+
+                if (
+                    isinstance(filtered, list)
+                    and len(filtered) == 1
+                    and isinstance(filtered[0], tuple)
+                    and str(filtered[0][0]) == str(value)
+                ):
+                    return str(filtered[0][2])
 
         if not isinstance(value, (str, int, float, bool)):
             return str(value)
