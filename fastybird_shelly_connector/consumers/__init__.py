@@ -15,5 +15,5 @@
 #     limitations under the License.
 
 """
-Shelly connector receivers module
+Shelly connector consumers module
 """

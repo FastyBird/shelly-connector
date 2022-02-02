@@ -19,26 +19,76 @@ Shelly connector clients module clients proxy
 """
 
 # Python base dependencies
-import logging
-from typing import Set, Union
+from abc import ABC, abstractmethod
+from typing import List, Set, Union
 
 # Library libs
-from fastybird_shelly_connector.clients.base import IClient
-from fastybird_shelly_connector.clients.coap import CoapClient
-from fastybird_shelly_connector.clients.http import HttpClient
-from fastybird_shelly_connector.clients.mdns import MdnsClient
-from fastybird_shelly_connector.logger import Logger
-from fastybird_shelly_connector.receivers.receiver import Receiver
-from fastybird_shelly_connector.registry.model import (
-    AttributesRegistry,
-    CommandsRegistry,
-    DevicesRegistry,
-)
 from fastybird_shelly_connector.registry.records import (
     BlockRecord,
     DeviceRecord,
     SensorRecord,
 )
+from fastybird_shelly_connector.types import ClientType
+
+
+class IClient(ABC):
+    """
+    Client interface
+
+    @package        FastyBird:ShellyConnector!
+    @module         clients/base
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    @abstractmethod
+    def type(self) -> ClientType:
+        """Client type"""
+
+    # -----------------------------------------------------------------------------
+
+    @abstractmethod
+    def start(self) -> None:
+        """Start client communication"""
+
+    # -----------------------------------------------------------------------------
+
+    @abstractmethod
+    def stop(self) -> None:
+        """Stop client communication"""
+
+    # -----------------------------------------------------------------------------
+
+    @abstractmethod
+    def is_connected(self) -> bool:
+        """Check if client is connected"""
+
+    # -----------------------------------------------------------------------------
+
+    @abstractmethod
+    def discover(self) -> None:
+        """Send discover command"""
+
+    # -----------------------------------------------------------------------------
+
+    @abstractmethod
+    def handle(self) -> None:
+        """Process client requests"""
+
+    # -----------------------------------------------------------------------------
+
+    @abstractmethod
+    def write_sensor(
+        self,
+        device_record: DeviceRecord,
+        block_record: BlockRecord,
+        sensor_record: SensorRecord,
+        write_value: Union[str, int, float, bool, None],
+    ) -> None:
+        """Write value to device sensor"""
 
 
 class Client:
@@ -53,61 +103,13 @@ class Client:
 
     __clients: Set[IClient] = set()
 
-    __receiver: Receiver
-
-    __devices_registry: DevicesRegistry
-    __attributes_registry: AttributesRegistry
-    __commands_registry: CommandsRegistry
-
-    __logger: Union[Logger, logging.Logger]
-
     # -----------------------------------------------------------------------------
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        receiver: Receiver,
-        devices_registry: DevicesRegistry,
-        attributes_registry: AttributesRegistry,
-        commands_registry: CommandsRegistry,
-        logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
+        clients: List[IClient],
     ) -> None:
-        self.__clients = set()
-
-        self.__receiver = receiver
-
-        self.__devices_registry = devices_registry
-        self.__attributes_registry = attributes_registry
-        self.__commands_registry = commands_registry
-
-        self.__logger = logger
-
-    # -----------------------------------------------------------------------------
-
-    def initialize(self) -> None:
-        """Append new client"""
-        self.__clients.add(
-            CoapClient(
-                receiver=self.__receiver,
-                logger=self.__logger,
-            )
-        )
-
-        self.__clients.add(
-            MdnsClient(
-                receiver=self.__receiver,
-                logger=self.__logger,
-            )
-        )
-
-        self.__clients.add(
-            HttpClient(
-                receiver=self.__receiver,
-                devices_registry=self.__devices_registry,
-                attributes_registry=self.__attributes_registry,
-                commands_registry=self.__commands_registry,
-                logger=self.__logger,
-            )
-        )
+        self.__clients = set(clients)
 
     # -----------------------------------------------------------------------------
 

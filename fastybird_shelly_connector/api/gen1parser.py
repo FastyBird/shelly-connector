@@ -30,8 +30,7 @@ from fastybird_metadata.types import DataType, SwitchPayload
 # Library libs
 from fastybird_shelly_connector.api.gen1validator import Gen1Validator
 from fastybird_shelly_connector.api.transformers import DataTransformHelpers
-from fastybird_shelly_connector.exceptions import LogicException, ParsePayloadException
-from fastybird_shelly_connector.receivers.entities import (
+from fastybird_shelly_connector.consumers.entities import (
     BaseEntity,
     BlockDescriptionEntity,
     DeviceDescriptionEntity,
@@ -43,6 +42,7 @@ from fastybird_shelly_connector.receivers.entities import (
     SensorStateDescriptionEntity,
     SensorStateStatusEntity,
 )
+from fastybird_shelly_connector.exceptions import LogicException, ParsePayloadException
 from fastybird_shelly_connector.registry.model import (
     BlocksRegistry,
     DevicesRegistry,

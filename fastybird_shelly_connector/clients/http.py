@@ -28,14 +28,27 @@ from http import client
 from socket import gethostbyaddr, timeout  # pylint: disable=no-name-in-module
 from typing import Optional, Tuple, Union
 
+# Library dependencies
+from fastybird_metadata.devices_module import ConnectionState
+
 # Library libs
-from fastybird_shelly_connector.clients.base import IClient
+from fastybird_shelly_connector.api.gen1parser import Gen1Parser
+from fastybird_shelly_connector.api.gen1validator import Gen1Validator
+from fastybird_shelly_connector.api.transformers import DataTransformHelpers
+from fastybird_shelly_connector.clients.client import IClient
+from fastybird_shelly_connector.consumers.consumer import Consumer
+from fastybird_shelly_connector.exceptions import (
+    FileNotFoundException,
+    LogicException,
+    ParsePayloadException,
+)
 from fastybird_shelly_connector.logger import Logger
-from fastybird_shelly_connector.receivers.receiver import Receiver
 from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
+    BlocksRegistry,
     CommandsRegistry,
     DevicesRegistry,
+    SensorsRegistry,
 )
 from fastybird_shelly_connector.registry.records import (
     BlockRecord,
@@ -62,11 +75,16 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
 
-    __receiver: Receiver
+    __validator: Gen1Validator
+    __parser: Gen1Parser
+
+    __consumer: Consumer
 
     __devices_registry: DevicesRegistry
     __attributes_registry: AttributesRegistry
     __commands_registry: CommandsRegistry
+    __blocks_registry: BlocksRegistry
+    __sensors_registry: SensorsRegistry
 
     __logger: Union[Logger, logging.Logger]
 
@@ -77,21 +95,33 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
     __SENDING_CMD_DELAY: float = 60
 
+    __DEVICE_COMMUNICATION_TIMEOUT: float = 120.0
+    __SENSOR_VALUE_RESEND_DELAY: float = 5.0
+
     # -----------------------------------------------------------------------------
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        receiver: Receiver,
+        validator: Gen1Validator,
+        parser: Gen1Parser,
+        consumer: Consumer,
         devices_registry: DevicesRegistry,
         attributes_registry: AttributesRegistry,
         commands_registry: CommandsRegistry,
+        blocks_registry: BlocksRegistry,
+        sensors_registry: SensorsRegistry,
         logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
     ) -> None:
-        self.__receiver = receiver
+        self.__consumer = consumer
+
+        self.__validator = validator
+        self.__parser = parser
 
         self.__devices_registry = devices_registry
         self.__attributes_registry = attributes_registry
         self.__commands_registry = commands_registry
+        self.__blocks_registry = blocks_registry
+        self.__sensors_registry = sensors_registry
 
         self.__logger = logger
 
@@ -125,7 +155,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def handle(self) -> None:
+    def handle(self) -> None:  # pylint: disable=too-many-branches
         """Process HTTP requests"""
         for device_record in self.__devices_registry:
             ip_address_attribute = self.__attributes_registry.get_by_attribute(
@@ -165,6 +195,61 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
                 )
 
                 return
+
+            state_attribute_record = self.__attributes_registry.get_by_attribute(
+                device_id=device_record.id,
+                attribute_type=DeviceAttribute.STATE,
+            )
+
+            if (
+                device_record.last_communication_timestamp is None
+                or time.time() - device_record.last_communication_timestamp > self.__DEVICE_COMMUNICATION_TIMEOUT
+            ):
+                if state_attribute_record is not None and state_attribute_record.value != ConnectionState.LOST.value:
+                    self.__attributes_registry.set_value(
+                        attribute=state_attribute_record,
+                        value=ConnectionState.LOST.value,
+                    )
+
+                return
+
+            if (
+                device_record.last_communication_timestamp is not None
+                and time.time() - device_record.last_communication_timestamp <= self.__DEVICE_COMMUNICATION_TIMEOUT
+            ):
+                if (
+                    state_attribute_record is not None
+                    and state_attribute_record.value != ConnectionState.CONNECTED.value
+                ):
+                    self.__attributes_registry.set_value(
+                        attribute=state_attribute_record,
+                        value=ConnectionState.CONNECTED.value,
+                    )
+
+            for block in self.__blocks_registry.get_all_by_device(device_id=device_record.id):
+                for sensor in self.__sensors_registry.get_all_for_block(block_id=block.id):
+                    if sensor.expected_value is not None:
+                        if sensor.expected_value == sensor.actual_value:
+                            self.__sensors_registry.set_expected_value(sensor=sensor, value=None)
+
+                        elif (
+                            sensor.expected_pending is None
+                            or time.time() - sensor.expected_pending >= self.__SENSOR_VALUE_RESEND_DELAY
+                        ):
+                            self.write_sensor(
+                                device_record=device_record,
+                                block_record=block,
+                                sensor_record=sensor,
+                                write_value=DataTransformHelpers.transform_to_device(
+                                    data_type=sensor.data_type,
+                                    value_format=sensor.format,
+                                    value=sensor.expected_value,
+                                ),
+                            )
+
+                            self.__sensors_registry.set_expected_pending(sensor=sensor, timestamp=time.time())
+
+            return
 
     # -----------------------------------------------------------------------------
 
@@ -241,7 +326,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
                 )
 
                 if success:
-                    self.__receiver.on_http_message(
+                    self.__handle_message(
                         device_identifier=device_record.identifier.lower(),
                         device_ip_address=host,
                         message_payload=response,
@@ -416,3 +501,74 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
             return "temp"
 
         return sensor_record.description
+
+    # -----------------------------------------------------------------------------
+
+    def __handle_message(
+        self,
+        device_identifier: str,
+        device_ip_address: str,
+        message_payload: str,
+        message_type: ClientMessageType,
+    ) -> None:
+        device_record = self.__devices_registry.get_by_identifier(
+            device_identifier=device_identifier,
+        )
+
+        if device_record is not None:
+            self.__devices_registry.set_last_communication_timestamp(
+                device=device_record,
+                last_communication_timestamp=time.time(),
+            )
+
+        try:
+            if (
+                self.__validator.validate_http_message(
+                    message_payload=message_payload,
+                    message_type=message_type,
+                )
+                is False
+            ):
+                return
+
+        except (LogicException, FileNotFoundException) as ex:
+            self.__logger.error(
+                "Received message validation against schema failed",
+                extra={
+                    "device": {
+                        "identifier": device_identifier,
+                        "ip_address": device_ip_address,
+                    },
+                    "exception": {
+                        "message": str(ex),
+                        "code": type(ex).__name__,
+                    },
+                },
+            )
+            return
+
+        try:
+            entity = self.__parser.parse_http_message(
+                device_identifier=device_identifier,
+                device_ip_address=device_ip_address,
+                message_payload=message_payload,
+                message_type=message_type,
+            )
+
+        except (FileNotFoundException, LogicException, ParsePayloadException) as ex:
+            self.__logger.error(
+                "Received message could not be successfully parsed to entity",
+                extra={
+                    "device": {
+                        "identifier": device_identifier,
+                        "ip_address": device_ip_address,
+                    },
+                    "exception": {
+                        "message": str(ex),
+                        "code": type(ex).__name__,
+                    },
+                },
+            )
+            return
+
+        self.__consumer.append(entity=entity)

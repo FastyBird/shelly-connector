@@ -22,15 +22,18 @@ Shelly connector clients module mDNS client
 import ipaddress
 import logging
 import re
+import time
 from typing import Optional, Union
 
 # Library dependencies
 from zeroconf import ServiceBrowser, Zeroconf
 
 # Library libs
-from fastybird_shelly_connector.clients.base import IClient
+from fastybird_shelly_connector.clients.client import IClient
+from fastybird_shelly_connector.consumers.consumer import Consumer
+from fastybird_shelly_connector.consumers.entities import DeviceFoundEntity
 from fastybird_shelly_connector.logger import Logger
-from fastybird_shelly_connector.receivers.receiver import Receiver
+from fastybird_shelly_connector.registry.model import DevicesRegistry
 from fastybird_shelly_connector.registry.records import (
     BlockRecord,
     DeviceRecord,
@@ -49,7 +52,9 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
 
-    __receiver: Receiver
+    __consumer: Consumer
+
+    __devices_registry: DevicesRegistry
 
     __logger: Union[Logger, logging.Logger]
 
@@ -64,11 +69,14 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        receiver: Receiver,
+        consumer: Consumer,
+        devices_registry: DevicesRegistry,
         logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
         zeroconf: Optional[Zeroconf] = None,
     ) -> None:
-        self.__receiver = receiver
+        self.__consumer = consumer
+
+        self.__devices_registry = devices_registry
 
         self.__common_zeroconf = zeroconf
         self.__zeroconf = None
@@ -181,9 +189,21 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
                         },
                     )
 
-                    self.__receiver.on_mdns_message(
-                        device_identifier=device_identifier.lower(),
-                        device_ip_address=ip_address,
+                    device_record = self.__devices_registry.get_by_identifier(
+                        device_identifier=device_identifier,
+                    )
+
+                    if device_record is not None:
+                        self.__devices_registry.set_last_communication_timestamp(
+                            device=device_record,
+                            last_communication_timestamp=time.time(),
+                        )
+
+                    self.__consumer.append(
+                        entity=DeviceFoundEntity(
+                            device_identifier=device_identifier.lower(),
+                            device_ip_address=ip_address,
+                        ),
                     )
 
     # -----------------------------------------------------------------------------

@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector receivers module receiver for device messages
+Shelly connector consumers module consumer for device messages
 """
 
 # Python base dependencies
@@ -26,7 +26,8 @@ from typing import Set
 from fastybird_metadata.devices_module import ConnectionState
 
 # Library libs
-from fastybird_shelly_connector.receivers.entities import (
+from fastybird_shelly_connector.consumers.consumer import IConsumer
+from fastybird_shelly_connector.consumers.entities import (
     BaseEntity,
     DeviceDescriptionEntity,
     DeviceDescriptionFromCoapEntity,
@@ -36,7 +37,6 @@ from fastybird_shelly_connector.receivers.entities import (
     DeviceInfoEntity,
     DeviceStatusEntity,
 )
-from fastybird_shelly_connector.receivers.receiver import IReceiver
 from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
     BlocksRegistry,
@@ -47,12 +47,12 @@ from fastybird_shelly_connector.registry.records import DeviceRecord, SensorReco
 from fastybird_shelly_connector.types import DeviceAttribute, DeviceDescriptionSource
 
 
-class DeviceDescriptionReceiver(IReceiver):  # pylint: disable=too-few-public-methods
+class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-methods
     """
-    Device description message receiver
+    Device description message consumer
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/device
+    @module         consumers/device
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -78,7 +78,7 @@ class DeviceDescriptionReceiver(IReceiver):  # pylint: disable=too-few-public-me
 
     # -----------------------------------------------------------------------------
 
-    def receive(self, entity: BaseEntity) -> None:
+    def consume(self, entity: BaseEntity) -> None:
         """Handle received message"""
         if not isinstance(entity, (DeviceDescriptionEntity, DeviceInfoEntity, DeviceExtendedStatusEntity)):
             return
@@ -305,12 +305,12 @@ class DeviceDescriptionReceiver(IReceiver):  # pylint: disable=too-few-public-me
         return device_record
 
 
-class DeviceFoundReceiver(IReceiver):  # pylint: disable=too-few-public-methods
+class DeviceFoundConsumer(IConsumer):  # pylint: disable=too-few-public-methods
     """
-    Device state message receiver
+    Device state message consumer
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers
+    @module         consumers/device
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -330,7 +330,7 @@ class DeviceFoundReceiver(IReceiver):  # pylint: disable=too-few-public-methods
 
     # -----------------------------------------------------------------------------
 
-    def receive(self, entity: BaseEntity) -> None:
+    def consume(self, entity: BaseEntity) -> None:
         """Handle received message"""
         if not isinstance(entity, DeviceFoundEntity):
             return
@@ -377,12 +377,12 @@ class DeviceFoundReceiver(IReceiver):  # pylint: disable=too-few-public-methods
             )
 
 
-class DeviceStateReceiver(IReceiver):  # pylint: disable=too-few-public-methods
+class DeviceStateConsumer(IConsumer):  # pylint: disable=too-few-public-methods
     """
-    Device state message receiver
+    Device state message consumer
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers
+    @module         consumers/device
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -408,7 +408,7 @@ class DeviceStateReceiver(IReceiver):  # pylint: disable=too-few-public-methods
 
     # -----------------------------------------------------------------------------
 
-    def receive(self, entity: BaseEntity) -> None:
+    def consume(self, entity: BaseEntity) -> None:
         """Handle received message"""
         if not isinstance(entity, DeviceStatusEntity):
             return

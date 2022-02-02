@@ -15,7 +15,7 @@
 #     limitations under the License.
 
 """
-Shelly connector receivers module entities
+Shelly connector consumers module entities
 """
 
 # Python base dependencies
@@ -35,7 +35,7 @@ class BaseEntity(ABC):  # pylint: disable=too-few-public-methods
     Base message entity
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/entities
+    @module         consumers/entities
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -69,7 +69,7 @@ class DeviceDescriptionEntity(BaseEntity):
     Device description message entity
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/entities
+    @module         consumers/entities
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -109,7 +109,7 @@ class DeviceDescriptionFromCoapEntity(DeviceDescriptionEntity):
     Device description message entity parsed from CoAP message
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/entities
+    @module         consumers/entities
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -144,7 +144,7 @@ class DeviceDescriptionFromHttpEntity(DeviceDescriptionEntity):
     Device description message entity parsed from HTTP message
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/entities
+    @module         consumers/entities
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -155,7 +155,7 @@ class BlockDescriptionEntity:
     Device block description message entity
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/entities
+    @module         consumers/entities
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -210,7 +210,7 @@ class SensorStateDescriptionEntity:  # pylint: disable=too-many-arguments,too-ma
     Block sensor&state description message entity
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/entities
+    @module         consumers/entities
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -335,7 +335,7 @@ class DeviceStatusEntity(BaseEntity):
     Device status message entity
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/entities
+    @module         consumers/entities
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -375,7 +375,7 @@ class SensorStateStatusEntity:
     Sensor&State status message entity
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/entities
+    @module         consumers/entities
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -437,7 +437,7 @@ class DeviceFoundEntity(BaseEntity):
     Device found via mDNS message entity
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/entities
+    @module         consumers/entities
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -448,7 +448,7 @@ class DeviceInfoEntity(BaseEntity):
     Device base info message entity
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/entities
+    @module         consumers/entities
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
@@ -513,7 +513,7 @@ class DeviceExtendedStatusEntity(BaseEntity):
     Device extended status message entity
 
     @package        FastyBird:ShellyConnector!
-    @module         receivers/entities
+    @module         consumers/entities
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """

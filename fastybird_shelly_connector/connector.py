@@ -46,11 +46,10 @@ from kink import inject
 
 # Library libs
 from fastybird_shelly_connector.clients.client import Client
+from fastybird_shelly_connector.consumers.consumer import Consumer
 from fastybird_shelly_connector.entities import ShellyDeviceEntity
 from fastybird_shelly_connector.events.listeners import EventsListener
 from fastybird_shelly_connector.logger import Logger
-from fastybird_shelly_connector.publishers.publisher import Publisher
-from fastybird_shelly_connector.receivers.receiver import Receiver
 from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
     BlocksRegistry,
@@ -83,8 +82,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     __devices_repository: DevicesRepository
 
-    __receiver: Receiver
-    __publisher: Publisher
+    __consumer: Consumer
 
     __devices_registry: DevicesRegistry
     __attributes_registry: AttributesRegistry
@@ -103,8 +101,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         self,
         connector_id: uuid.UUID,
         devices_repository: DevicesRepository,
-        receiver: Receiver,
-        publisher: Publisher,
+        consumer: Consumer,
         devices_registry: DevicesRegistry,
         attributes_registry: AttributesRegistry,
         blocks_registry: BlocksRegistry,
@@ -117,8 +114,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
         self.__devices_repository = devices_repository
 
-        self.__receiver = receiver
-        self.__publisher = publisher
+        self.__consumer = consumer
 
         self.__devices_registry = devices_registry
         self.__attributes_registry = attributes_registry
@@ -135,7 +131,6 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     def initialize(self, settings: Optional[Dict] = None) -> None:
         """Set connector to initial state"""
-        self.__client.initialize()
         self.__devices_registry.reset()
 
         for device in self.__devices_repository.get_all_by_connector(connector_id=self.__connector_id):
@@ -344,7 +339,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     def has_unfinished_tasks(self) -> bool:
         """Check if connector has some unfinished task"""
-        return not self.__receiver.is_empty()
+        return not self.__consumer.is_empty()
 
     # -----------------------------------------------------------------------------
 
@@ -355,15 +350,13 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
             return
 
-        self.__receiver.handle()
+        self.__consumer.handle()
 
         if self.__stopped:
             return
 
+        # Continue processing communication
         self.__client.handle()
-
-        # Continue processing devices
-        self.__publisher.handle()
 
     # -----------------------------------------------------------------------------
 

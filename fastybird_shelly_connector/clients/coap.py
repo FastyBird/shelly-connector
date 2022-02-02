@@ -22,6 +22,7 @@ Shelly connector clients module CoAP client
 import logging
 import select
 import struct
+import time
 from socket import (  # pylint: disable=no-name-in-module
     AF_INET,
     INADDR_ANY,
@@ -40,9 +41,17 @@ from threading import Thread
 from typing import Optional, Union
 
 # Library libs
-from fastybird_shelly_connector.clients.base import IClient
+from fastybird_shelly_connector.api.gen1parser import Gen1Parser
+from fastybird_shelly_connector.api.gen1validator import Gen1Validator
+from fastybird_shelly_connector.clients.client import IClient
+from fastybird_shelly_connector.consumers.consumer import Consumer
+from fastybird_shelly_connector.exceptions import (
+    FileNotFoundException,
+    LogicException,
+    ParsePayloadException,
+)
 from fastybird_shelly_connector.logger import Logger
-from fastybird_shelly_connector.receivers.receiver import Receiver
+from fastybird_shelly_connector.registry.model import DevicesRegistry
 from fastybird_shelly_connector.registry.records import (
     BlockRecord,
     DeviceRecord,
@@ -52,7 +61,7 @@ from fastybird_shelly_connector.types import ClientMessageType, ClientType
 from fastybird_shelly_connector.utilities.helpers import Timer
 
 
-class CoapClient(IClient, Thread):
+class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attributes
     """
     CoAP client
 
@@ -66,7 +75,12 @@ class CoapClient(IClient, Thread):
 
     __socket: Optional[socket] = None
 
-    __receiver: Receiver
+    __validator: Gen1Validator
+    __parser: Gen1Parser
+
+    __consumer: Consumer
+
+    __devices_registry: DevicesRegistry
 
     __logger: Union[Logger, logging.Logger]
 
@@ -80,14 +94,22 @@ class CoapClient(IClient, Thread):
 
     # -----------------------------------------------------------------------------
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
-        receiver: Receiver,
+        validator: Gen1Validator,
+        parser: Gen1Parser,
+        consumer: Consumer,
+        devices_registry: DevicesRegistry,
         logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
     ) -> None:
         Thread.__init__(self, name="CoAP server thread", daemon=True)
 
-        self.__receiver = receiver
+        self.__consumer = consumer
+
+        self.__validator = validator
+        self.__parser = parser
+
+        self.__devices_registry = devices_registry
 
         self.__logger = logger
 
@@ -341,7 +363,7 @@ class CoapClient(IClient, Thread):
                     )
 
                     if code == 30:
-                        self.__receiver.on_coap_message(
+                        self.__handle_message(
                             device_identifier=device_identifier.lower(),
                             device_type=device_type.lower(),
                             device_ip_address=ip_address,
@@ -350,10 +372,85 @@ class CoapClient(IClient, Thread):
                         )
 
                     elif code == 69:
-                        self.__receiver.on_coap_message(
+                        self.__handle_message(
                             device_identifier=device_identifier.lower(),
                             device_type=device_type.lower(),
                             device_ip_address=ip_address,
                             message_payload=payload,
                             message_type=ClientMessageType.COAP_DESCRIPTION,
                         )
+
+    # -----------------------------------------------------------------------------
+
+    def __handle_message(  # pylint: disable=too-many-arguments
+        self,
+        device_identifier: str,
+        device_type: str,
+        device_ip_address: str,
+        message_payload: str,
+        message_type: ClientMessageType,
+    ) -> None:
+        device_record = self.__devices_registry.get_by_identifier(
+            device_identifier=device_identifier,
+        )
+
+        if device_record is not None:
+            self.__devices_registry.set_last_communication_timestamp(
+                device=device_record,
+                last_communication_timestamp=time.time(),
+            )
+
+        try:
+            if (
+                self.__validator.validate_coap_message(
+                    message_payload=message_payload,
+                    message_type=message_type,
+                )
+                is False
+            ):
+                return
+
+        except (LogicException, FileNotFoundException) as ex:
+            self.__logger.error(
+                "Received message validation against schema failed",
+                extra={
+                    "device": {
+                        "identifier": device_identifier,
+                        "type": device_type,
+                    },
+                    "exception": {
+                        "message": str(ex),
+                        "code": type(ex).__name__,
+                    },
+                },
+            )
+
+            return
+
+        try:
+            entity = self.__parser.parse_coap_message(
+                device_identifier=device_identifier,
+                device_type=device_type,
+                device_ip_address=device_ip_address,
+                message_payload=message_payload,
+                message_type=message_type,
+            )
+
+        except (FileNotFoundException, LogicException, ParsePayloadException) as ex:
+            self.__logger.error(
+                "Received message could not be successfully parsed to entity",
+                extra={
+                    "device": {
+                        "identifier": device_identifier,
+                        "type": device_type,
+                    },
+                    "exception": {
+                        "message": str(ex),
+                        "code": type(ex).__name__,
+                    },
+                },
+            )
+
+            return
+
+        self.__consumer.append(entity=entity)

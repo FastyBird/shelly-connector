@@ -31,21 +31,22 @@ from whistle import EventDispatcher
 from fastybird_shelly_connector.api.gen1parser import Gen1Parser
 from fastybird_shelly_connector.api.gen1validator import Gen1Validator
 from fastybird_shelly_connector.clients.client import Client
+from fastybird_shelly_connector.clients.coap import CoapClient
+from fastybird_shelly_connector.clients.http import HttpClient
+from fastybird_shelly_connector.clients.mdns import MdnsClient
 from fastybird_shelly_connector.connector import ShellyConnector
+from fastybird_shelly_connector.consumers.consumer import Consumer
+from fastybird_shelly_connector.consumers.device import (
+    DeviceDescriptionConsumer,
+    DeviceFoundConsumer,
+    DeviceStateConsumer,
+)
 from fastybird_shelly_connector.entities import (  # pylint: disable=unused-import
     ShellyConnectorEntity,
     ShellyDeviceEntity,
 )
 from fastybird_shelly_connector.events.listeners import EventsListener
 from fastybird_shelly_connector.logger import Logger
-from fastybird_shelly_connector.publishers.gen1 import Gen1Publisher
-from fastybird_shelly_connector.publishers.publisher import Publisher
-from fastybird_shelly_connector.receivers.device import (
-    DeviceDescriptionReceiver,
-    DeviceFoundReceiver,
-    DeviceStateReceiver,
-)
-from fastybird_shelly_connector.receivers.receiver import Receiver
 from fastybird_shelly_connector.registry.model import (
     AttributesRegistry,
     BlocksRegistry,
@@ -101,64 +102,71 @@ def create_connector(
     )
     di["shelly-connector_api-gen-1-parser"] = di[Gen1Parser]
 
-    # Data publishers
-    di[Gen1Publisher] = Gen1Publisher(
-        attributes_registry=di[AttributesRegistry],
-        blocks_registry=di[BlocksRegistry],
-        sensors_registry=di[SensorsRegistry],
-        client=di[Client],
-    )
-    di["shelly-connector_gen1-publisher"] = di[Gen1Publisher]
-
-    di[Publisher] = Publisher(
-        publishers=[di[Gen1Publisher]],
-        devices_registry=di[DevicesRegistry],
-    )
-    di["shelly-connector_publisher-proxy"] = di[Publisher]
-
-    # Connector messages receivers
-    di[DeviceDescriptionReceiver] = DeviceDescriptionReceiver(
+    # Connector messages consumers
+    di[DeviceDescriptionConsumer] = DeviceDescriptionConsumer(
         devices_registry=di[DevicesRegistry],
         attributes_registry=di[AttributesRegistry],
         blocks_registry=di[BlocksRegistry],
         sensors_registry=di[SensorsRegistry],
     )
-    di["shelly-connector_device-description-receiver"] = di[DeviceDescriptionReceiver]
+    di["shelly-connector_device-description-consumer"] = di[DeviceDescriptionConsumer]
 
-    di[DeviceFoundReceiver] = DeviceFoundReceiver(
+    di[DeviceFoundConsumer] = DeviceFoundConsumer(
         devices_registry=di[DevicesRegistry],
         attributes_registry=di[AttributesRegistry],
     )
-    di["shelly-connector_device-description-receiver"] = di[DeviceFoundReceiver]
+    di["shelly-connector_device-description-consumer"] = di[DeviceFoundConsumer]
 
-    di[DeviceStateReceiver] = DeviceStateReceiver(
+    di[DeviceStateConsumer] = DeviceStateConsumer(
         devices_registry=di[DevicesRegistry],
         attributes_registry=di[AttributesRegistry],
         blocks_registry=di[BlocksRegistry],
         sensors_registry=di[SensorsRegistry],
     )
-    di["shelly-connector_device-state-receiver"] = di[DeviceStateReceiver]
+    di["shelly-connector_device-state-consumer"] = di[DeviceStateConsumer]
 
-    di[Receiver] = Receiver(
-        validator=di[Gen1Validator],
-        parser=di[Gen1Parser],
-        receivers=[
-            di[DeviceDescriptionReceiver],
-            di[DeviceFoundReceiver],
-            di[DeviceStateReceiver],
+    di[Consumer] = Consumer(
+        consumers=[
+            di[DeviceDescriptionConsumer],
+            di[DeviceFoundConsumer],
+            di[DeviceStateConsumer],
         ],
-        devices_registry=di[DevicesRegistry],
         logger=connector_logger,
     )
-    di["shelly-connector_receivers-proxy"] = di[Receiver]
+    di["shelly-connector_consumers-proxy"] = di[Consumer]
 
     # Connector clients
-    di[Client] = Client(
-        receiver=di[Receiver],
+    di[CoapClient] = CoapClient(
+        validator=di[Gen1Validator],
+        parser=di[Gen1Parser],
+        consumer=di[Consumer],
+        devices_registry=di[DevicesRegistry],
+        logger=logger,
+    )
+    di["shelly-connector_coap-client"] = di[CoapClient]
+
+    di[MdnsClient] = MdnsClient(consumer=di[Consumer], devices_registry=di[DevicesRegistry], logger=logger)
+    di["shelly-connector_mdns-client"] = di[MdnsClient]
+
+    di[HttpClient] = HttpClient(
+        validator=di[Gen1Validator],
+        parser=di[Gen1Parser],
+        consumer=di[Consumer],
         devices_registry=di[DevicesRegistry],
         attributes_registry=di[AttributesRegistry],
         commands_registry=di[CommandsRegistry],
-        logger=connector_logger,
+        blocks_registry=di[BlocksRegistry],
+        sensors_registry=di[SensorsRegistry],
+        logger=logger,
+    )
+    di["shelly-connector_http-client"] = di[HttpClient]
+
+    di[Client] = Client(
+        clients=[
+            di[CoapClient],
+            di[MdnsClient],
+            di[HttpClient],
+        ],
     )
     di["shelly-connector_clients-proxy"] = di[Client]
 
@@ -173,8 +181,7 @@ def create_connector(
     # Main connector service
     connector_service = ShellyConnector(  # type: ignore[call-arg]
         connector_id=connector.id,
-        receiver=di[Receiver],
-        publisher=di[Publisher],
+        consumer=di[Consumer],
         devices_registry=di[DevicesRegistry],
         attributes_registry=di[AttributesRegistry],
         blocks_registry=di[BlocksRegistry],
