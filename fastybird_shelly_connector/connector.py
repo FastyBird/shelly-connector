@@ -41,7 +41,7 @@ from fastybird_devices_module.entities.device import (
 from fastybird_devices_module.repositories.device import DevicesRepository
 from fastybird_metadata.devices_module import ConnectionState
 from fastybird_metadata.helpers import normalize_value
-from fastybird_metadata.types import ButtonPayload, SwitchPayload
+from fastybird_metadata.types import ButtonPayload, SwitchPayload, ControlAction
 from kink import inject
 
 # Library libs
@@ -57,7 +57,7 @@ from fastybird_shelly_connector.registry.model import (
     SensorsRegistry,
 )
 from fastybird_shelly_connector.types import (
-    ControlAction,
+    ConnectorAction,
     DeviceAttribute,
     DeviceDescriptionSource,
     SensorType,
@@ -388,16 +388,17 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         self,
         control_item: Union[ConnectorControlEntity, DeviceControlEntity, ChannelControlEntity],
         data: Optional[Dict],
+        action: ControlAction,
     ) -> None:
         """Write connector control action"""
         if isinstance(control_item, ConnectorControlEntity):
-            if not ControlAction.has_value(control_item.name):
+            if not ConnectorAction.has_value(control_item.name):
                 return
 
-            control_action = ControlAction(control_item.name)
+            control_action = ConnectorAction(control_item.name)
 
-            if control_action == ControlAction.DISCOVER:
+            if control_action == ConnectorAction.DISCOVER:
                 self.__client.discover()
 
-            if control_action == ControlAction.RESTART:
+            if control_action == ConnectorAction.RESTART:
                 pass

@@ -319,7 +319,7 @@ class DeviceType(ExtendedEnum, Enum):
 
 
 @unique
-class ControlAction(ExtendedEnum, Enum):
+class ConnectorAction(ExtendedEnum, Enum):
     """
     Connector control action
 
