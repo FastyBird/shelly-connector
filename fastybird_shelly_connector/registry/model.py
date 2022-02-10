@@ -27,7 +27,9 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
-from fastybird_devices_module.repositories.state import ChannelPropertiesStatesRepository
+from fastybird_devices_module.repositories.state import (
+    ChannelPropertiesStatesRepository,
+)
 from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 from kink import inject
 from whistle import EventDispatcher
@@ -460,7 +462,7 @@ class SensorsRegistry:
     def __init__(
         self,
         event_dispatcher: EventDispatcher,
-        channel_property_state_repository: ChannelPropertiesStatesRepository
+        channel_property_state_repository: ChannelPropertiesStatesRepository,
     ) -> None:
         self.__items = {}
 
