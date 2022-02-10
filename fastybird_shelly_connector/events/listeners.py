@@ -44,9 +44,7 @@ from fastybird_devices_module.repositories.device import (
     DevicePropertiesRepository,
     DevicesRepository,
 )
-from fastybird_devices_module.repositories.state import (
-    ChannelPropertiesStatesRepository,
-)
+from fastybird_devices_module.repositories.state import ChannelPropertiesStatesRepository
 from fastybird_metadata.devices_module import FirmwareManufacturer, HardwareManufacturer
 from kink import inject
 from whistle import Event, EventDispatcher
