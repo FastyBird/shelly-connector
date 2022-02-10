@@ -19,8 +19,12 @@ Shelly connector entities module
 """
 
 # Library dependencies
+from typing import Union
+
+# Library dependencies
 from fastybird_devices_module.entities.connector import ConnectorEntity
 from fastybird_devices_module.entities.device import DeviceEntity
+from fastybird_metadata.types import ConnectorSource, ModuleSource, PluginSource
 
 # Library libs
 from fastybird_shelly_connector.types import CONNECTOR_NAME, DEVICE_NAME
@@ -45,6 +49,13 @@ class ShellyConnectorEntity(ConnectorEntity):  # pylint: disable=too-few-public-
         """Connector type"""
         return CONNECTOR_NAME
 
+    # -----------------------------------------------------------------------------
+
+    @property
+    def source(self) -> Union[ModuleSource, ConnectorSource, PluginSource]:
+        """Entity source type"""
+        return ConnectorSource.SHELLY_CONNECTOR
+
 
 class ShellyDeviceEntity(DeviceEntity):  # pylint: disable=too-few-public-methods
     """
@@ -64,3 +75,10 @@ class ShellyDeviceEntity(DeviceEntity):  # pylint: disable=too-few-public-method
     def type(self) -> str:
         """Device type"""
         return DEVICE_NAME
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    def source(self) -> Union[ModuleSource, ConnectorSource, PluginSource]:
+        """Entity source type"""
+        return ConnectorSource.SHELLY_CONNECTOR

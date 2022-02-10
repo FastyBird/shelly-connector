@@ -17,6 +17,7 @@ namespace FastyBird\ShellyConnector\Entities;
 
 use Doctrine\ORM\Mapping as ORM;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
+use FastyBird\Metadata\Types as MetadataTypes;
 
 /**
  * @ORM\Entity
@@ -40,6 +41,14 @@ class ShellyConnector extends DevicesModuleEntities\Connectors\Connector impleme
 	public function getDiscriminatorName(): string
 	{
 		return self::CONNECTOR_TYPE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getSource()
+	{
+		return MetadataTypes\ConnectorSourceType::get(MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_SHELLY);
 	}
 
 }

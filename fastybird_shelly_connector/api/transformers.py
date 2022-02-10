@@ -189,11 +189,10 @@ class DataTransformHelpers:
                 ):
                     return str(filtered[0][2])
 
-                elif len(filtered) == 1 and not isinstance(filtered[0], tuple):
+                if len(filtered) == 1 and not isinstance(filtered[0], tuple):
                     return str(filtered[0])
 
-                else:
-                    return None
+                return None
 
         if data_type == DataType.SWITCH:
             if value_format is not None and isinstance(value_format, list) and isinstance(value, SwitchPayload):

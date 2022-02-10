@@ -27,7 +27,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
-from fastybird_devices_module.repositories.state import IChannelPropertyStateRepository
+from fastybird_devices_module.repositories.state import ChannelPropertiesStatesRepository
 from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 from kink import inject
 from whistle import EventDispatcher
@@ -436,11 +436,7 @@ class BlocksRegistry:
             self.__items = {}
 
 
-@inject(
-    bind={
-        "channel_property_state_repository": IChannelPropertyStateRepository,
-    }
-)
+@inject
 class SensorsRegistry:
     """
     Sensors&States registry
@@ -457,14 +453,14 @@ class SensorsRegistry:
 
     __event_dispatcher: EventDispatcher
 
-    __channel_property_state_repository: Optional[IChannelPropertyStateRepository] = None
+    __channel_property_state_repository: ChannelPropertiesStatesRepository
 
     # -----------------------------------------------------------------------------
 
     def __init__(
         self,
         event_dispatcher: EventDispatcher,
-        channel_property_state_repository: Optional[IChannelPropertyStateRepository] = None,
+        channel_property_state_repository: ChannelPropertiesStatesRepository
     ) -> None:
         self.__items = {}
 
@@ -546,13 +542,17 @@ class SensorsRegistry:
             sensor_settable=sensor_settable,
         )
 
-        if existing_sensor is None and self.__channel_property_state_repository is not None:
-            stored_state = self.__channel_property_state_repository.get_by_id(property_id=sensor_id)
+        if existing_sensor is None:
+            try:
+                stored_state = self.__channel_property_state_repository.get_by_id(property_id=sensor_id)
 
-            if stored_state is not None:
-                sensor_record.actual_value = stored_state.actual_value
-                sensor_record.expected_value = stored_state.expected_value
-                sensor_record.expected_pending = stored_state.pending
+                if stored_state is not None:
+                    sensor_record.actual_value = stored_state.actual_value
+                    sensor_record.expected_value = stored_state.expected_value
+                    sensor_record.expected_pending = stored_state.pending
+
+            except NotImplementedError:
+                pass
 
         self.__items[sensor_record.id.__str__()] = sensor_record
 
@@ -668,6 +668,8 @@ class SensorsRegistry:
         value: Union[str, int, float, bool, ButtonPayload, SwitchPayload, None],
     ) -> SensorRecord:
         """Set sensor&state expected value"""
+        existing_record = self.get_by_id(sensor_id=sensor.id)
+
         sensor.expected_value = value
 
         self.__update(sensor=sensor)
@@ -676,6 +678,14 @@ class SensorsRegistry:
 
         if updated_sensor is None:
             raise InvalidStateException("Sensor&State record could not be re-fetched from registry after update")
+
+        self.__event_dispatcher.dispatch(
+            event_id=SensorActualValueEvent.EVENT_NAME,
+            event=SensorActualValueEvent(
+                original_record=existing_record,
+                updated_record=updated_sensor,
+            ),
+        )
 
         return updated_sensor
 

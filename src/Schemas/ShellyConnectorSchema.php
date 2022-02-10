@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\Schemas;
 
 use FastyBird\DevicesModule\Schemas as DevicesModuleSchemas;
+use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\ShellyConnector\Entities;
 
 /**
@@ -34,7 +35,7 @@ final class ShellyConnectorSchema extends DevicesModuleSchemas\Connectors\Connec
 	/**
 	 * Define entity schema type string
 	 */
-	public const SCHEMA_TYPE = 'devices-module/connector-shelly';
+	public const SCHEMA_TYPE = MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_SHELLY . '/connector/' . Entities\ShellyConnector::CONNECTOR_TYPE;
 
 	/**
 	 * {@inheritDoc}

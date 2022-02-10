@@ -467,8 +467,11 @@ class SensorRecord:  # pylint: disable=too-many-public-methods,too-many-instance
         """Set sensor&state actual value"""
         self.__actual_value = value
 
-        if value == self.expected_value:
+        if self.actual_value == self.expected_value:
             self.expected_value = None
+            self.expected_pending = None
+
+        if self.expected_value is None:
             self.expected_pending = None
 
     # -----------------------------------------------------------------------------
@@ -484,9 +487,7 @@ class SensorRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     def expected_value(self, value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None]) -> None:
         """Set sensor&state expected value"""
         self.__expected_value = value
-
-        if value is not None:
-            self.expected_pending = None
+        self.expected_pending = None
 
     # -----------------------------------------------------------------------------
 

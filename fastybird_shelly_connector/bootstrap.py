@@ -74,7 +74,7 @@ def create_connector(
     di["shelly-connector_events-dispatcher"] = di[EventDispatcher]
 
     # Registers
-    di[SensorsRegistry] = SensorsRegistry(event_dispatcher=di[EventDispatcher])
+    di[SensorsRegistry] = SensorsRegistry(event_dispatcher=di[EventDispatcher])  # type: ignore[call-arg]
     di["shelly-connector_sensors-registry"] = di[SensorsRegistry]
     di[BlocksRegistry] = BlocksRegistry(sensors_registry=di[SensorsRegistry], event_dispatcher=di[EventDispatcher])
     di["shelly-connector_blocks-registry"] = di[BlocksRegistry]
