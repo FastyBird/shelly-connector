@@ -129,6 +129,12 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
+    def id(self) -> uuid.UUID:
+        """Connector identifier"""
+        return self.__connector_id
+
+    # -----------------------------------------------------------------------------
+
     def initialize(self, settings: Optional[Dict] = None) -> None:
         """Set connector to initial state"""
         self.__devices_registry.reset()
