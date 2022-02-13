@@ -129,7 +129,8 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def id(self) -> uuid.UUID:
+    @property
+    def id(self) -> uuid.UUID:  # pylint: disable=invalid-name
         """Connector identifier"""
         return self.__connector_id
 
