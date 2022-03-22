@@ -156,10 +156,10 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         )
 
         for device_property in device.properties:
-            self.initialize_device_property(device_property=device_property)
+            self.initialize_device_property(device=device, device_property=device_property)
 
         for channel in device.channels:
-            self.initialize_device_channel(channel=channel)
+            self.initialize_device_channel(device=device, channel=channel)
 
     # -----------------------------------------------------------------------------
 
@@ -175,7 +175,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def initialize_device_property(self, device_property: DevicePropertyEntity) -> None:
+    def initialize_device_property(self, device: ShellyDeviceEntity, device_property: DevicePropertyEntity) -> None:
         """Initialize device property in connector registry"""
         if not isinstance(device_property, DeviceStaticPropertyEntity):
             return
@@ -195,7 +195,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def remove_device_property(self, property_id: uuid.UUID) -> None:
+    def remove_device_property(self, device: ShellyDeviceEntity, property_id: uuid.UUID) -> None:
         """Remove device from connector registry"""
         self.__attributes_registry.remove(attribute_id=property_id)
 
@@ -207,7 +207,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def initialize_device_channel(self, channel: ChannelEntity) -> None:
+    def initialize_device_channel(self, device: ShellyDeviceEntity, channel: ChannelEntity) -> None:
         """Initialize device channel aka shelly device block in connector registry"""
         match = re.compile("(?P<identifier>[0-9]+)_(?P<description>[a-zA-Z0-9_]+)")
 
@@ -236,11 +236,11 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         )
 
         for channel_property in channel.properties:
-            self.initialize_device_channel_property(channel_property=channel_property)
+            self.initialize_device_channel_property(channel=channel, channel_property=channel_property)
 
     # -----------------------------------------------------------------------------
 
-    def remove_device_channel(self, channel_id: uuid.UUID) -> None:
+    def remove_device_channel(self, device: ShellyDeviceEntity, channel_id: uuid.UUID) -> None:
         """Remove device channel from connector registry"""
         self.__blocks_registry.remove(block_id=channel_id)
 
@@ -252,7 +252,11 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def initialize_device_channel_property(self, channel_property: ChannelPropertyEntity) -> None:
+    def initialize_device_channel_property(
+        self,
+        channel: ChannelEntity,
+        channel_property: ChannelPropertyEntity,
+    ) -> None:
         """Initialize device channel property aka shelly device sensor|state in connector registry"""
         match = re.compile("(?P<identifier>[0-9]+)_(?P<type>[a-zA-Z]{1,3})_(?P<description>[a-zA-Z0-9]+)")
 
@@ -296,7 +300,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def remove_device_channel_property(self, property_id: uuid.UUID) -> None:
+    def remove_device_channel_property(self, channel: ChannelEntity, property_id: uuid.UUID) -> None:
         """Remove device channel property from connector registry"""
         self.__sensors_registry.remove(sensor_id=property_id)
 

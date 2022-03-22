@@ -19,7 +19,7 @@ Shelly connector types module
 """
 
 # Python base dependencies
-from enum import Enum, unique
+from enum import unique
 
 # Library dependencies
 from fastybird_metadata.devices_module import DevicePropertyName
@@ -30,7 +30,7 @@ DEVICE_NAME: str = "shelly"
 
 
 @unique
-class ClientType(ExtendedEnum, Enum):
+class ClientType(ExtendedEnum):
     """
     Connector client type
 
@@ -51,7 +51,7 @@ class ClientType(ExtendedEnum, Enum):
 
 
 @unique
-class ClientMessageType(ExtendedEnum, Enum):
+class ClientMessageType(ExtendedEnum):
     """
     Client message type
 
@@ -75,7 +75,7 @@ class ClientMessageType(ExtendedEnum, Enum):
 
 
 @unique
-class SensorType(ExtendedEnum, Enum):
+class SensorType(ExtendedEnum):
     """
     Block sensor type
 
@@ -106,7 +106,7 @@ class SensorType(ExtendedEnum, Enum):
 
 
 @unique
-class SensorUnit(ExtendedEnum, Enum):
+class SensorUnit(ExtendedEnum):
     """
     Block sensor unit
 
@@ -137,7 +137,7 @@ class SensorUnit(ExtendedEnum, Enum):
 
 
 @unique
-class WritableSensor(ExtendedEnum, Enum):
+class WritableSensor(ExtendedEnum):
     """
     List of sensors which could be written
 
@@ -165,7 +165,7 @@ class WritableSensor(ExtendedEnum, Enum):
 
 
 @unique
-class DeviceAttribute(ExtendedEnum, Enum):
+class DeviceAttribute(ExtendedEnum):
     """
     Devices attribute name
 
@@ -188,7 +188,7 @@ class DeviceAttribute(ExtendedEnum, Enum):
 
 
 @unique
-class DeviceDescriptionSource(ExtendedEnum, Enum):
+class DeviceDescriptionSource(ExtendedEnum):
     """
     Source of provided description
 
@@ -212,7 +212,7 @@ class DeviceDescriptionSource(ExtendedEnum, Enum):
 
 
 @unique
-class DeviceCommandType(ExtendedEnum, Enum):
+class DeviceCommandType(ExtendedEnum):
     """
     Device command type
 
@@ -234,7 +234,7 @@ class DeviceCommandType(ExtendedEnum, Enum):
 
 
 @unique
-class RelayPayload(ExtendedEnum, Enum):
+class RelayPayload(ExtendedEnum):
     """
     Output as relay supported payload
 
@@ -250,7 +250,7 @@ class RelayPayload(ExtendedEnum, Enum):
 
 
 @unique
-class LightSwitchPayload(ExtendedEnum, Enum):
+class LightSwitchPayload(ExtendedEnum):
     """
     Output as light bulb supported payload
 
@@ -271,7 +271,7 @@ class LightSwitchPayload(ExtendedEnum, Enum):
 
 
 @unique
-class DeviceType(ExtendedEnum, Enum):
+class DeviceType(ExtendedEnum):
     """
     Known device types
 
@@ -319,7 +319,7 @@ class DeviceType(ExtendedEnum, Enum):
 
 
 @unique
-class ConnectorAction(ExtendedEnum, Enum):
+class ConnectorAction(ExtendedEnum):
     """
     Connector control action
 
