@@ -39,6 +39,7 @@ from fastybird_shelly_connector.consumers.consumer import Consumer
 from fastybird_shelly_connector.consumers.device import (
     DeviceDescriptionConsumer,
     DeviceFoundConsumer,
+    DeviceSettingsConsumer,
     DeviceStateConsumer,
 )
 from fastybird_shelly_connector.entities import (  # pylint: disable=unused-import
@@ -125,11 +126,17 @@ def create_connector(
     )
     di["shelly-connector_device-state-consumer"] = di[DeviceStateConsumer]
 
+    di[DeviceSettingsConsumer] = DeviceSettingsConsumer(
+        devices_registry=di[DevicesRegistry],
+    )
+    di["shelly-connector_device-settings-consumer"] = di[DeviceSettingsConsumer]
+
     di[Consumer] = Consumer(
         consumers=[
             di[DeviceDescriptionConsumer],
             di[DeviceFoundConsumer],
             di[DeviceStateConsumer],
+            di[DeviceSettingsConsumer],
         ],
         logger=connector_logger,
     )

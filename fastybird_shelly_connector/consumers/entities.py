@@ -150,6 +150,41 @@ class DeviceDescriptionFromHttpEntity(DeviceDescriptionEntity):
     """
 
 
+class DeviceSettingsFromHttpEntity(BaseEntity):
+    """
+    Device settings message entity parsed from HTTP message
+
+    @package        FastyBird:ShellyConnector!
+    @module         consumers/entities
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
+
+    __name: str
+
+    # -----------------------------------------------------------------------------
+
+    def __init__(
+        self,
+        device_identifier: str,
+        device_ip_address: str,
+        device_name: str,
+    ) -> None:
+        super().__init__(
+            device_identifier=device_identifier,
+            device_ip_address=device_ip_address,
+        )
+
+        self.__name = device_name
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    def name(self) -> str:
+        """Device unique name"""
+        return self.__name
+
+
 class BlockDescriptionEntity:
     """
     Device block description message entity

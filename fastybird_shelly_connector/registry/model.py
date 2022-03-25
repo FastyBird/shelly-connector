@@ -128,6 +128,7 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
         device_mac_address: Optional[str] = None,
         device_firmware_version: Optional[str] = None,
         device_enabled: bool = False,
+        device_name: Optional[str] = None,
     ) -> DeviceRecord:
         """Append device record into registry"""
         device_record = DeviceRecord(
@@ -137,6 +138,7 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
             device_mac_address=device_mac_address,
             device_firmware_version=device_firmware_version,
             device_enabled=device_enabled,
+            device_name=device_name,
         )
 
         device_record.add_description_source(description_source=description_source)
@@ -164,6 +166,7 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
         device_mac_address: Optional[str] = None,
         device_firmware_version: Optional[str] = None,
         device_enabled: bool = False,
+        device_name: Optional[str] = None,
     ) -> DeviceRecord:
         """Create or update device record"""
         device_record = self.append(
@@ -174,6 +177,7 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
             device_firmware_version=device_firmware_version,
             device_enabled=device_enabled,
             description_source=description_source,
+            device_name=device_name,
         )
 
         self.__event_dispatcher.dispatch(
@@ -551,9 +555,9 @@ class SensorsRegistry:
                 if stored_state is not None:
                     sensor_record.actual_value = stored_state.actual_value
                     sensor_record.expected_value = stored_state.expected_value
-                    sensor_record.expected_pending = stored_state.pending
+                    sensor_record.expected_pending = None
 
-            except NotImplementedError:
+            except (NotImplementedError, AttributeError):
                 pass
 
         self.__items[sensor_record.id.__str__()] = sensor_record
@@ -909,7 +913,7 @@ class AttributesRegistry:
         """Set attribute value"""
         existing_record = self.get_by_id(attribute_id=attribute.id)
 
-        attribute.value = value
+        attribute.actual_value = value
 
         self.__update(attribute=attribute)
 

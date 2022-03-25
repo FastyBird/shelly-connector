@@ -26,7 +26,7 @@ import re
 import time
 from http import client
 from socket import gethostbyaddr, timeout  # pylint: disable=no-name-in-module
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List
 
 # Library dependencies
 from fastybird_metadata.devices_module import ConnectionState
@@ -60,7 +60,6 @@ from fastybird_shelly_connector.types import (
     ClientType,
     DeviceAttribute,
     DeviceCommandType,
-    DeviceDescriptionSource,
     WritableSensor,
 )
 
@@ -74,6 +73,8 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
+
+    __processed_devices: List[str] = []
 
     __validator: Gen1Validator
     __parser: Gen1Parser
@@ -90,6 +91,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
     __SHELLY_INFO_ENDPOINT: str = "/shelly"
     __STATUS_ENDPOINT: str = "/status"
+    __SETTINGS_ENDPOINT: str = "/settings"
     __DESCRIPTION_ENDPOINT: str = "/cit/d"
     __SET_CHANNEL_SENSOR_ENDPOINT: str = "/{channel}/{index}?{action}={value}"
 
@@ -125,6 +127,8 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
         self.__logger = logger
 
+        self.__processed_devices = []
+
     # -----------------------------------------------------------------------------
 
     @property
@@ -158,42 +162,32 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
     def handle(self) -> None:  # pylint: disable=too-many-branches
         """Process HTTP requests"""
         for device_record in self.__devices_registry:
+            if device_record.enabled is False:
+                continue
+
+            if device_record.id.__str__() in self.__processed_devices:
+                continue
+
+            self.__processed_devices.append(device_record.id.__str__())
+
             ip_address_attribute = self.__attributes_registry.get_by_attribute(
                 device_id=device_record.id,
                 attribute_type=DeviceAttribute.IP_ADDRESS,
             )
 
-            if ip_address_attribute is None or not isinstance(ip_address_attribute.value, str):
-                continue
-
-            if DeviceDescriptionSource.HTTP_SHELLY not in device_record.description_source:
-                self.__send_command(
-                    device_record=device_record,
-                    host=ip_address_attribute.value,
-                    endpoint=self.__SHELLY_INFO_ENDPOINT,
-                    command=DeviceCommandType.GET_SHELLY,
-                )
-
+            if ip_address_attribute is None or not isinstance(ip_address_attribute.actual_value, str):
                 return
 
-            if DeviceDescriptionSource.HTTP_STATUS not in device_record.description_source:
-                self.__send_command(
-                    device_record=device_record,
-                    host=ip_address_attribute.value,
-                    endpoint=self.__STATUS_ENDPOINT,
-                    command=DeviceCommandType.GET_STATUS,
-                )
-
+            if self.__check_and_send_command(device=device_record, command=DeviceCommandType.GET_SHELLY) is False:
                 return
 
-            if DeviceDescriptionSource.HTTP_DESCRIPTION not in device_record.description_source:
-                self.__send_command(
-                    device_record=device_record,
-                    host=ip_address_attribute.value,
-                    endpoint=self.__DESCRIPTION_ENDPOINT,
-                    command=DeviceCommandType.GET_DESCRIPTION,
-                )
+            if self.__check_and_send_command(device=device_record, command=DeviceCommandType.GET_DESCRIPTION) is False:
+                return
 
+            if self.__check_and_send_command(device=device_record, command=DeviceCommandType.GET_SETTINGS) is False:
+                return
+
+            if self.__check_and_send_command(device=device_record, command=DeviceCommandType.GET_STATUS) is False:
                 return
 
             state_attribute_record = self.__attributes_registry.get_by_attribute(
@@ -201,11 +195,20 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
                 attribute_type=DeviceAttribute.STATE,
             )
 
+            if state_attribute_record is not None and state_attribute_record.actual_value == ConnectionState.INIT.value:
+                self.__attributes_registry.set_value(
+                    attribute=state_attribute_record,
+                    value=ConnectionState.CONNECTED.value,
+                )
+
             if (
                 device_record.last_communication_timestamp is None
                 or time.time() - device_record.last_communication_timestamp > self.__DEVICE_COMMUNICATION_TIMEOUT
             ):
-                if state_attribute_record is not None and state_attribute_record.value != ConnectionState.LOST.value:
+                if (
+                    state_attribute_record is not None
+                    and state_attribute_record.actual_value != ConnectionState.LOST.value
+                ):
                     self.__attributes_registry.set_value(
                         attribute=state_attribute_record,
                         value=ConnectionState.LOST.value,
@@ -215,16 +218,18 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
             if (
                 device_record.last_communication_timestamp is not None
-                and time.time() - device_record.last_communication_timestamp <= self.__DEVICE_COMMUNICATION_TIMEOUT
+                and time.time() - device_record.last_communication_timestamp > self.__DEVICE_COMMUNICATION_TIMEOUT
             ):
                 if (
                     state_attribute_record is not None
-                    and state_attribute_record.value != ConnectionState.CONNECTED.value
+                    and state_attribute_record.actual_value != ConnectionState.CONNECTED.value
                 ):
                     self.__attributes_registry.set_value(
                         attribute=state_attribute_record,
                         value=ConnectionState.CONNECTED.value,
                     )
+
+                return
 
             for block in self.__blocks_registry.get_all_by_device(device_id=device_record.id):
                 for sensor in self.__sensors_registry.get_all_for_block(block_id=block.id):
@@ -249,7 +254,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
                             self.__sensors_registry.set_expected_pending(sensor=sensor, timestamp=time.time())
 
-            return
+        self.__processed_devices = []
 
     # -----------------------------------------------------------------------------
 
@@ -266,7 +271,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
             attribute_type=DeviceAttribute.IP_ADDRESS,
         )
 
-        if ip_address_attribute is None or not isinstance(ip_address_attribute.value, str):
+        if ip_address_attribute is None or not isinstance(ip_address_attribute.actual_value, str):
             return
 
         match = re.compile("(?P<channelName>[a-zA-Z]+)_(?P<channelIndex>[0-9_]+)")
@@ -280,7 +285,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
             return
 
         success, _ = self.__send_http_get(
-            host=ip_address_attribute.value,
+            host=ip_address_attribute.actual_value,
             url=self.__SET_CHANNEL_SENSOR_ENDPOINT.replace("{channel}", test.group("channelName"))
             .replace("{index}", test.group("channelIndex"))
             .replace("{action}", self.__build_action(sensor_record=sensor_record))
@@ -298,48 +303,90 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
+    def __check_and_send_command(self, device: DeviceRecord, command: DeviceCommandType) -> bool:
+        http_command = self.__commands_registry.get_by_command(
+            device_id=device.id,
+            client_type=self.type,
+            command_type=command,
+        )
+
+        state_attribute_record = self.__attributes_registry.get_by_attribute(
+            device_id=device.id,
+            attribute_type=DeviceAttribute.STATE,
+        )
+
+        if http_command is None:
+            self.__send_command(
+                device_record=device,
+                endpoint=self.__get_command_endpoint(command=command),
+                command=command,
+            )
+
+            if state_attribute_record is not None:
+                self.__attributes_registry.set_value(
+                    attribute=state_attribute_record,
+                    value=ConnectionState.INIT.value,
+                )
+
+            return False
+
+        if http_command.command_status is True:
+            return True
+
+        if time.time() - http_command.command_timestamp > self.__SENDING_CMD_DELAY:
+            return False
+
+        self.__send_command(
+            device_record=device,
+            endpoint=self.__get_command_endpoint(command=command),
+            command=command,
+        )
+
+        if state_attribute_record is not None:
+            self.__attributes_registry.set_value(
+                attribute=state_attribute_record,
+                value=ConnectionState.INIT.value,
+            )
+
+        return False
+
+    # -----------------------------------------------------------------------------
+
     def __send_command(
         self,
         device_record: DeviceRecord,
-        host: Optional[str],
         endpoint: str,
         command: DeviceCommandType,
     ) -> None:
-        http_command = self.__commands_registry.get_by_command(
-            device_id=device_record.id, client_type=self.type, command_type=command
+        ip_address_attribute = self.__attributes_registry.get_by_attribute(
+            device_id=device_record.id,
+            attribute_type=DeviceAttribute.IP_ADDRESS,
         )
 
-        if http_command is None or time.time() - http_command.command_timestamp >= self.__SENDING_CMD_DELAY:
-            if host is not None:
-                success, response = self.__send_http_get(
-                    host=host,
-                    url=endpoint,
-                    username=device_record.username,
-                    password=device_record.password,
-                )
+        if ip_address_attribute is None or not isinstance(ip_address_attribute.actual_value, str):
+            return
 
-                self.__commands_registry.create_or_update(
-                    device_id=device_record.id,
-                    client_type=self.type,
-                    command_type=command,
-                    command_status=success,
-                )
+        success, response = self.__send_http_get(
+            host=ip_address_attribute.actual_value,
+            url=endpoint,
+            username=device_record.username,
+            password=device_record.password,
+        )
 
-                if success:
-                    self.__handle_message(
-                        device_identifier=device_record.identifier.lower(),
-                        device_ip_address=host,
-                        message_payload=response,
-                        message_type=self.__get_message_type_for_command(command=command),
-                    )
+        self.__commands_registry.create_or_update(
+            device_id=device_record.id,
+            client_type=self.type,
+            command_type=command,
+            command_status=success,
+        )
 
-            else:
-                self.__commands_registry.create_or_update(
-                    device_id=device_record.id,
-                    client_type=self.type,
-                    command_type=command,
-                    command_status=False,
-                )
+        if success:
+            self.__handle_message(
+                device_identifier=device_record.identifier.lower(),
+                device_ip_address=ip_address_attribute.actual_value,
+                message_payload=response,
+                message_type=self.__get_message_type_for_command(command=command),
+            )
 
     # -----------------------------------------------------------------------------
 
@@ -389,7 +436,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
             if resp.status == 200:
                 body = resp.read()
 
-                res = json.dumps(json.loads(str(body, "cp1252")))
+                res = json.dumps(json.loads(str(body, "utf-8")))
 
                 success = True
 
@@ -487,6 +534,26 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
         if command == DeviceCommandType.GET_DESCRIPTION:
             return ClientMessageType.HTTP_DESCRIPTION
+
+        if command == DeviceCommandType.GET_SETTINGS:
+            return ClientMessageType.HTTP_SETTINGS
+
+        raise AttributeError("Provided command is not supported by connector")
+
+    # -----------------------------------------------------------------------------
+
+    def __get_command_endpoint(self, command: DeviceCommandType) -> str:
+        if command.__eq__(DeviceCommandType.GET_SHELLY):
+            return self.__SHELLY_INFO_ENDPOINT
+
+        if command.__eq__(DeviceCommandType.GET_STATUS):
+            return self.__STATUS_ENDPOINT
+
+        if command.__eq__(DeviceCommandType.GET_DESCRIPTION):
+            return self.__DESCRIPTION_ENDPOINT
+
+        if command.__eq__(DeviceCommandType.GET_SETTINGS):
+            return self.__SETTINGS_ENDPOINT
 
         raise AttributeError("Provided command is not supported by connector")
 

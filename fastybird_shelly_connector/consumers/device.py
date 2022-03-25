@@ -20,7 +20,7 @@ Shelly connector consumers module consumer for device messages
 
 # Python base dependencies
 import uuid
-from typing import Set
+from typing import Set, Optional
 
 # Library dependencies
 from fastybird_metadata.devices_module import ConnectionState
@@ -35,6 +35,7 @@ from fastybird_shelly_connector.consumers.entities import (
     DeviceExtendedStatusEntity,
     DeviceFoundEntity,
     DeviceInfoEntity,
+    DeviceSettingsFromHttpEntity,
     DeviceStatusEntity,
 )
 from fastybird_shelly_connector.registry.model import (
@@ -95,13 +96,19 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
         else:
             return
 
+        if device_record is None:
+            return
+
         # Set device connection state
         state_attribute_record = self.__attributes_registry.get_by_attribute(
             device_id=device_record.id,
             attribute_type=DeviceAttribute.STATE,
         )
 
-        if state_attribute_record is not None and state_attribute_record.value != ConnectionState.CONNECTED.value:
+        if (
+            state_attribute_record is not None
+            and state_attribute_record.actual_value != ConnectionState.CONNECTED.value
+        ):
             self.__attributes_registry.set_value(
                 attribute=state_attribute_record,
                 value=ConnectionState.CONNECTED.value,
@@ -112,7 +119,7 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
     def __receive_basic_description(  # pylint: disable=too-many-branches
         self,
         entity: DeviceDescriptionEntity,
-    ) -> DeviceRecord:
+    ) -> Optional[DeviceRecord]:
         device_record = self.__devices_registry.get_by_identifier(
             device_identifier=entity.identifier,
         )
@@ -127,6 +134,7 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
                     device_mac_address=device_record.mac_address,
                     device_firmware_version=device_record.firmware_version,
                     device_enabled=device_record.enabled,
+                    device_name=device_record.name,
                 )
 
             else:
@@ -139,24 +147,19 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
                 )
 
         elif isinstance(entity, DeviceDescriptionFromHttpEntity):
-            if device_record is not None:
-                device_record = self.__devices_registry.create_or_update(
-                    description_source=DeviceDescriptionSource.HTTP_DESCRIPTION,
-                    device_id=device_record.id,
-                    device_identifier=entity.identifier,
-                    device_type=device_record.type,
-                    device_mac_address=device_record.mac_address,
-                    device_firmware_version=device_record.firmware_version,
-                    device_enabled=device_record.enabled,
-                )
+            if device_record is None:
+                return None
 
-            else:
-                device_record = self.__devices_registry.create_or_update(
-                    description_source=DeviceDescriptionSource.HTTP_DESCRIPTION,
-                    device_id=uuid.uuid4(),
-                    device_identifier=entity.identifier,
-                    device_enabled=True,
-                )
+            device_record = self.__devices_registry.create_or_update(
+                description_source=DeviceDescriptionSource.HTTP_DESCRIPTION,
+                device_id=device_record.id,
+                device_identifier=entity.identifier,
+                device_type=device_record.type,
+                device_mac_address=device_record.mac_address,
+                device_firmware_version=device_record.firmware_version,
+                device_enabled=device_record.enabled,
+                device_name=device_record.name,
+            )
 
         else:
             raise AttributeError("Provided entity is not supported")
@@ -229,32 +232,24 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
 
     # -----------------------------------------------------------------------------
 
-    def __receive_info(self, entity: DeviceInfoEntity) -> DeviceRecord:
+    def __receive_info(self, entity: DeviceInfoEntity) -> Optional[DeviceRecord]:
         device_record = self.__devices_registry.get_by_identifier(
             device_identifier=entity.identifier,
         )
 
-        if device_record is not None:
-            device_record = self.__devices_registry.create_or_update(
-                description_source=DeviceDescriptionSource.HTTP_SHELLY,
-                device_id=device_record.id,
-                device_identifier=entity.identifier,
-                device_type=entity.type,
-                device_mac_address=entity.mac_address,
-                device_firmware_version=entity.firmware_version,
-                device_enabled=device_record.enabled,
-            )
+        if device_record is None:
+            return None
 
-        else:
-            device_record = self.__devices_registry.create_or_update(
-                description_source=DeviceDescriptionSource.HTTP_SHELLY,
-                device_id=uuid.uuid4(),
-                device_identifier=entity.identifier,
-                device_type=entity.type,
-                device_mac_address=entity.mac_address,
-                device_firmware_version=entity.firmware_version,
-                device_enabled=True,
-            )
+        device_record = self.__devices_registry.create_or_update(
+            description_source=DeviceDescriptionSource.HTTP_SHELLY,
+            device_id=device_record.id,
+            device_identifier=entity.identifier,
+            device_type=entity.type,
+            device_mac_address=entity.mac_address,
+            device_firmware_version=entity.firmware_version,
+            device_enabled=device_record.enabled,
+            device_name=device_record.name,
+        )
 
         self.__attributes_registry.create_or_update(
             device_id=device_record.id,
@@ -272,29 +267,24 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
 
     # -----------------------------------------------------------------------------
 
-    def __receive_extended_description(self, entity: DeviceExtendedStatusEntity) -> DeviceRecord:
+    def __receive_extended_description(self, entity: DeviceExtendedStatusEntity) -> Optional[DeviceRecord]:
         device_record = self.__devices_registry.get_by_identifier(
             device_identifier=entity.identifier,
         )
 
-        if device_record is not None:
-            device_record = self.__devices_registry.create_or_update(
-                description_source=DeviceDescriptionSource.HTTP_STATUS,
-                device_id=device_record.id,
-                device_identifier=entity.identifier,
-                device_type=device_record.type,
-                device_mac_address=device_record.mac_address,
-                device_firmware_version=device_record.firmware_version,
-                device_enabled=device_record.enabled,
-            )
+        if device_record is None:
+            return None
 
-        else:
-            device_record = self.__devices_registry.create_or_update(
-                description_source=DeviceDescriptionSource.HTTP_STATUS,
-                device_id=uuid.uuid4(),
-                device_identifier=entity.identifier,
-                device_enabled=True,
-            )
+        device_record = self.__devices_registry.create_or_update(
+            description_source=DeviceDescriptionSource.HTTP_STATUS,
+            device_id=device_record.id,
+            device_identifier=entity.identifier,
+            device_type=device_record.type,
+            device_mac_address=device_record.mac_address,
+            device_firmware_version=device_record.firmware_version,
+            device_enabled=device_record.enabled,
+            device_name=device_record.name,
+        )
 
         self.__attributes_registry.create_or_update(
             device_id=device_record.id,
@@ -348,6 +338,7 @@ class DeviceFoundConsumer(IConsumer):  # pylint: disable=too-few-public-methods
                 device_mac_address=device_record.mac_address,
                 device_firmware_version=device_record.firmware_version,
                 device_enabled=device_record.enabled,
+                device_name=device_record.name,
             )
 
         else:
@@ -370,7 +361,7 @@ class DeviceFoundConsumer(IConsumer):  # pylint: disable=too-few-public-methods
             attribute_type=DeviceAttribute.STATE,
         )
 
-        if state_attribute_record is not None and state_attribute_record.value != ConnectionState.RUNNING.value:
+        if state_attribute_record is not None and state_attribute_record.actual_value != ConnectionState.RUNNING.value:
             self.__attributes_registry.set_value(
                 attribute=state_attribute_record,
                 value=ConnectionState.CONNECTED.value,
@@ -455,3 +446,49 @@ class DeviceStateConsumer(IConsumer):  # pylint: disable=too-few-public-methods
                 attribute=state_attribute_record,
                 value=ConnectionState.CONNECTED.value,
             )
+
+
+class DeviceSettingsConsumer(IConsumer):  # pylint: disable=too-few-public-methods
+    """
+    Device settings message consumer
+
+    @package        FastyBird:ShellyConnector!
+    @module         consumers/device
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
+
+    __devices_registry: DevicesRegistry
+
+    # -----------------------------------------------------------------------------
+
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        devices_registry: DevicesRegistry,
+    ) -> None:
+        self.__devices_registry = devices_registry
+
+    # -----------------------------------------------------------------------------
+
+    def consume(self, entity: BaseEntity) -> None:
+        """Handle received message"""
+        if not isinstance(entity, DeviceSettingsFromHttpEntity):
+            return
+
+        device_record = self.__devices_registry.get_by_identifier(
+            device_identifier=entity.identifier,
+        )
+
+        if device_record is None:
+            return
+
+        self.__devices_registry.create_or_update(
+            description_source=DeviceDescriptionSource.HTTP_SETTINGS,
+            device_id=device_record.id,
+            device_identifier=device_record.identifier,
+            device_type=device_record.type,
+            device_mac_address=device_record.mac_address,
+            device_firmware_version=device_record.firmware_version,
+            device_enabled=device_record.enabled,
+            device_name=entity.name,
+        )

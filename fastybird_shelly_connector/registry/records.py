@@ -58,6 +58,8 @@ class DeviceRecord:  # pylint: disable=too-many-public-methods,too-many-instance
 
     __enabled: bool = False
 
+    __name: Optional[str] = None
+
     __username: Optional[str] = None
     __password: Optional[str] = None
 
@@ -75,12 +77,14 @@ class DeviceRecord:  # pylint: disable=too-many-public-methods,too-many-instance
         device_mac_address: Optional[str] = None,
         device_firmware_version: Optional[str] = None,
         device_enabled: bool = False,
+        device_name: Optional[str] = None,
     ) -> None:
         self.__id = device_id
         self.__identifier = device_identifier
         self.__type = device_type
         self.__mac_address = device_mac_address
         self.__firmware_version = device_firmware_version
+        self.__name = device_name
         self.__enabled = device_enabled
 
         self.__description_source = set()
@@ -148,6 +152,20 @@ class DeviceRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     def add_description_source(self, description_source: DeviceDescriptionSource) -> None:
         """Add new description source"""
         self.__description_source.add(description_source)
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    def name(self) -> Optional[str]:
+        """Device unique name"""
+        return self.__name
+
+    # -----------------------------------------------------------------------------
+
+    @name.setter
+    def name(self, name: Optional[str] = None) -> None:
+        """Set device unique name"""
+        self.__name = name
 
     # -----------------------------------------------------------------------------
 
@@ -598,6 +616,20 @@ class AttributeRecord:  # pylint: disable=too-many-public-methods,too-many-insta
     # -----------------------------------------------------------------------------
 
     @property
+    def actual_value(self) -> Union[int, float, str, bool, datetime, ButtonPayload, SwitchPayload, None]:
+        """Attribute value"""
+        return self.__value
+
+    # -----------------------------------------------------------------------------
+
+    @actual_value.setter
+    def actual_value(self, value: Union[int, float, str, bool, datetime, ButtonPayload, SwitchPayload, None]) -> None:
+        """Set attribute value"""
+        self.__value = value
+
+    # -----------------------------------------------------------------------------
+
+    @property
     def data_type(self) -> Optional[DataType]:
         """Attribute data type"""
         if self.type == DeviceAttribute.STATE:
@@ -619,6 +651,7 @@ class AttributeRecord:  # pylint: disable=too-many-public-methods,too-many-insta
             return [
                 ConnectionState.CONNECTED.value,
                 ConnectionState.DISCONNECTED.value,
+                ConnectionState.INIT.value,
                 ConnectionState.LOST.value,
                 ConnectionState.UNKNOWN.value,
             ]
@@ -637,7 +670,7 @@ class AttributeRecord:  # pylint: disable=too-many-public-methods,too-many-insta
             and self.type == other.type
             and self.data_type == other.data_type
             and self.format == other.format
-            and self.value == other.value
+            and self.actual_value == other.actual_value
         )
 
     # -----------------------------------------------------------------------------

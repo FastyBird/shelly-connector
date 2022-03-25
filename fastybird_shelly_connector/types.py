@@ -67,6 +67,7 @@ class ClientMessageType(ExtendedEnum):
     HTTP_SHELLY: str = "http-shelly"
     HTTP_STATUS: str = "http-status"
     HTTP_DESCRIPTION: str = "http-description"
+    HTTP_SETTINGS: str = "http-settings"
 
     # -----------------------------------------------------------------------------
 
@@ -203,6 +204,7 @@ class DeviceDescriptionSource(ExtendedEnum):
     HTTP_SHELLY: str = "http-shelly"
     HTTP_STATUS: str = "http-status"
     HTTP_DESCRIPTION: str = "http-description"
+    HTTP_SETTINGS: str = "http-settings"
     MANUAL: str = "manual"
 
     # -----------------------------------------------------------------------------
@@ -225,6 +227,7 @@ class DeviceCommandType(ExtendedEnum):
     GET_SHELLY: str = "get-shelly"
     GET_STATUS: str = "get-status"
     GET_DESCRIPTION: str = "get-description"
+    GET_SETTINGS: str = "get-settings"
     SET_SENSOR: str = "set-sensor"
 
     # -----------------------------------------------------------------------------

@@ -50,6 +50,7 @@ class Gen1Validator:
     HTTP_SHELLY_MESSAGE_SCHEMA_FILENAME: str = "gen1_http_shelly.json"
     HTTP_STATUS_MESSAGE_SCHEMA_FILENAME: str = "gen1_http_status.json"
     HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME: str = "gen1_http_description.json"
+    HTTP_SETTINGS_MESSAGE_SCHEMA_FILENAME: str = "gen1_http_settings.json"
 
     # -----------------------------------------------------------------------------
 
@@ -120,6 +121,9 @@ class Gen1Validator:
         if message_type == ClientMessageType.HTTP_DESCRIPTION:
             return self.validate_device_description_from_http(message_payload=message_payload)
 
+        if message_type == ClientMessageType.HTTP_SETTINGS:
+            return self.validate_device_settings_from_http(message_payload=message_payload)
+
         return False
 
     # -----------------------------------------------------------------------------
@@ -170,6 +174,24 @@ class Gen1Validator:
             return False
 
         validation_schema = self.get_validation_schema(self.HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME)
+
+        if validation_schema is None:
+            return False
+
+        return isinstance(self.validate_data_against_schema(data=data, schema=validation_schema), dict)
+
+    # -----------------------------------------------------------------------------
+
+    def validate_device_settings_from_http(self, message_payload: str) -> bool:
+        """Validate device description message received via HTTP client"""
+        try:
+            data = json.loads(message_payload)
+
+        except json.JSONDecodeError:
+            # Invalid message format
+            return False
+
+        validation_schema = self.get_validation_schema(self.HTTP_SETTINGS_MESSAGE_SCHEMA_FILENAME)
 
         if validation_schema is None:
             return False

@@ -197,8 +197,8 @@ class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attribut
             return
 
         while not self.__stopped:
-            if self.__timer is not None and self.__timer.check():
-                self.discover()
+            # if self.__timer is not None and self.__timer.check():
+            #     self.discover()
 
             try:
                 self.__handle_request()

@@ -35,6 +35,7 @@ from fastybird_devices_module.entities.channel import (
 from fastybird_devices_module.entities.connector import ConnectorControlEntity
 from fastybird_devices_module.entities.device import (
     DeviceControlEntity,
+    DeviceDynamicPropertyEntity,
     DevicePropertyEntity,
     DeviceStaticPropertyEntity,
 )
@@ -153,6 +154,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
             device_identifier=device.identifier,
             device_type=str(device.hardware_model),
             device_enabled=device.enabled,
+            device_name=device.name,
         )
 
         for device_property in device.properties:
@@ -177,18 +179,24 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     def initialize_device_property(self, device: ShellyDeviceEntity, device_property: DevicePropertyEntity) -> None:
         """Initialize device property in connector registry"""
-        if not isinstance(device_property, DeviceStaticPropertyEntity):
-            return
-
         if not DeviceAttribute.has_value(device_property.identifier):
             return
 
-        attribute_record = self.__attributes_registry.append(
-            device_id=device_property.device.id,
-            attribute_id=device_property.id,
-            attribute_type=DeviceAttribute(device_property.identifier),
-            attribute_value=device_property.value,
-        )
+        if isinstance(device_property, DeviceDynamicPropertyEntity):
+            attribute_record = self.__attributes_registry.append(
+                device_id=device_property.device.id,
+                attribute_id=device_property.id,
+                attribute_type=DeviceAttribute(device_property.identifier),
+                attribute_value=None,
+            )
+
+        else:
+            attribute_record = self.__attributes_registry.append(
+                device_id=device_property.device.id,
+                attribute_id=device_property.id,
+                attribute_type=DeviceAttribute(device_property.identifier),
+                attribute_value=device_property.value,
+            )
 
         if device_property.identifier == DeviceAttribute.STATE.value:
             self.__attributes_registry.set_value(attribute=attribute_record, value=ConnectionState.UNKNOWN.value)

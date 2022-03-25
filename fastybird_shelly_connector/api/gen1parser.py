@@ -38,6 +38,7 @@ from fastybird_shelly_connector.consumers.entities import (
     DeviceDescriptionFromHttpEntity,
     DeviceExtendedStatusEntity,
     DeviceInfoEntity,
+    DeviceSettingsFromHttpEntity,
     DeviceStatusEntity,
     SensorStateDescriptionEntity,
     SensorStateStatusEntity,
@@ -157,6 +158,13 @@ class Gen1Parser:
 
         if self.__validator.validate_device_description_from_http(message_payload=message_payload):
             return self.parse_device_description_http(
+                device_identifier=device_identifier,
+                device_ip_address=device_ip_address,
+                message_payload=message_payload,
+            )
+
+        if self.__validator.validate_device_settings_from_http(message_payload=message_payload):
+            return self.parse_device_settings_http(
                 device_identifier=device_identifier,
                 device_ip_address=device_ip_address,
                 message_payload=message_payload,
@@ -388,6 +396,42 @@ class Gen1Parser:
             device_description=device_description,
             parsed_message=parsed_message,
         )
+
+    # -----------------------------------------------------------------------------
+
+    def parse_device_settings_http(
+        self,
+        device_identifier: str,
+        device_ip_address: str,
+        message_payload: str,
+    ) -> DeviceSettingsFromHttpEntity:
+        """Parse device settings message received via HTTP client"""
+        validation_schema = self.__validator.get_validation_schema(
+            filename=Gen1Validator.HTTP_SETTINGS_MESSAGE_SCHEMA_FILENAME,
+        )
+
+        if validation_schema is None:
+            raise LogicException("Message validation schema could not be loaded")
+
+        try:
+            parsed_message = self.__validator.validate_data_against_schema(
+                data=json.loads(message_payload),
+                schema=validation_schema,
+            )
+
+            if parsed_message is None:
+                raise ParsePayloadException("Provided payload is not valid")
+
+        except json.JSONDecodeError as ex:
+            raise ParsePayloadException("Provided payload is not valid") from ex
+
+        device_settings = DeviceSettingsFromHttpEntity(
+            device_identifier=device_identifier,
+            device_ip_address=device_ip_address,
+            device_name=str(parsed_message.get("name")),
+        )
+
+        return device_settings
 
     # -----------------------------------------------------------------------------
 
