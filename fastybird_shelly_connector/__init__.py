@@ -20,9 +20,9 @@ Shelly connector module
 
 from .bootstrap import create_connector
 
-__version__ = "0.16.0"
+__version__ = "0.17.0"
 
-__all__ = ["connector", "bootstrap"]
+__all__ = ["connector", "bootstrap", "__connector_version__"]
 
 __connector_name__ = "Shelly connector"
 
