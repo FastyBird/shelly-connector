@@ -66,7 +66,7 @@ from fastybird_shelly_connector.types import (
 
 
 @inject(alias=IConnector)
-class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attributes
+class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attributes,too-many-public-methods
     """
     Shelly connector service
 
