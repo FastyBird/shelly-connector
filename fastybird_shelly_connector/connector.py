@@ -202,6 +202,11 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
+    def notify_device_property(self, device: ShellyDeviceEntity, device_property: DevicePropertyEntity) -> None:
+        """Notify device property was reported to connector"""
+
+    # -----------------------------------------------------------------------------
+
     def remove_device_property(self, device: ShellyDeviceEntity, property_id: uuid.UUID) -> None:
         """Remove device from connector registry"""
         self.__attributes_registry.remove(attribute_id=property_id)
@@ -304,6 +309,15 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
             sensor_queryable=channel_property.queryable,
             sensor_settable=channel_property.settable,
         )
+
+    # -----------------------------------------------------------------------------
+
+    def notify_device_channel_property(
+        self,
+        channel: ChannelEntity,
+        channel_property: ChannelPropertyEntity,
+    ) -> None:
+        """Notify device channel property was reported to connector"""
 
     # -----------------------------------------------------------------------------
 
