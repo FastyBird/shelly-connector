@@ -648,6 +648,7 @@ class SensorsRegistry:
         existing_record = self.get_by_id(sensor_id=sensor.id)
 
         sensor.actual_value = value
+        sensor.actual_value_valid = True
 
         self.__update(sensor=sensor)
 
@@ -709,6 +710,31 @@ class SensorsRegistry:
             raise InvalidStateException("Sensor&State record could not be re-fetched from registry after update")
 
         return updated_sensor
+
+    # -----------------------------------------------------------------------------
+
+    def set_valid_state(self, sensor: SensorRecord, state: bool) -> SensorRecord:
+        """Set sensor&state actual value reading state"""
+        existing_record = self.get_by_id(sensor_id=sensor.id)
+
+        sensor.actual_value_valid = state
+
+        self.__update(sensor=sensor)
+
+        updated_sensor = self.get_by_id(sensor.id)
+
+        if updated_sensor is None:
+            raise InvalidStateException("Sensor&State record could not be re-fetched from registry after update")
+
+        self.__event_dispatcher.dispatch(
+            event_id=SensorActualValueEvent.EVENT_NAME,
+            event=SensorActualValueEvent(
+                original_record=existing_record,
+                updated_record=updated_sensor,
+            ),
+        )
+
+        return updated_register
 
     # -----------------------------------------------------------------------------
 

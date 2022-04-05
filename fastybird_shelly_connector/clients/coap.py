@@ -84,7 +84,7 @@ class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attribut
 
     __logger: Union[Logger, logging.Logger]
 
-    __timer: Optional[Timer] = None
+    # __timer: Optional[Timer] = None
 
     __BIND_IP: str = "0.0.0.0"
     __COAP_IP: str = "224.0.1.187"
@@ -126,7 +126,7 @@ class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attribut
         """Start communication"""
         self.__create_client()
 
-        self.__timer = Timer(interval=self.__DISCOVERY_INTERVAL)
+        # self.__timer = Timer(interval=self.__DISCOVERY_INTERVAL)
 
         self.__stopped = False
 
@@ -137,7 +137,7 @@ class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attribut
 
     def stop(self) -> None:
         """Stop communication"""
-        self.__timer = None
+        # self.__timer = None
 
         self.__stopped = True
 

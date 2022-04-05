@@ -24,8 +24,8 @@ from datetime import datetime
 from typing import List, Optional, Set, Tuple, Union
 
 # Library dependencies
+from fastybird_devices_module.utils import normalize_value
 from fastybird_metadata.devices_module import ConnectionState
-from fastybird_metadata.helpers import normalize_value
 from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 
 # Library libs
@@ -350,6 +350,7 @@ class SensorRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     __actual_value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None] = None
     __expected_value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None] = None
     __expected_pending: Optional[float] = None
+    __actual_value_valid: bool = False
 
     # -----------------------------------------------------------------------------
 
@@ -476,7 +477,12 @@ class SensorRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     @property
     def actual_value(self) -> Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None]:
         """Sensor&State actual value"""
-        return normalize_value(data_type=self.data_type, value=self.__actual_value, value_format=self.format)
+        return normalize_value(
+            data_type=self.data_type,
+            value=self.__actual_value,
+            value_format=self.format,
+            value_invalid=self.invalid,
+        )
 
     # -----------------------------------------------------------------------------
 
@@ -497,7 +503,12 @@ class SensorRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     @property
     def expected_value(self) -> Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None]:
         """Sensor&State expected value"""
-        return normalize_value(data_type=self.data_type, value=self.__expected_value, value_format=self.format)
+        return normalize_value(
+            data_type=self.data_type,
+            value=self.__expected_value,
+            value_format=self.format,
+            value_invalid=self.invalid,
+        )
 
     # -----------------------------------------------------------------------------
 
@@ -520,6 +531,20 @@ class SensorRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     def expected_pending(self, timestamp: Optional[float]) -> None:
         """Set sensor&state expected value transmit timestamp"""
         self.__expected_pending = timestamp
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    def actual_value_valid(self) -> bool:
+        """Sensor&State actual value reading status"""
+        return self.__actual_value_valid
+
+    # -----------------------------------------------------------------------------
+
+    @actual_value_valid.setter
+    def actual_value_valid(self, state: bool) -> None:
+        """Sensor&State actual value reading status setter"""
+        self.__actual_value_valid = state
 
     # -----------------------------------------------------------------------------
 

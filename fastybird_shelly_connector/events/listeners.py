@@ -39,7 +39,10 @@ from fastybird_devices_module.managers.device import (
     DevicePropertiesManager,
     DevicesManager,
 )
-from fastybird_devices_module.managers.state import ChannelPropertiesStatesManager, DevicePropertiesStatesManager
+from fastybird_devices_module.managers.state import (
+    ChannelPropertiesStatesManager,
+    DevicePropertiesStatesManager,
+)
 from fastybird_devices_module.repositories.channel import (
     ChannelPropertiesRepository,
     ChannelsRepository,
@@ -49,7 +52,8 @@ from fastybird_devices_module.repositories.device import (
     DevicesRepository,
 )
 from fastybird_devices_module.repositories.state import (
-    ChannelPropertiesStatesRepository, DevicePropertiesStatesRepository,
+    ChannelPropertiesStatesRepository,
+    DevicePropertiesStatesRepository,
 )
 from fastybird_metadata.devices_module import FirmwareManufacturer, HardwareManufacturer
 from fastybird_metadata.types import ButtonPayload, SwitchPayload
@@ -105,7 +109,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         connector_id: uuid.UUID,
         # Connector services
@@ -490,6 +494,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
                 "actual_value": event.updated_record.actual_value,
                 "expected_value": None,
                 "pending": False,
+                "valid": True,
             }
 
             if property_state is None:
@@ -518,6 +523,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
                             "actual_value": property_state.actual_value,
                             "expected_value": property_state.expected_value,
                             "pending": property_state.pending,
+                            "valid": property_state.valid,
                         },
                     },
                 )
@@ -549,6 +555,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
                             "actual_value": property_state.actual_value,
                             "expected_value": property_state.expected_value,
                             "pending": property_state.pending,
+                            "valid": property_state.valid,
                         },
                     },
                 )
@@ -610,6 +617,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
                 "actual_value": event.updated_record.actual_value,
                 "expected_value": event.updated_record.expected_value,
                 "pending": event.updated_record.expected_pending is not None,
+                "valid": event.updated_record.actual_value_valid,
             }
 
             if property_state is None:
@@ -641,6 +649,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
                             "actual_value": property_state.actual_value,
                             "expected_value": property_state.expected_value,
                             "pending": property_state.pending,
+                            "valid": property_state.valid,
                         },
                     },
                 )
@@ -675,6 +684,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
                             "actual_value": property_state.actual_value,
                             "expected_value": property_state.expected_value,
                             "pending": property_state.pending,
+                            "valid": property_state.valid,
                         },
                     },
                 )

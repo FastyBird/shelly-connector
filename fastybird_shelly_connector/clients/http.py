@@ -26,7 +26,7 @@ import re
 import time
 from http import client
 from socket import gethostbyaddr, timeout  # pylint: disable=no-name-in-module
-from typing import Optional, Tuple, Union, List
+from typing import List, Optional, Tuple, Union
 
 # Library dependencies
 from fastybird_metadata.devices_module import ConnectionState
@@ -159,7 +159,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def handle(self) -> None:  # pylint: disable=too-many-branches
+    def handle(self) -> None:  # pylint: disable=too-many-branches,too-many-return-statements
         """Process HTTP requests"""
         for device_record in self.__devices_registry:
             if device_record.enabled is False:

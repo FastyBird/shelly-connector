@@ -20,7 +20,7 @@ Shelly connector consumers module consumer for device messages
 
 # Python base dependencies
 import uuid
-from typing import Set, Optional
+from typing import Optional, Set
 
 # Library dependencies
 from fastybird_metadata.devices_module import ConnectionState

@@ -186,7 +186,7 @@ def create_connector(
     di["shelly-connector_events-listener"] = di[EventsListener]
 
     # Main connector service
-    connector_service = ShellyConnector(  # type: ignore[call-arg]
+    connector_service = ShellyConnector(
         connector_id=connector.id,
         consumer=di[Consumer],
         devices_registry=di[DevicesRegistry],
