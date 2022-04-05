@@ -734,7 +734,7 @@ class SensorsRegistry:
             ),
         )
 
-        return updated_register
+        return updated_sensor
 
     # -----------------------------------------------------------------------------
 
