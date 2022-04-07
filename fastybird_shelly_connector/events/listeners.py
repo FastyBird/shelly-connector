@@ -616,7 +616,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
             state_data = {
                 "actual_value": event.updated_record.actual_value,
                 "expected_value": event.updated_record.expected_value,
-                "pending": event.updated_record.expected_pending is not None,
+                "pending": event.updated_record.actual_value != event.updated_record.expected_value,
                 "valid": event.updated_record.actual_value_valid,
             }
 
