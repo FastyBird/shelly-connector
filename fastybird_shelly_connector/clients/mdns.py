@@ -61,7 +61,7 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
     __common_zeroconf: Optional[Zeroconf]
     __zeroconf: Optional[Zeroconf]
     __browser: Optional[ServiceBrowser] = None  # pylint: disable=unused-private-member
-    __browser2: Optional[ServiceBrowser] = None  # pylint: disable=unused-private-member
+    __browser_shelly: Optional[ServiceBrowser] = None  # pylint: disable=unused-private-member
 
     __MATCH_NAME = re.compile("(?P<devtype>shelly.+)-(?P<id>[0-9A-Fa-f]+)._(http|shelly)._tcp.local.")
 
@@ -80,8 +80,8 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
 
         self.__common_zeroconf = zeroconf
         self.__zeroconf = None
-        self.__browser = None  # pylint: disable=unused-private-member
-        self.__browser2 = None  # pylint: disable=unused-private-member
+        self.__browser_http = None  # pylint: disable=unused-private-member
+        self.__browser_shelly = None  # pylint: disable=unused-private-member
 
         self.__logger = logger
 
@@ -97,12 +97,12 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
     def start(self) -> None:
         """Start communication"""
         self.__zeroconf = zeroconf = self.__common_zeroconf or Zeroconf()
-        self.__browser = ServiceBrowser(  # pylint: disable=unused-private-member
+        self.__browser_http = ServiceBrowser(  # pylint: disable=unused-private-member
             zeroconf,
             "_http._tcp.local.",
             self,  # type: ignore[arg-type]
         )
-        self.__browser2 = ServiceBrowser(  # pylint: disable=unused-private-member
+        self.__browser_shelly = ServiceBrowser(  # pylint: disable=unused-private-member
             zeroconf,
             "_shelly._tcp.local.",
             self,  # type: ignore[arg-type]
@@ -122,8 +122,8 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
 
             self.__zeroconf = None
 
-        self.__browser = None  # pylint: disable=unused-private-member
-        self.__browser2 = None  # pylint: disable=unused-private-member
+        self.__browser_http = None  # pylint: disable=unused-private-member
+        self.__browser_shelly = None  # pylint: disable=unused-private-member
 
     # -----------------------------------------------------------------------------
 

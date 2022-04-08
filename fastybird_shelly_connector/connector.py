@@ -350,6 +350,9 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
         self.__stopped = False
 
+        # Register connector coroutine
+        asyncio.ensure_future(self.__worker())
+
     # -----------------------------------------------------------------------------
 
     def stop(self) -> None:
@@ -376,26 +379,6 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
     def has_unfinished_tasks(self) -> bool:
         """Check if connector has some unfinished task"""
         return not self.__consumer.is_empty()
-
-    # -----------------------------------------------------------------------------
-
-    async def handle(self) -> None:
-        """Run connector service"""
-        if self.__stopped and not self.has_unfinished_tasks():
-            self.__logger.warning("Connector is stopped and can't process another requests")
-
-            return
-
-        self.__consumer.handle()
-
-        if self.__stopped:
-            return
-
-        # Continue processing communication
-        self.__client.handle()
-
-        # Be gentle to server
-        await asyncio.sleep(0.01)
 
     # -----------------------------------------------------------------------------
 
@@ -442,3 +425,19 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
             if control_action == ConnectorAction.RESTART:
                 pass
+
+    # -----------------------------------------------------------------------------
+
+    async def __worker(self) -> None:
+        """Run connector service"""
+        while True:
+            if self.__stopped and self.has_unfinished_tasks():
+                return
+
+            self.__consumer.handle()
+
+            # Continue processing communication
+            self.__client.handle()
+
+            # Be gentle to server
+            await asyncio.sleep(0.01)
