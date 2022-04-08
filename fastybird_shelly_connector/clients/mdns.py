@@ -60,7 +60,7 @@ class MdnsClient(IClient):  # pylint: disable=too-many-instance-attributes
 
     __common_zeroconf: Optional[Zeroconf]
     __zeroconf: Optional[Zeroconf]
-    __browser: Optional[ServiceBrowser] = None  # pylint: disable=unused-private-member
+    __browser_http: Optional[ServiceBrowser] = None  # pylint: disable=unused-private-member
     __browser_shelly: Optional[ServiceBrowser] = None  # pylint: disable=unused-private-member
 
     __MATCH_NAME = re.compile("(?P<devtype>shelly.+)-(?P<id>[0-9A-Fa-f]+)._(http|shelly)._tcp.local.")

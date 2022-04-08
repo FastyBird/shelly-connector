@@ -58,7 +58,6 @@ from fastybird_shelly_connector.registry.records import (
     SensorRecord,
 )
 from fastybird_shelly_connector.types import ClientMessageType, ClientType
-from fastybird_shelly_connector.utilities.helpers import Timer
 
 
 class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attributes
