@@ -19,6 +19,7 @@ Shelly connector module
 """
 
 # Python base dependencies
+import asyncio
 import logging
 import re
 import uuid
@@ -392,6 +393,9 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
         # Continue processing communication
         self.__client.handle()
+
+        # Be gentle to server
+        await asyncio.sleep(0.01)
 
     # -----------------------------------------------------------------------------
 
