@@ -162,9 +162,6 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
     def handle(self) -> None:  # pylint: disable=too-many-branches,too-many-return-statements
         """Process HTTP requests"""
         for device_record in self.__devices_registry:
-            if device_record.enabled is False:
-                continue
-
             if device_record.id.__str__() in self.__processed_devices:
                 continue
 

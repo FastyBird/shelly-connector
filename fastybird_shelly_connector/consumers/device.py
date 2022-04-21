@@ -133,7 +133,6 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
                     device_type=entity.type,
                     device_mac_address=device_record.mac_address,
                     device_firmware_version=device_record.firmware_version,
-                    device_enabled=device_record.enabled,
                     device_name=device_record.name,
                 )
 
@@ -143,7 +142,6 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
                     device_id=uuid.uuid4(),
                     device_identifier=entity.identifier,
                     device_type=entity.type,
-                    device_enabled=True,
                 )
 
         elif isinstance(entity, DeviceDescriptionFromHttpEntity):
@@ -157,7 +155,6 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
                 device_type=device_record.type,
                 device_mac_address=device_record.mac_address,
                 device_firmware_version=device_record.firmware_version,
-                device_enabled=device_record.enabled,
                 device_name=device_record.name,
             )
 
@@ -247,7 +244,6 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
             device_type=entity.type,
             device_mac_address=entity.mac_address,
             device_firmware_version=entity.firmware_version,
-            device_enabled=device_record.enabled,
             device_name=device_record.name,
         )
 
@@ -282,7 +278,6 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
             device_type=device_record.type,
             device_mac_address=device_record.mac_address,
             device_firmware_version=device_record.firmware_version,
-            device_enabled=device_record.enabled,
             device_name=device_record.name,
         )
 
@@ -337,7 +332,6 @@ class DeviceFoundConsumer(IConsumer):  # pylint: disable=too-few-public-methods
                 device_type=device_record.type,
                 device_mac_address=device_record.mac_address,
                 device_firmware_version=device_record.firmware_version,
-                device_enabled=device_record.enabled,
                 device_name=device_record.name,
             )
 
@@ -346,7 +340,6 @@ class DeviceFoundConsumer(IConsumer):  # pylint: disable=too-few-public-methods
                 description_source=DeviceDescriptionSource.MDNS_DISCOVERY,
                 device_id=uuid.uuid4(),
                 device_identifier=entity.identifier,
-                device_enabled=True,
             )
 
         self.__attributes_registry.create_or_update(
@@ -489,6 +482,5 @@ class DeviceSettingsConsumer(IConsumer):  # pylint: disable=too-few-public-metho
             device_type=device_record.type,
             device_mac_address=device_record.mac_address,
             device_firmware_version=device_record.firmware_version,
-            device_enabled=device_record.enabled,
             device_name=entity.name,
         )

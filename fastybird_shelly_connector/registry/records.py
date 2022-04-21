@@ -56,8 +56,6 @@ class DeviceRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     __mac_address: Optional[str] = None  # Provided by Shelly device
     __firmware_version: Optional[str] = None  # Provided by Shelly device
 
-    __enabled: bool = False
-
     __name: Optional[str] = None
 
     __username: Optional[str] = None
@@ -76,7 +74,6 @@ class DeviceRecord:  # pylint: disable=too-many-public-methods,too-many-instance
         device_type: Optional[str] = None,
         device_mac_address: Optional[str] = None,
         device_firmware_version: Optional[str] = None,
-        device_enabled: bool = False,
         device_name: Optional[str] = None,
     ) -> None:
         self.__id = device_id
@@ -85,7 +82,6 @@ class DeviceRecord:  # pylint: disable=too-many-public-methods,too-many-instance
         self.__mac_address = device_mac_address
         self.__firmware_version = device_firmware_version
         self.__name = device_name
-        self.__enabled = device_enabled
 
         self.__description_source = set()
 
@@ -194,13 +190,6 @@ class DeviceRecord:  # pylint: disable=too-many-public-methods,too-many-instance
     def password(self, password: Optional[str] = None) -> None:
         """Set HTTP authentication password"""
         self.__password = password
-
-    # -----------------------------------------------------------------------------
-
-    @property
-    def enabled(self) -> bool:
-        """Is device enabled?"""
-        return self.__enabled
 
     # -----------------------------------------------------------------------------
 

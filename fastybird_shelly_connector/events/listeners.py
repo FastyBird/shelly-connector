@@ -229,7 +229,6 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
             "id": event.record.id,
             "identifier": event.record.identifier,
             "name": event.record.type if event.record.name is None else event.record.name,
-            "enabled": event.record.enabled,
             "hardware_manufacturer": HardwareManufacturer.SHELLY.value,
             "hardware_model": event.record.type,
             "hardware_mac_address": event.record.mac_address,

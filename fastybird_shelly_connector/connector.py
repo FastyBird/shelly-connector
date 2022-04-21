@@ -150,7 +150,6 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
             device_id=device.id,
             device_identifier=device.identifier,
             device_type=str(device.hardware_model),
-            device_enabled=device.enabled,
             device_name=device.name,
         )
 

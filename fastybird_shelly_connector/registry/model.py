@@ -127,7 +127,6 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
         device_type: Optional[str] = None,
         device_mac_address: Optional[str] = None,
         device_firmware_version: Optional[str] = None,
-        device_enabled: bool = False,
         device_name: Optional[str] = None,
     ) -> DeviceRecord:
         """Append device record into registry"""
@@ -137,7 +136,6 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
             device_type=device_type,
             device_mac_address=device_mac_address,
             device_firmware_version=device_firmware_version,
-            device_enabled=device_enabled,
             device_name=device_name,
         )
 
@@ -165,7 +163,6 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
         device_type: Optional[str] = None,
         device_mac_address: Optional[str] = None,
         device_firmware_version: Optional[str] = None,
-        device_enabled: bool = False,
         device_name: Optional[str] = None,
     ) -> DeviceRecord:
         """Create or update device record"""
@@ -175,7 +172,6 @@ class DevicesRegistry:  # pylint: disable=too-many-instance-attributes
             device_type=device_type,
             device_mac_address=device_mac_address,
             device_firmware_version=device_firmware_version,
-            device_enabled=device_enabled,
             description_source=description_source,
             device_name=device_name,
         )
