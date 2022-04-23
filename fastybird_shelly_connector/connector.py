@@ -35,12 +35,13 @@ from fastybird_devices_module.entities.channel import (
 )
 from fastybird_devices_module.entities.connector import ConnectorControlEntity
 from fastybird_devices_module.entities.device import (
+    DeviceAttributeEntity,
     DeviceControlEntity,
     DeviceDynamicPropertyEntity,
     DevicePropertyEntity,
 )
 from fastybird_devices_module.utils import normalize_value
-from fastybird_metadata.devices_module import ConnectionState
+from fastybird_metadata.devices_module import ConnectionState, DeviceAttributeName
 from fastybird_metadata.types import ButtonPayload, ControlAction, SwitchPayload
 from kink import inject
 
@@ -149,12 +150,14 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
             description_source=DeviceDescriptionSource.MANUAL,
             device_id=device.id,
             device_identifier=device.identifier,
-            device_type=str(device.hardware_model),
             device_name=device.name,
         )
 
         for device_property in device.properties:
             self.initialize_device_property(device=device, device_property=device_property)
+
+        for device_attribute in device.attributes:
+            self.initialize_device_attribute(device=device, device_attribute=device_attribute)
 
         for channel in device.channels:
             self.initialize_device_channel(device=device, channel=channel)
@@ -213,6 +216,37 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
     def reset_devices_properties(self, device: ShellyDeviceEntity) -> None:
         """Reset devices properties registry to initial state"""
         self.__attributes_registry.reset(device_id=device.id)
+
+    # -----------------------------------------------------------------------------
+
+    def initialize_device_attribute(self, device: ShellyDeviceEntity, device_attribute: DeviceAttributeEntity) -> None:
+        """Initialize device attribute in connector"""
+        if (
+            device_attribute.identifier == DeviceAttributeName.HARDWARE_MODEL.value
+            and device_attribute.content is not None
+        ):
+            self.__devices_registry.append(
+                description_source=DeviceDescriptionSource.MANUAL,
+                device_id=device.id,
+                device_identifier=device.identifier,
+                device_name=device.name,
+                device_type=str(device_attribute.content),
+            )
+
+    # -----------------------------------------------------------------------------
+
+    def notify_device_attribute(self, device: ShellyDeviceEntity, device_attribute: DeviceAttributeEntity) -> None:
+        """Notify device attribute was reported to connector"""
+
+    # -----------------------------------------------------------------------------
+
+    def remove_device_attribute(self, device: ShellyDeviceEntity, attribute_id: uuid.UUID) -> None:
+        """Remove device attribute from connector"""
+
+    # -----------------------------------------------------------------------------
+
+    def reset_devices_attributes(self, device: ShellyDeviceEntity) -> None:
+        """Reset devices attributes to initial state"""
 
     # -----------------------------------------------------------------------------
 

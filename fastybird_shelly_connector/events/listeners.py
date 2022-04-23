@@ -36,6 +36,7 @@ from fastybird_devices_module.managers.channel import (
     ChannelsManager,
 )
 from fastybird_devices_module.managers.device import (
+    DeviceAttributesManager,
     DevicePropertiesManager,
     DevicesManager,
 )
@@ -48,6 +49,7 @@ from fastybird_devices_module.repositories.channel import (
     ChannelsRepository,
 )
 from fastybird_devices_module.repositories.device import (
+    DeviceAttributesRepository,
     DevicePropertiesRepository,
     DevicesRepository,
 )
@@ -55,7 +57,11 @@ from fastybird_devices_module.repositories.state import (
     ChannelPropertiesStatesRepository,
     DevicePropertiesStatesRepository,
 )
-from fastybird_metadata.devices_module import FirmwareManufacturer, HardwareManufacturer
+from fastybird_metadata.devices_module import (
+    DeviceAttributeName,
+    FirmwareManufacturer,
+    HardwareManufacturer,
+)
 from fastybird_metadata.types import ButtonPayload, SwitchPayload
 from kink import inject
 from whistle import Event, EventDispatcher
@@ -95,6 +101,9 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
     __devices_properties_states_repository: DevicePropertiesStatesRepository
     __devices_properties_states_manager: DevicePropertiesStatesManager
 
+    __devices_attributes_repository: DeviceAttributesRepository
+    __devices_attributes_manager: DeviceAttributesManager
+
     __channels_repository: ChannelsRepository
     __channels_manager: ChannelsManager
 
@@ -119,6 +128,8 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         devices_manager: DevicesManager,
         devices_properties_repository: DevicePropertiesRepository,
         devices_properties_manager: DevicePropertiesManager,
+        devices_attributes_repository: DeviceAttributesRepository,
+        devices_attributes_manager: DeviceAttributesManager,
         devices_properties_states_repository: DevicePropertiesStatesRepository,
         devices_properties_states_manager: DevicePropertiesStatesManager,
         channels_repository: ChannelsRepository,
@@ -138,6 +149,9 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         self.__devices_properties_manager = devices_properties_manager
         self.__devices_properties_states_repository = devices_properties_states_repository
         self.__devices_properties_states_manager = devices_properties_states_manager
+
+        self.__devices_attributes_repository = devices_attributes_repository
+        self.__devices_attributes_manager = devices_attributes_manager
 
         self.__channels_repository = channels_repository
         self.__channels_manager = channels_manager
@@ -221,7 +235,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
     # -----------------------------------------------------------------------------
 
-    def __handle_create_or_update_device(self, event: Event) -> None:
+    def __handle_create_or_update_device(self, event: Event) -> None:  # pylint: disable=too-many-branches
         if not isinstance(event, DeviceRecordCreatedOrUpdatedEvent):
             return
 
@@ -229,11 +243,6 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
             "id": event.record.id,
             "identifier": event.record.identifier,
             "name": event.record.type if event.record.name is None else event.record.name,
-            "hardware_manufacturer": HardwareManufacturer.SHELLY.value,
-            "hardware_model": event.record.type,
-            "hardware_mac_address": event.record.mac_address,
-            "firmware_manufacturer": FirmwareManufacturer.SHELLY.value,
-            "firmware_version": event.record.firmware_version,
         }
 
         device = self.__devices_repository.get_by_id(device_id=event.record.id)
@@ -266,6 +275,121 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
                         "id": device.id.__str__(),
                     },
                 },
+            )
+
+        hw_manufacturer = self.__devices_attributes_repository.get_by_identifier(
+            device_id=device.id,
+            attribute_identifier=DeviceAttributeName.HARDWARE_MANUFACTURER.value,
+        )
+
+        if hw_manufacturer is None:
+            self.__devices_attributes_manager.create(
+                data={
+                    "device_id": device.id,
+                    "id": uuid.uuid4(),
+                    "identifier": DeviceAttributeName.HARDWARE_MANUFACTURER.value,
+                    "name": None,
+                    "content": HardwareManufacturer.SHELLY.value,
+                },
+            )
+        else:
+            self.__devices_attributes_manager.update(
+                data={
+                    "content": HardwareManufacturer.SHELLY.value,
+                },
+                device_attribute=hw_manufacturer,
+            )
+
+        hw_model = self.__devices_attributes_repository.get_by_identifier(
+            device_id=device.id,
+            attribute_identifier=DeviceAttributeName.HARDWARE_MODEL.value,
+        )
+
+        if hw_model is None:
+            self.__devices_attributes_manager.create(
+                data={
+                    "device_id": device.id,
+                    "id": uuid.uuid4(),
+                    "identifier": DeviceAttributeName.HARDWARE_MODEL.value,
+                    "name": None,
+                    "content": event.record.type,
+                },
+            )
+        else:
+            self.__devices_attributes_manager.update(
+                data={
+                    "content": event.record.type,
+                },
+                device_attribute=hw_model,
+            )
+
+        hw_mac_address = self.__devices_attributes_repository.get_by_identifier(
+            device_id=device.id,
+            attribute_identifier=DeviceAttributeName.HARDWARE_MAC_ADDRESS.value,
+        )
+
+        if hw_mac_address is None:
+            self.__devices_attributes_manager.create(
+                data={
+                    "device_id": device.id,
+                    "id": uuid.uuid4(),
+                    "identifier": DeviceAttributeName.HARDWARE_MAC_ADDRESS.value,
+                    "name": None,
+                    "content": event.record.mac_address,
+                },
+            )
+        else:
+            self.__devices_attributes_manager.update(
+                data={
+                    "content": event.record.mac_address,
+                },
+                device_attribute=hw_mac_address,
+            )
+
+        fw_manufacturer = self.__devices_attributes_repository.get_by_identifier(
+            device_id=device.id,
+            attribute_identifier=DeviceAttributeName.FIRMWARE_MANUFACTURER.value,
+        )
+
+        if fw_manufacturer is None:
+            self.__devices_attributes_manager.create(
+                data={
+                    "device_id": device.id,
+                    "id": uuid.uuid4(),
+                    "identifier": DeviceAttributeName.FIRMWARE_MANUFACTURER.value,
+                    "name": None,
+                    "content": FirmwareManufacturer.SHELLY.value,
+                },
+            )
+        else:
+            self.__devices_attributes_manager.update(
+                data={
+                    "content": FirmwareManufacturer.SHELLY.value,
+                },
+                device_attribute=fw_manufacturer,
+            )
+
+        fw_version = self.__devices_attributes_repository.get_by_identifier(
+            device_id=device.id,
+            attribute_identifier=DeviceAttributeName.FIRMWARE_VERSION.value,
+        )
+
+        if fw_version is None:
+            self.__devices_attributes_manager.create(
+                data={
+                    "device_id": device.id,
+                    "id": uuid.uuid4(),
+                    "identifier": DeviceAttributeName.FIRMWARE_VERSION.value,
+                    "name": None,
+                    "content": event.record.firmware_version,
+                },
+            )
+        else:
+            self.__devices_attributes_manager.update(
+                data={
+                    "content": event.record.firmware_version,
+                },
+                device_attribute=fw_version,
             )
 
     # -----------------------------------------------------------------------------
