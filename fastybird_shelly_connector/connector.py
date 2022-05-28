@@ -55,15 +55,15 @@ from fastybird_shelly_connector.entities import (
 from fastybird_shelly_connector.events.listeners import EventsListener
 from fastybird_shelly_connector.logger import Logger
 from fastybird_shelly_connector.registry.model import (
-    PropertiesRegistry,
     BlocksRegistry,
     DevicesRegistry,
+    PropertiesRegistry,
     SensorsRegistry,
 )
 from fastybird_shelly_connector.types import (
     ConnectorAction,
-    DeviceProperty,
     DeviceDescriptionSource,
+    DeviceProperty,
     SensorType,
     SensorUnit,
 )

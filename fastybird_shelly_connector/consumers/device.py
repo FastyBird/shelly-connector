@@ -39,13 +39,13 @@ from fastybird_shelly_connector.consumers.entities import (
     DeviceStatusEntity,
 )
 from fastybird_shelly_connector.registry.model import (
-    PropertiesRegistry,
     BlocksRegistry,
     DevicesRegistry,
+    PropertiesRegistry,
     SensorsRegistry,
 )
 from fastybird_shelly_connector.registry.records import DeviceRecord, SensorRecord
-from fastybird_shelly_connector.types import DeviceProperty, DeviceDescriptionSource
+from fastybird_shelly_connector.types import DeviceDescriptionSource, DeviceProperty
 
 
 class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-methods
@@ -105,10 +105,7 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
             property_type=DeviceProperty.STATE,
         )
 
-        if (
-            state_property_record is not None
-            and state_property_record.actual_value != ConnectionState.CONNECTED.value
-        ):
+        if state_property_record is not None and state_property_record.actual_value != ConnectionState.CONNECTED.value:
             self.__properties_registry.set_value(
                 item=state_property_record,
                 value=ConnectionState.CONNECTED.value,

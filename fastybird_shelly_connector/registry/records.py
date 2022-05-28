@@ -31,9 +31,9 @@ from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 # Library libs
 from fastybird_shelly_connector.types import (
     ClientType,
-    DeviceProperty,
     DeviceCommandType,
     DeviceDescriptionSource,
+    DeviceProperty,
     SensorType,
     SensorUnit,
 )

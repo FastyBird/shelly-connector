@@ -44,10 +44,10 @@ from fastybird_shelly_connector.exceptions import (
 )
 from fastybird_shelly_connector.logger import Logger
 from fastybird_shelly_connector.registry.model import (
-    PropertiesRegistry,
     BlocksRegistry,
     CommandsRegistry,
     DevicesRegistry,
+    PropertiesRegistry,
     SensorsRegistry,
 )
 from fastybird_shelly_connector.registry.records import (
@@ -58,8 +58,8 @@ from fastybird_shelly_connector.registry.records import (
 from fastybird_shelly_connector.types import (
     ClientMessageType,
     ClientType,
-    DeviceProperty,
     DeviceCommandType,
+    DeviceProperty,
     WritableSensor,
 )
 

@@ -36,26 +36,26 @@ from whistle import EventDispatcher
 
 # Library libs
 from fastybird_shelly_connector.events.events import (
-    PropertyActualValueEvent,
-    PropertyRecordCreatedOrUpdatedEvent,
     BlockRecordCreatedOrUpdatedEvent,
     DeviceRecordCreatedOrUpdatedEvent,
+    PropertyActualValueEvent,
+    PropertyRecordCreatedOrUpdatedEvent,
     SensorActualValueEvent,
     SensorRecordCreatedOrUpdatedEvent,
 )
 from fastybird_shelly_connector.exceptions import InvalidStateException
 from fastybird_shelly_connector.registry.records import (
-    PropertyRecord,
     BlockRecord,
     CommandRecord,
     DeviceRecord,
+    PropertyRecord,
     SensorRecord,
 )
 from fastybird_shelly_connector.types import (
     ClientType,
-    DeviceProperty,
     DeviceCommandType,
     DeviceDescriptionSource,
+    DeviceProperty,
     SensorType,
     SensorUnit,
 )

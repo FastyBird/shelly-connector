@@ -26,9 +26,9 @@ from whistle import Event
 
 # Library libs
 from fastybird_shelly_connector.registry.records import (
-    PropertyRecord,
     BlockRecord,
     DeviceRecord,
+    PropertyRecord,
     SensorRecord,
 )
 

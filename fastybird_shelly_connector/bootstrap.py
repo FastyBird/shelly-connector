@@ -49,10 +49,10 @@ from fastybird_shelly_connector.entities import (  # pylint: disable=unused-impo
 from fastybird_shelly_connector.events.listeners import EventsListener
 from fastybird_shelly_connector.logger import Logger
 from fastybird_shelly_connector.registry.model import (
-    PropertiesRegistry,
     BlocksRegistry,
     CommandsRegistry,
     DevicesRegistry,
+    PropertiesRegistry,
     SensorsRegistry,
 )
 

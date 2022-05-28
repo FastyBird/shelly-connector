@@ -69,10 +69,10 @@ from whistle import Event, EventDispatcher
 # Library libs
 from fastybird_shelly_connector.entities import ShellyDeviceEntity
 from fastybird_shelly_connector.events.events import (
-    PropertyActualValueEvent,
-    PropertyRecordCreatedOrUpdatedEvent,
     BlockRecordCreatedOrUpdatedEvent,
     DeviceRecordCreatedOrUpdatedEvent,
+    PropertyActualValueEvent,
+    PropertyRecordCreatedOrUpdatedEvent,
     SensorActualValueEvent,
     SensorRecordCreatedOrUpdatedEvent,
 )
