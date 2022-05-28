@@ -44,7 +44,7 @@ from fastybird_shelly_connector.exceptions import (
 )
 from fastybird_shelly_connector.logger import Logger
 from fastybird_shelly_connector.registry.model import (
-    AttributesRegistry,
+    PropertiesRegistry,
     BlocksRegistry,
     CommandsRegistry,
     DevicesRegistry,
@@ -58,7 +58,7 @@ from fastybird_shelly_connector.registry.records import (
 from fastybird_shelly_connector.types import (
     ClientMessageType,
     ClientType,
-    DeviceAttribute,
+    DeviceProperty,
     DeviceCommandType,
     WritableSensor,
 )
@@ -82,7 +82,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
     __consumer: Consumer
 
     __devices_registry: DevicesRegistry
-    __attributes_registry: AttributesRegistry
+    __properties_registry: PropertiesRegistry
     __commands_registry: CommandsRegistry
     __blocks_registry: BlocksRegistry
     __sensors_registry: SensorsRegistry
@@ -108,7 +108,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
         parser: Gen1Parser,
         consumer: Consumer,
         devices_registry: DevicesRegistry,
-        attributes_registry: AttributesRegistry,
+        properties_registry: PropertiesRegistry,
         commands_registry: CommandsRegistry,
         blocks_registry: BlocksRegistry,
         sensors_registry: SensorsRegistry,
@@ -120,7 +120,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
         self.__parser = parser
 
         self.__devices_registry = devices_registry
-        self.__attributes_registry = attributes_registry
+        self.__properties_registry = properties_registry
         self.__commands_registry = commands_registry
         self.__blocks_registry = blocks_registry
         self.__sensors_registry = sensors_registry
@@ -167,12 +167,12 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
 
             self.__processed_devices.append(device_record.id.__str__())
 
-            ip_address_attribute = self.__attributes_registry.get_by_attribute(
+            ip_address_property = self.__properties_registry.get_by_property(
                 device_id=device_record.id,
-                attribute_type=DeviceAttribute.IP_ADDRESS,
+                property_type=DeviceProperty.IP_ADDRESS,
             )
 
-            if ip_address_attribute is None or not isinstance(ip_address_attribute.actual_value, str):
+            if ip_address_property is None or not isinstance(ip_address_property.actual_value, str):
                 return
 
             if self.__check_and_send_command(device=device_record, command=DeviceCommandType.GET_SHELLY) is False:
@@ -187,14 +187,14 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
             if self.__check_and_send_command(device=device_record, command=DeviceCommandType.GET_STATUS) is False:
                 return
 
-            state_attribute_record = self.__attributes_registry.get_by_attribute(
+            state_property_record = self.__properties_registry.get_by_property(
                 device_id=device_record.id,
-                attribute_type=DeviceAttribute.STATE,
+                property_type=DeviceProperty.STATE,
             )
 
-            if state_attribute_record is not None and state_attribute_record.actual_value == ConnectionState.INIT.value:
-                self.__attributes_registry.set_value(
-                    attribute=state_attribute_record,
+            if state_property_record is not None and state_property_record.actual_value == ConnectionState.INIT.value:
+                self.__properties_registry.set_value(
+                    item=state_property_record,
                     value=ConnectionState.CONNECTED.value,
                 )
 
@@ -203,11 +203,11 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
                 or time.time() - device_record.last_communication_timestamp > self.__DEVICE_COMMUNICATION_TIMEOUT
             ):
                 if (
-                    state_attribute_record is not None
-                    and state_attribute_record.actual_value != ConnectionState.LOST.value
+                    state_property_record is not None
+                    and state_property_record.actual_value != ConnectionState.LOST.value
                 ):
-                    self.__attributes_registry.set_value(
-                        attribute=state_attribute_record,
+                    self.__properties_registry.set_value(
+                        item=state_property_record,
                         value=ConnectionState.LOST.value,
                     )
 
@@ -218,11 +218,11 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
                 and time.time() - device_record.last_communication_timestamp > self.__DEVICE_COMMUNICATION_TIMEOUT
             ):
                 if (
-                    state_attribute_record is not None
-                    and state_attribute_record.actual_value != ConnectionState.CONNECTED.value
+                    state_property_record is not None
+                    and state_property_record.actual_value != ConnectionState.CONNECTED.value
                 ):
-                    self.__attributes_registry.set_value(
-                        attribute=state_attribute_record,
+                    self.__properties_registry.set_value(
+                        item=state_property_record,
                         value=ConnectionState.CONNECTED.value,
                     )
 
@@ -263,12 +263,12 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
         write_value: Union[str, int, float, bool, None],
     ) -> None:
         """Write value to device sensor"""
-        ip_address_attribute = self.__attributes_registry.get_by_attribute(
+        ip_address_property = self.__properties_registry.get_by_property(
             device_id=device_record.id,
-            attribute_type=DeviceAttribute.IP_ADDRESS,
+            property_type=DeviceProperty.IP_ADDRESS,
         )
 
-        if ip_address_attribute is None or not isinstance(ip_address_attribute.actual_value, str):
+        if ip_address_property is None or not isinstance(ip_address_property.actual_value, str):
             return
 
         match = re.compile("(?P<channelName>[a-zA-Z]+)_(?P<channelIndex>[0-9_]+)")
@@ -282,7 +282,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
             return
 
         success, _ = self.__send_http_get(
-            host=ip_address_attribute.actual_value,
+            host=ip_address_property.actual_value,
             url=self.__SET_CHANNEL_SENSOR_ENDPOINT.replace("{channel}", test.group("channelName"))
             .replace("{index}", test.group("channelIndex"))
             .replace("{action}", self.__build_action(sensor_record=sensor_record))
@@ -307,9 +307,9 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
             command_type=command,
         )
 
-        state_attribute_record = self.__attributes_registry.get_by_attribute(
+        state_property_record = self.__properties_registry.get_by_property(
             device_id=device.id,
-            attribute_type=DeviceAttribute.STATE,
+            property_type=DeviceProperty.STATE,
         )
 
         if http_command is None:
@@ -319,9 +319,9 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
                 command=command,
             )
 
-            if state_attribute_record is not None:
-                self.__attributes_registry.set_value(
-                    attribute=state_attribute_record,
+            if state_property_record is not None:
+                self.__properties_registry.set_value(
+                    item=state_property_record,
                     value=ConnectionState.INIT.value,
                 )
 
@@ -339,9 +339,9 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
             command=command,
         )
 
-        if state_attribute_record is not None:
-            self.__attributes_registry.set_value(
-                attribute=state_attribute_record,
+        if state_property_record is not None:
+            self.__properties_registry.set_value(
+                item=state_property_record,
                 value=ConnectionState.INIT.value,
             )
 
@@ -355,16 +355,16 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
         endpoint: str,
         command: DeviceCommandType,
     ) -> None:
-        ip_address_attribute = self.__attributes_registry.get_by_attribute(
+        ip_address_property = self.__properties_registry.get_by_property(
             device_id=device_record.id,
-            attribute_type=DeviceAttribute.IP_ADDRESS,
+            property_type=DeviceProperty.IP_ADDRESS,
         )
 
-        if ip_address_attribute is None or not isinstance(ip_address_attribute.actual_value, str):
+        if ip_address_property is None or not isinstance(ip_address_property.actual_value, str):
             return
 
         success, response = self.__send_http_get(
-            host=ip_address_attribute.actual_value,
+            host=ip_address_property.actual_value,
             url=endpoint,
             username=device_record.username,
             password=device_record.password,
@@ -380,7 +380,7 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
         if success:
             self.__handle_message(
                 device_identifier=device_record.identifier.lower(),
-                device_ip_address=ip_address_attribute.actual_value,
+                device_ip_address=ip_address_property.actual_value,
                 message_payload=response,
                 message_type=self.__get_message_type_for_command(command=command),
             )

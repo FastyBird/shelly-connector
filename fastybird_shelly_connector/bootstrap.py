@@ -49,7 +49,7 @@ from fastybird_shelly_connector.entities import (  # pylint: disable=unused-impo
 from fastybird_shelly_connector.events.listeners import EventsListener
 from fastybird_shelly_connector.logger import Logger
 from fastybird_shelly_connector.registry.model import (
-    AttributesRegistry,
+    PropertiesRegistry,
     BlocksRegistry,
     CommandsRegistry,
     DevicesRegistry,
@@ -81,11 +81,11 @@ def create_connector(
     di["shelly-connector_blocks-registry"] = di[BlocksRegistry]
     di[CommandsRegistry] = CommandsRegistry()
     di["shelly-connector_devices-commands-registry"] = di[CommandsRegistry]
-    di[AttributesRegistry] = AttributesRegistry(event_dispatcher=di[EventDispatcher])
-    di["shelly-connector_devices-attributes-registry"] = di[AttributesRegistry]
+    di[PropertiesRegistry] = PropertiesRegistry(event_dispatcher=di[EventDispatcher])
+    di["shelly-connector_devices-attributes-registry"] = di[PropertiesRegistry]
     di[DevicesRegistry] = DevicesRegistry(
         commands_registry=di[CommandsRegistry],
-        attributes_registry=di[AttributesRegistry],
+        properties_registry=di[PropertiesRegistry],
         blocks_registry=di[BlocksRegistry],
         event_dispatcher=di[EventDispatcher],
     )
@@ -106,7 +106,7 @@ def create_connector(
     # Connector messages consumers
     di[DeviceDescriptionConsumer] = DeviceDescriptionConsumer(
         devices_registry=di[DevicesRegistry],
-        attributes_registry=di[AttributesRegistry],
+        properties_registry=di[PropertiesRegistry],
         blocks_registry=di[BlocksRegistry],
         sensors_registry=di[SensorsRegistry],
     )
@@ -114,13 +114,13 @@ def create_connector(
 
     di[DeviceFoundConsumer] = DeviceFoundConsumer(
         devices_registry=di[DevicesRegistry],
-        attributes_registry=di[AttributesRegistry],
+        properties_registry=di[PropertiesRegistry],
     )
-    di["shelly-connector_device-description-consumer"] = di[DeviceFoundConsumer]
+    di["shelly-connector_device-found-consumer"] = di[DeviceFoundConsumer]
 
     di[DeviceStateConsumer] = DeviceStateConsumer(
         devices_registry=di[DevicesRegistry],
-        attributes_registry=di[AttributesRegistry],
+        properties_registry=di[PropertiesRegistry],
         blocks_registry=di[BlocksRegistry],
         sensors_registry=di[SensorsRegistry],
     )
@@ -160,7 +160,7 @@ def create_connector(
         parser=di[Gen1Parser],
         consumer=di[Consumer],
         devices_registry=di[DevicesRegistry],
-        attributes_registry=di[AttributesRegistry],
+        properties_registry=di[PropertiesRegistry],
         commands_registry=di[CommandsRegistry],
         blocks_registry=di[BlocksRegistry],
         sensors_registry=di[SensorsRegistry],
@@ -190,7 +190,7 @@ def create_connector(
         connector_id=connector.id,
         consumer=di[Consumer],
         devices_registry=di[DevicesRegistry],
-        attributes_registry=di[AttributesRegistry],
+        properties_registry=di[PropertiesRegistry],
         blocks_registry=di[BlocksRegistry],
         sensors_registry=di[SensorsRegistry],
         client=di[Client],

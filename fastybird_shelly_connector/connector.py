@@ -55,14 +55,14 @@ from fastybird_shelly_connector.entities import (
 from fastybird_shelly_connector.events.listeners import EventsListener
 from fastybird_shelly_connector.logger import Logger
 from fastybird_shelly_connector.registry.model import (
-    AttributesRegistry,
+    PropertiesRegistry,
     BlocksRegistry,
     DevicesRegistry,
     SensorsRegistry,
 )
 from fastybird_shelly_connector.types import (
     ConnectorAction,
-    DeviceAttribute,
+    DeviceProperty,
     DeviceDescriptionSource,
     SensorType,
     SensorUnit,
@@ -87,7 +87,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
     __consumer: Consumer
 
     __devices_registry: DevicesRegistry
-    __attributes_registry: AttributesRegistry
+    __properties_registry: PropertiesRegistry
     __blocks_registry: BlocksRegistry
     __sensors_registry: SensorsRegistry
 
@@ -104,7 +104,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         connector_id: uuid.UUID,
         consumer: Consumer,
         devices_registry: DevicesRegistry,
-        attributes_registry: AttributesRegistry,
+        properties_registry: PropertiesRegistry,
         blocks_registry: BlocksRegistry,
         sensors_registry: SensorsRegistry,
         client: Client,
@@ -116,7 +116,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         self.__consumer = consumer
 
         self.__devices_registry = devices_registry
-        self.__attributes_registry = attributes_registry
+        self.__properties_registry = properties_registry
         self.__blocks_registry = blocks_registry
         self.__sensors_registry = sensors_registry
 
@@ -178,27 +178,27 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     def initialize_device_property(self, device: ShellyDeviceEntity, device_property: DevicePropertyEntity) -> None:
         """Initialize device property in connector registry"""
-        if not DeviceAttribute.has_value(device_property.identifier):
+        if not DeviceProperty.has_value(device_property.identifier):
             return
 
         if isinstance(device_property, DeviceDynamicPropertyEntity):
-            attribute_record = self.__attributes_registry.append(
+            property_record = self.__properties_registry.append(
                 device_id=device_property.device.id,
-                attribute_id=device_property.id,
-                attribute_type=DeviceAttribute(device_property.identifier),
-                attribute_value=None,
+                property_id=device_property.id,
+                property_type=DeviceProperty(device_property.identifier),
+                property_value=None,
             )
 
         else:
-            attribute_record = self.__attributes_registry.append(
+            property_record = self.__properties_registry.append(
                 device_id=device_property.device.id,
-                attribute_id=device_property.id,
-                attribute_type=DeviceAttribute(device_property.identifier),
-                attribute_value=device_property.value,
+                property_id=device_property.id,
+                property_type=DeviceProperty(device_property.identifier),
+                property_value=device_property.value,
             )
 
-        if device_property.identifier == DeviceAttribute.STATE.value:
-            self.__attributes_registry.set_value(attribute=attribute_record, value=ConnectionState.UNKNOWN.value)
+        if device_property.identifier == DeviceProperty.STATE.value:
+            self.__properties_registry.set_value(item=property_record, value=ConnectionState.UNKNOWN.value)
 
     # -----------------------------------------------------------------------------
 
@@ -209,13 +209,13 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     def remove_device_property(self, device: ShellyDeviceEntity, property_id: uuid.UUID) -> None:
         """Remove device from connector registry"""
-        self.__attributes_registry.remove(attribute_id=property_id)
+        self.__properties_registry.remove(property_id=property_id)
 
     # -----------------------------------------------------------------------------
 
     def reset_devices_properties(self, device: ShellyDeviceEntity) -> None:
         """Reset devices properties registry to initial state"""
-        self.__attributes_registry.reset(device_id=device.id)
+        self.__properties_registry.reset(device_id=device.id)
 
     # -----------------------------------------------------------------------------
 
@@ -364,13 +364,13 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def start(self) -> None:
+    async def start(self) -> None:
         """Start connector services"""
         self.__events_listener.open()
 
-        for state_attribute_record in self.__attributes_registry.get_all_by_type(attribute_type=DeviceAttribute.STATE):
-            self.__attributes_registry.set_value(
-                attribute=state_attribute_record,
+        for state_property_record in self.__properties_registry.get_all_by_type(property_type=DeviceProperty.STATE):
+            self.__properties_registry.set_value(
+                item=state_property_record,
                 value=ConnectionState.UNKNOWN.value,
             )
 
@@ -392,9 +392,9 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
         """Close all opened connections & stop connector"""
         self.__client.stop()
 
-        for state_attribute_record in self.__attributes_registry.get_all_by_type(attribute_type=DeviceAttribute.STATE):
-            self.__attributes_registry.set_value(
-                attribute=state_attribute_record,
+        for state_property_record in self.__properties_registry.get_all_by_type(property_type=DeviceProperty.STATE):
+            self.__properties_registry.set_value(
+                item=state_property_record,
                 value=ConnectionState.DISCONNECTED.value,
             )
 
@@ -415,7 +415,11 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def write_property(self, property_item: Union[DevicePropertyEntity, ChannelPropertyEntity], data: Dict) -> None:
+    async def write_property(
+        self,
+        property_item: Union[DevicePropertyEntity, ChannelPropertyEntity],
+        data: Dict,
+    ) -> None:
         """Write device or channel property value to device"""
         if isinstance(property_item, ChannelDynamicPropertyEntity):
             sensor_record = self.__sensors_registry.get_by_id(sensor_id=property_item.id)
@@ -440,7 +444,7 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
 
     # -----------------------------------------------------------------------------
 
-    def write_control(
+    async def write_control(
         self,
         control_item: Union[ConnectorControlEntity, DeviceControlEntity, ChannelControlEntity],
         data: Optional[Dict],

@@ -166,9 +166,9 @@ class WritableSensor(ExtendedEnum):
 
 
 @unique
-class DeviceAttribute(ExtendedEnum):
+class DeviceProperty(ExtendedEnum):
     """
-    Devices attribute name
+    Devices property name
 
     @package        FastyBird:ShellyConnector!
     @module         types

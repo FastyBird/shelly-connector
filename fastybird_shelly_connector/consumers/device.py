@@ -39,13 +39,13 @@ from fastybird_shelly_connector.consumers.entities import (
     DeviceStatusEntity,
 )
 from fastybird_shelly_connector.registry.model import (
-    AttributesRegistry,
+    PropertiesRegistry,
     BlocksRegistry,
     DevicesRegistry,
     SensorsRegistry,
 )
 from fastybird_shelly_connector.registry.records import DeviceRecord, SensorRecord
-from fastybird_shelly_connector.types import DeviceAttribute, DeviceDescriptionSource
+from fastybird_shelly_connector.types import DeviceProperty, DeviceDescriptionSource
 
 
 class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-methods
@@ -59,7 +59,7 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
     """
 
     __devices_registry: DevicesRegistry
-    __attributes_registry: AttributesRegistry
+    __properties_registry: PropertiesRegistry
     __blocks_registry: BlocksRegistry
     __sensors_registry: SensorsRegistry
 
@@ -68,12 +68,12 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
     def __init__(  # pylint: disable=too-many-arguments
         self,
         devices_registry: DevicesRegistry,
-        attributes_registry: AttributesRegistry,
+        properties_registry: PropertiesRegistry,
         blocks_registry: BlocksRegistry,
         sensors_registry: SensorsRegistry,
     ) -> None:
         self.__devices_registry = devices_registry
-        self.__attributes_registry = attributes_registry
+        self.__properties_registry = properties_registry
         self.__blocks_registry = blocks_registry
         self.__sensors_registry = sensors_registry
 
@@ -100,17 +100,17 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
             return
 
         # Set device connection state
-        state_attribute_record = self.__attributes_registry.get_by_attribute(
+        state_property_record = self.__properties_registry.get_by_property(
             device_id=device_record.id,
-            attribute_type=DeviceAttribute.STATE,
+            property_type=DeviceProperty.STATE,
         )
 
         if (
-            state_attribute_record is not None
-            and state_attribute_record.actual_value != ConnectionState.CONNECTED.value
+            state_property_record is not None
+            and state_property_record.actual_value != ConnectionState.CONNECTED.value
         ):
-            self.__attributes_registry.set_value(
-                attribute=state_attribute_record,
+            self.__properties_registry.set_value(
+                item=state_property_record,
                 value=ConnectionState.CONNECTED.value,
             )
 
@@ -161,10 +161,10 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
         else:
             raise AttributeError("Provided entity is not supported")
 
-        self.__attributes_registry.create_or_update(
+        self.__properties_registry.create_or_update(
             device_id=device_record.id,
-            attribute_type=DeviceAttribute.IP_ADDRESS,
-            attribute_value=entity.ip_address,
+            property_type=DeviceProperty.IP_ADDRESS,
+            property_value=entity.ip_address,
         )
 
         for block_description in entity.blocks:
@@ -247,16 +247,16 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
             device_name=device_record.name,
         )
 
-        self.__attributes_registry.create_or_update(
+        self.__properties_registry.create_or_update(
             device_id=device_record.id,
-            attribute_type=DeviceAttribute.IP_ADDRESS,
-            attribute_value=entity.ip_address,
+            property_type=DeviceProperty.IP_ADDRESS,
+            property_value=entity.ip_address,
         )
 
-        self.__attributes_registry.create_or_update(
+        self.__properties_registry.create_or_update(
             device_id=device_record.id,
-            attribute_type=DeviceAttribute.AUTH_ENABLED,
-            attribute_value=entity.auth_enabled,
+            property_type=DeviceProperty.AUTH_ENABLED,
+            property_value=entity.auth_enabled,
         )
 
         return device_record
@@ -281,10 +281,10 @@ class DeviceDescriptionConsumer(IConsumer):  # pylint: disable=too-few-public-me
             device_name=device_record.name,
         )
 
-        self.__attributes_registry.create_or_update(
+        self.__properties_registry.create_or_update(
             device_id=device_record.id,
-            attribute_type=DeviceAttribute.IP_ADDRESS,
-            attribute_value=entity.ip_address,
+            property_type=DeviceProperty.IP_ADDRESS,
+            property_value=entity.ip_address,
         )
 
         return device_record
@@ -301,17 +301,17 @@ class DeviceFoundConsumer(IConsumer):  # pylint: disable=too-few-public-methods
     """
 
     __devices_registry: DevicesRegistry
-    __attributes_registry: AttributesRegistry
+    __properties_registry: PropertiesRegistry
 
     # -----------------------------------------------------------------------------
 
     def __init__(
         self,
         devices_registry: DevicesRegistry,
-        attributes_registry: AttributesRegistry,
+        properties_registry: PropertiesRegistry,
     ) -> None:
         self.__devices_registry = devices_registry
-        self.__attributes_registry = attributes_registry
+        self.__properties_registry = properties_registry
 
     # -----------------------------------------------------------------------------
 
@@ -342,21 +342,21 @@ class DeviceFoundConsumer(IConsumer):  # pylint: disable=too-few-public-methods
                 device_identifier=entity.identifier,
             )
 
-        self.__attributes_registry.create_or_update(
+        self.__properties_registry.create_or_update(
             device_id=device_record.id,
-            attribute_type=DeviceAttribute.IP_ADDRESS,
-            attribute_value=entity.ip_address,
+            property_type=DeviceProperty.IP_ADDRESS,
+            property_value=entity.ip_address,
         )
 
         # Set device connection state
-        state_attribute_record = self.__attributes_registry.get_by_attribute(
+        state_property_record = self.__properties_registry.get_by_property(
             device_id=device_record.id,
-            attribute_type=DeviceAttribute.STATE,
+            property_type=DeviceProperty.STATE,
         )
 
-        if state_attribute_record is not None and state_attribute_record.actual_value != ConnectionState.RUNNING.value:
-            self.__attributes_registry.set_value(
-                attribute=state_attribute_record,
+        if state_property_record is not None and state_property_record.actual_value != ConnectionState.RUNNING.value:
+            self.__properties_registry.set_value(
+                item=state_property_record,
                 value=ConnectionState.CONNECTED.value,
             )
 
@@ -372,7 +372,7 @@ class DeviceStateConsumer(IConsumer):  # pylint: disable=too-few-public-methods
     """
 
     __devices_registry: DevicesRegistry
-    __attributes_registry: AttributesRegistry
+    __properties_registry: PropertiesRegistry
     __blocks_registry: BlocksRegistry
     __sensors_registry: SensorsRegistry
 
@@ -381,12 +381,12 @@ class DeviceStateConsumer(IConsumer):  # pylint: disable=too-few-public-methods
     def __init__(  # pylint: disable=too-many-arguments
         self,
         devices_registry: DevicesRegistry,
-        attributes_registry: AttributesRegistry,
+        properties_registry: PropertiesRegistry,
         blocks_registry: BlocksRegistry,
         sensors_registry: SensorsRegistry,
     ) -> None:
         self.__devices_registry = devices_registry
-        self.__attributes_registry = attributes_registry
+        self.__properties_registry = properties_registry
         self.__blocks_registry = blocks_registry
         self.__sensors_registry = sensors_registry
 
@@ -404,10 +404,10 @@ class DeviceStateConsumer(IConsumer):  # pylint: disable=too-few-public-methods
         if device_record is None:
             return
 
-        self.__attributes_registry.create_or_update(
+        self.__properties_registry.create_or_update(
             device_id=device_record.id,
-            attribute_type=DeviceAttribute.IP_ADDRESS,
-            attribute_value=entity.ip_address,
+            property_type=DeviceProperty.IP_ADDRESS,
+            property_value=entity.ip_address,
         )
 
         device_sensors: Set[SensorRecord] = set()
@@ -429,14 +429,14 @@ class DeviceStateConsumer(IConsumer):  # pylint: disable=too-few-public-methods
                 )
 
         # Set device connection state
-        state_attribute_record = self.__attributes_registry.get_by_attribute(
+        state_property_record = self.__properties_registry.get_by_property(
             device_id=device_record.id,
-            attribute_type=DeviceAttribute.STATE,
+            property_type=DeviceProperty.STATE,
         )
 
-        if state_attribute_record is not None and state_attribute_record.value != ConnectionState.CONNECTED.value:
-            self.__attributes_registry.set_value(
-                attribute=state_attribute_record,
+        if state_property_record is not None and state_property_record.value != ConnectionState.CONNECTED.value:
+            self.__properties_registry.set_value(
+                item=state_property_record,
                 value=ConnectionState.CONNECTED.value,
             )
 

@@ -69,15 +69,15 @@ from whistle import Event, EventDispatcher
 # Library libs
 from fastybird_shelly_connector.entities import ShellyDeviceEntity
 from fastybird_shelly_connector.events.events import (
-    AttributeActualValueEvent,
-    AttributeRecordCreatedOrUpdatedEvent,
+    PropertyActualValueEvent,
+    PropertyRecordCreatedOrUpdatedEvent,
     BlockRecordCreatedOrUpdatedEvent,
     DeviceRecordCreatedOrUpdatedEvent,
     SensorActualValueEvent,
     SensorRecordCreatedOrUpdatedEvent,
 )
 from fastybird_shelly_connector.logger import Logger
-from fastybird_shelly_connector.types import DeviceAttribute
+from fastybird_shelly_connector.types import DeviceProperty
 
 
 @inject
@@ -185,12 +185,12 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         )
 
         self.__event_dispatcher.add_listener(
-            event_id=AttributeRecordCreatedOrUpdatedEvent.EVENT_NAME,
+            event_id=PropertyRecordCreatedOrUpdatedEvent.EVENT_NAME,
             listener=self.__handle_create_or_update_attribute,
         )
 
         self.__event_dispatcher.add_listener(
-            event_id=AttributeActualValueEvent.EVENT_NAME,
+            event_id=PropertyActualValueEvent.EVENT_NAME,
             listener=self.__handle_write_attribute_actual_value,
         )
 
@@ -219,12 +219,12 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         )
 
         self.__event_dispatcher.remove_listener(
-            event_id=AttributeRecordCreatedOrUpdatedEvent.EVENT_NAME,
+            event_id=PropertyRecordCreatedOrUpdatedEvent.EVENT_NAME,
             listener=self.__handle_create_or_update_attribute,
         )
 
         self.__event_dispatcher.remove_listener(
-            event_id=AttributeActualValueEvent.EVENT_NAME,
+            event_id=PropertyActualValueEvent.EVENT_NAME,
             listener=self.__handle_write_attribute_actual_value,
         )
 
@@ -513,7 +513,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def __handle_create_or_update_attribute(self, event: Event) -> None:
-        if not isinstance(event, AttributeRecordCreatedOrUpdatedEvent):
+        if not isinstance(event, PropertyRecordCreatedOrUpdatedEvent):
             return
 
         property_data = {
@@ -534,7 +534,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
             # Define relation between device & property
             property_data["device_id"] = event.record.device_id
 
-            if event.record.type.__eq__(DeviceAttribute.STATE):
+            if event.record.type.__eq__(DeviceProperty.STATE):
                 del property_data["value"]
 
                 device_property = self.__devices_properties_manager.create(
@@ -564,7 +564,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
             if device_property.name is not None:
                 property_data["name"] = device_property.name
 
-            if event.record.type.__eq__(DeviceAttribute.STATE):
+            if event.record.type.__eq__(DeviceProperty.STATE):
                 del property_data["value"]
 
             device_property = self.__devices_properties_manager.update(
@@ -587,7 +587,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def __handle_write_attribute_actual_value(self, event: Event) -> None:
-        if not isinstance(event, AttributeActualValueEvent):
+        if not isinstance(event, PropertyActualValueEvent):
             return
 
         device_property = self.__devices_properties_repository.get_by_id(property_id=event.updated_record.id)

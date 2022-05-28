@@ -26,7 +26,7 @@ from whistle import Event
 
 # Library libs
 from fastybird_shelly_connector.registry.records import (
-    AttributeRecord,
+    PropertyRecord,
     BlockRecord,
     DeviceRecord,
     SensorRecord,
@@ -114,9 +114,9 @@ class SensorRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-publi
         return self.__record
 
 
-class AttributeRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-public-methods
+class PropertyRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-public-methods
     """
-    Device's attribute record was created or updated in registry
+    Device's property record was created or updated in registry
 
     @package        FastyBird:ShellyConnector!
     @module         events/events
@@ -124,26 +124,26 @@ class AttributeRecordCreatedOrUpdatedEvent(Event):  # pylint: disable=too-few-pu
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
 
-    __record: AttributeRecord
+    __record: PropertyRecord
 
-    EVENT_NAME: str = "registry.attributeRecordCreatedOrUpdated"
+    EVENT_NAME: str = "registry.propertyRecordCreatedOrUpdated"
 
     # -----------------------------------------------------------------------------
 
-    def __init__(self, record: AttributeRecord) -> None:
+    def __init__(self, record: PropertyRecord) -> None:
         self.__record = record
 
     # -----------------------------------------------------------------------------
 
     @property
-    def record(self) -> AttributeRecord:
-        """Created or updated attribute record"""
+    def record(self) -> PropertyRecord:
+        """Created or updated property record"""
         return self.__record
 
 
-class AttributeActualValueEvent(Event):
+class PropertyActualValueEvent(Event):
     """
-    Attribute record actual value was updated in registry
+    Property record actual value was updated in registry
 
     @package        FastyBird:ShellyConnector!
     @module         events/events
@@ -151,29 +151,29 @@ class AttributeActualValueEvent(Event):
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
 
-    __original_record: Optional[AttributeRecord]
-    __updated_record: AttributeRecord
+    __original_record: Optional[PropertyRecord]
+    __updated_record: PropertyRecord
 
-    EVENT_NAME: str = "registry.attributeRecordActualValueUpdated"
+    EVENT_NAME: str = "registry.propertyRecordActualValueUpdated"
 
     # -----------------------------------------------------------------------------
 
-    def __init__(self, original_record: Optional[AttributeRecord], updated_record: AttributeRecord) -> None:
+    def __init__(self, original_record: Optional[PropertyRecord], updated_record: PropertyRecord) -> None:
         self.__original_record = original_record
         self.__updated_record = updated_record
 
     # -----------------------------------------------------------------------------
 
     @property
-    def original_record(self) -> Optional[AttributeRecord]:
-        """Original attribute record"""
+    def original_record(self) -> Optional[PropertyRecord]:
+        """Original property record"""
         return self.__original_record
 
     # -----------------------------------------------------------------------------
 
     @property
-    def updated_record(self) -> AttributeRecord:
-        """Updated attribute record"""
+    def updated_record(self) -> PropertyRecord:
+        """Updated property record"""
         return self.__updated_record
 
 
