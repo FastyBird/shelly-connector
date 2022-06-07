@@ -261,10 +261,10 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
                 "Device's channel couldn't be initialized",
                 extra={
                     "device": {
-                        "id": channel.device.id.__str__(),
+                        "id": str(channel.device.id),
                     },
                     "channel": {
-                        "id": channel.id.__str__(),
+                        "id": str(channel.id),
                     },
                 },
             )
@@ -314,13 +314,13 @@ class ShellyConnector(IConnector):  # pylint: disable=too-many-instance-attribut
                 "Device's channel's property couldn't be initialized",
                 extra={
                     "device": {
-                        "id": channel_property.channel.device.id.__str__(),
+                        "id": str(channel_property.channel.device.id),
                     },
                     "channel": {
-                        "id": channel_property.channel.id.__str__(),
+                        "id": str(channel_property.channel.id),
                     },
                     "property": {
-                        "id": channel_property.id.__str__(),
+                        "id": str(channel_property.id),
                     },
                 },
             )

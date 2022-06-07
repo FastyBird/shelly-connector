@@ -162,10 +162,10 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
     def handle(self) -> None:  # pylint: disable=too-many-branches,too-many-return-statements
         """Process HTTP requests"""
         for device_record in self.__devices_registry:
-            if device_record.id.__str__() in self.__processed_devices:
+            if str(device_record.id) in self.__processed_devices:
                 continue
 
-            self.__processed_devices.append(device_record.id.__str__())
+            self.__processed_devices.append(str(device_record.id))
 
             ip_address_property = self.__properties_registry.get_by_property(
                 device_id=device_record.id,
@@ -540,16 +540,16 @@ class HttpClient(IClient):  # pylint: disable=too-many-instance-attributes
     # -----------------------------------------------------------------------------
 
     def __get_command_endpoint(self, command: DeviceCommandType) -> str:
-        if command.__eq__(DeviceCommandType.GET_SHELLY):
+        if command == DeviceCommandType.GET_SHELLY:
             return self.__SHELLY_INFO_ENDPOINT
 
-        if command.__eq__(DeviceCommandType.GET_STATUS):
+        if command == DeviceCommandType.GET_STATUS:
             return self.__STATUS_ENDPOINT
 
-        if command.__eq__(DeviceCommandType.GET_DESCRIPTION):
+        if command == DeviceCommandType.GET_DESCRIPTION:
             return self.__DESCRIPTION_ENDPOINT
 
-        if command.__eq__(DeviceCommandType.GET_SETTINGS):
+        if command == DeviceCommandType.GET_SETTINGS:
             return self.__SETTINGS_ENDPOINT
 
         raise AttributeError("Provided command is not supported by connector")
