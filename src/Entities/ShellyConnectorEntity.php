@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
 /**
- * ShellyConnector.php
+ * ShellyConnectorEntity.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  * @since          0.1.0
  *
@@ -22,7 +22,7 @@ use FastyBird\Metadata\Types as MetadataTypes;
 /**
  * @ORM\Entity
  */
-class ShellyConnector extends DevicesModuleEntities\Connectors\Connector implements IShellyConnector
+class ShellyConnectorEntity extends DevicesModuleEntities\Connectors\Connector implements IShellyConnectorEntity
 {
 
 	public const CONNECTOR_TYPE = 'shelly';

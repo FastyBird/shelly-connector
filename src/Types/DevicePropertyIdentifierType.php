@@ -6,7 +6,7 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Types
  * @since          0.37.0
  *
@@ -21,7 +21,7 @@ use FastyBird\Metadata\Types as MetadataTypes;
 /**
  * Device property name types
  *
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Types
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

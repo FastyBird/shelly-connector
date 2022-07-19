@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
 /**
- * DeviceStatus.php
+ * DeviceDescriptionEntity.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  * @since          0.37.0
  *
@@ -16,27 +16,27 @@
 namespace FastyBird\ShellyConnector\Entities\Messages;
 
 /**
- * Device status message entity
+ * Device description message entity
  *
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class DeviceStatus extends Device
+final class DeviceDescriptionEntity extends DeviceEntity
 {
 
 	/** @var string */
 	private string $type;
 
-	/** @var BlockStatus[] */
+	/** @var BlockDescriptionEntity[] */
 	private array $blocks;
 
 	/**
 	 * @param string $identifier
 	 * @param string $type
 	 * @param string $ipAddress
-	 * @param BlockStatus[] $blocks
+	 * @param BlockDescriptionEntity[] $blocks
 	 */
 	public function __construct(
 		string $identifier,
@@ -47,7 +47,7 @@ final class DeviceStatus extends Device
 		parent::__construct($identifier, $ipAddress);
 
 		$this->type = $type;
-		$this->blocks = $blocks;
+		$this->blocks = array_unique($blocks);
 	}
 
 	/**
@@ -59,11 +59,23 @@ final class DeviceStatus extends Device
 	}
 
 	/**
-	 * @return BlockStatus[]
+	 * @return BlockDescriptionEntity[]
 	 */
 	public function getBlocks(): array
 	{
 		return $this->blocks;
+	}
+
+	/**
+	 * @param BlockDescriptionEntity $block
+	 *
+	 * @return void
+	 */
+	public function addBlock(BlockDescriptionEntity $block): void
+	{
+		$this->blocks[] = $block;
+
+		$this->blocks = array_unique($this->blocks);
 	}
 
 	/**
@@ -73,7 +85,7 @@ final class DeviceStatus extends Device
 	{
 		return array_merge(parent::toArray(), [
 			'type'   => $this->getType(),
-			'blocks' => array_map(function (BlockStatus $block): array {
+			'blocks' => array_map(function (BlockDescriptionEntity $block): array {
 				return $block->toArray();
 			}, $this->getBlocks()),
 		]);

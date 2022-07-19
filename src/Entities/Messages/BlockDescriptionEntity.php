@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
 /**
- * BlockDescription.php
+ * BlockDescriptionEntity.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  * @since          0.37.0
  *
@@ -20,12 +20,12 @@ use Nette;
 /**
  * Block description entity
  *
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class BlockDescription implements IEntity
+final class BlockDescriptionEntity implements IEntity
 {
 
 	use Nette\SmartObject;
@@ -36,13 +36,13 @@ final class BlockDescription implements IEntity
 	/** @var string */
 	private string $description;
 
-	/** @var SensorDescription[] */
+	/** @var SensorDescriptionEntity[] */
 	private array $sensors;
 
 	/**
 	 * @param int $identifier
 	 * @param string $description
-	 * @param SensorDescription[] $sensors
+	 * @param SensorDescriptionEntity[] $sensors
 	 */
 	public function __construct(
 		int $identifier,
@@ -71,7 +71,7 @@ final class BlockDescription implements IEntity
 	}
 
 	/**
-	 * @return SensorDescription[]
+	 * @return SensorDescriptionEntity[]
 	 */
 	public function getSensors(): array
 	{
@@ -79,11 +79,11 @@ final class BlockDescription implements IEntity
 	}
 
 	/**
-	 * @param SensorDescription $sensor
+	 * @param SensorDescriptionEntity $sensor
 	 *
 	 * @return void
 	 */
-	public function addSensor(SensorDescription $sensor): void
+	public function addSensor(SensorDescriptionEntity $sensor): void
 	{
 		$this->sensors[] = $sensor;
 
@@ -98,7 +98,7 @@ final class BlockDescription implements IEntity
 		return [
 			'identifier'  => $this->getIdentifier(),
 			'description' => $this->getDescription(),
-			'sensors'     => array_map(function (SensorDescription $sensor): array {
+			'sensors'     => array_map(function (SensorDescriptionEntity $sensor): array {
 				return $sensor->toArray();
 			}, $this->getSensors()),
 		];

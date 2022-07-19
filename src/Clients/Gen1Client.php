@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Clients
  * @since          0.37.0
  *
@@ -32,7 +32,7 @@ use Throwable;
 /**
  * Generation 1 devices client
  *
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

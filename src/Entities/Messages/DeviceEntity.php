@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
 /**
- * Device.php
+ * DeviceEntity.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  * @since          0.37.0
  *
@@ -20,12 +20,12 @@ use Nette;
 /**
  * Base device message entity
  *
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-abstract class Device implements IEntity
+abstract class DeviceEntity implements IEntity
 {
 
 	use Nette\SmartObject;

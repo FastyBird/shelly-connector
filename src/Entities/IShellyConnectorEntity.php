@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
 /**
- * IShellyDevice.php
+ * IShellyConnectorEntity.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  * @since          0.1.0
  *
@@ -18,14 +18,14 @@ namespace FastyBird\ShellyConnector\Entities;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 
 /**
- * Shelly device entity interface
+ * Shelly connector entity interface
  *
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface IShellyDevice extends DevicesModuleEntities\Devices\IDevice
+interface IShellyConnectorEntity extends DevicesModuleEntities\Connectors\IConnector
 {
 
 }

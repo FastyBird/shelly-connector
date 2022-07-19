@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
 /**
- * BlockStatus.php
+ * BlockStatusEntity.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  * @since          0.37.0
  *
@@ -20,12 +20,12 @@ use Nette;
 /**
  * Block status entity
  *
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class BlockStatus implements IEntity
+final class BlockStatusEntity implements IEntity
 {
 
 	use Nette\SmartObject;
@@ -33,12 +33,12 @@ final class BlockStatus implements IEntity
 	/** @var int */
 	private int $identifier;
 
-	/** @var SensorStatus[] */
+	/** @var SensorStatusEntity[] */
 	private array $sensors;
 
 	/**
 	 * @param int $identifier
-	 * @param SensorStatus[] $sensors
+	 * @param SensorStatusEntity[] $sensors
 	 */
 	public function __construct(
 		int $identifier,
@@ -57,7 +57,7 @@ final class BlockStatus implements IEntity
 	}
 
 	/**
-	 * @return SensorStatus[]
+	 * @return SensorStatusEntity[]
 	 */
 	public function getSensors(): array
 	{
@@ -65,11 +65,11 @@ final class BlockStatus implements IEntity
 	}
 
 	/**
-	 * @param SensorStatus $sensor
+	 * @param SensorStatusEntity $sensor
 	 *
 	 * @return void
 	 */
-	public function addSensor(SensorStatus $sensor): void
+	public function addSensor(SensorStatusEntity $sensor): void
 	{
 		$this->sensors[] = $sensor;
 
@@ -83,7 +83,7 @@ final class BlockStatus implements IEntity
 	{
 		return [
 			'identifier' => $this->getIdentifier(),
-			'sensors'    => array_map(function (SensorStatus $sensor): array {
+			'sensors'    => array_map(function (SensorStatusEntity $sensor): array {
 				return $sensor->toArray();
 			}, $this->getSensors()),
 		];

@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Clients
  * @since          0.37.0
  *
@@ -18,7 +18,7 @@ namespace FastyBird\ShellyConnector\Clients\Gen1;
 use Clue\React\Multicast;
 use FastyBird\Metadata;
 use FastyBird\ShellyConnector\Consumers;
-use FastyBird\ShellyConnector\Entities\Messages\DeviceFound;
+use FastyBird\ShellyConnector\Entities\Messages\DeviceFoundEntity;
 use InvalidArgumentException;
 use Nette\Utils;
 use Psr\Log;
@@ -29,7 +29,7 @@ use React\EventLoop;
 /**
  * mDNS client
  *
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -151,7 +151,7 @@ final class MdnsClient
 
 						preg_match(self::MATCH_NAME, $serviceName, $matches);
 
-						$this->consumer->append(new DeviceFound(
+						$this->consumer->append(new DeviceFoundEntity(
 							$results[1],
 							Utils\Strings::lower($matches['id'])
 						));

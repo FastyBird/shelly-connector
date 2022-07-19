@@ -6,8 +6,8 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
- * @subpackage     Connector
+ * @package        FastyBird:ShellyConnectorEntity!
+ * @subpackage     common
  * @since          0.37.0
  *
  * @date           14.07.22
@@ -24,8 +24,8 @@ use ReflectionClass;
 /**
  * Connector service container factory
  *
- * @package        FastyBird:ShellyConnector!
- * @subpackage     Connector
+ * @package        FastyBird:ShellyConnectorEntity!
+ * @subpackage     common
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
@@ -62,7 +62,7 @@ final class ConnectorFactory implements DevicesModuleConnectors\IConnectorFactor
 	 */
 	public function getType(): string
 	{
-		return Entities\ShellyConnector::CONNECTOR_TYPE;
+		return Entities\ShellyConnectorEntity::CONNECTOR_TYPE;
 	}
 
 	/**

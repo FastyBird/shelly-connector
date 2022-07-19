@@ -6,8 +6,8 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
- * @subpackage     Connector
+ * @package        FastyBird:ShellyConnectorEntity!
+ * @subpackage     API
  * @since          0.37.0
  *
  * @date           17.07.22
@@ -27,8 +27,8 @@ use Nette\Utils;
 /**
  * Generation 1 devices messages parser
  *
- * @package        FastyBird:ShellyConnector!
- * @subpackage     Connector
+ * @package        FastyBird:ShellyConnectorEntity!
+ * @subpackage     API
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
@@ -61,14 +61,14 @@ final class Gen1Parser
 	 * @param string $identifier
 	 * @param string $message
 	 *
-	 * @return Entities\Messages\DeviceDescription
+	 * @return Entities\Messages\DeviceDescriptionEntity
 	 */
 	public function parseCoapDescriptionMessage(
 		string $address,
 		string $type,
 		string $identifier,
 		string $message
-	): Entities\Messages\DeviceDescription {
+	): Entities\Messages\DeviceDescriptionEntity {
 		if (!$this->validator->isValidCoapDescriptionMessage($message)) {
 			throw new Exceptions\ParseMessageException('Provided description message is not valid');
 		}
@@ -86,7 +86,7 @@ final class Gen1Parser
 
 		$blocks = $this->extractBlocksDescription($parsedMessage);
 
-		return new Entities\Messages\DeviceDescription(
+		return new Entities\Messages\DeviceDescriptionEntity(
 			$identifier,
 			$type,
 			$address,
@@ -100,14 +100,14 @@ final class Gen1Parser
 	 * @param string $identifier
 	 * @param string $message
 	 *
-	 * @return Entities\Messages\DeviceStatus
+	 * @return Entities\Messages\DeviceEntityStatus
 	 */
 	public function parseCoapStatusMessage(
 		string $address,
 		string $type,
 		string $identifier,
 		string $message
-	): Entities\Messages\DeviceStatus {
+	): Entities\Messages\DeviceEntityStatus {
 		if (!$this->validator->isValidCoapDescriptionMessage($message)) {
 			throw new Exceptions\ParseMessageException('Provided description message is not valid');
 		}
@@ -138,11 +138,11 @@ final class Gen1Parser
 				[$blockIdentifier, $sensorIdentifier, $sensorValue] = $sensorState;
 
 				if (!array_key_exists($blockIdentifier, $blocks)) {
-					$blocks[$blockIdentifier] = new Entities\Messages\BlockStatus($blockIdentifier);
+					$blocks[$blockIdentifier] = new Entities\Messages\BlockStatusEntity($blockIdentifier);
 				}
 
 				$blocks[$blockIdentifier]->addSensor(
-					new Entities\Messages\SensorStatus(
+					new Entities\Messages\SensorStatusEntity(
 						$sensorIdentifier,
 						$sensorValue
 					)
@@ -150,7 +150,7 @@ final class Gen1Parser
 			}
 		}
 
-		return new Entities\Messages\DeviceStatus(
+		return new Entities\Messages\DeviceEntityStatus(
 			$identifier,
 			$type,
 			$address,
@@ -161,7 +161,7 @@ final class Gen1Parser
 	/**
 	 * @param Utils\ArrayHash $description
 	 *
-	 * @return Entities\Messages\BlockDescription[]
+	 * @return Entities\Messages\BlockDescriptionEntity[]
 	 */
 	private function extractBlocksDescription(Utils\ArrayHash $description): array
 	{
@@ -187,7 +187,7 @@ final class Gen1Parser
 				continue;
 			}
 
-			$blockDescription = new Entities\Messages\BlockDescription(
+			$blockDescription = new Entities\Messages\BlockDescriptionEntity(
 				intval($block->I),
 				$block->D,
 			);
@@ -213,7 +213,7 @@ final class Gen1Parser
 						property_exists($sensor, 'R') ? $sensor->R : null
 					);
 
-					$sensorDescription = new Entities\Messages\SensorDescription(
+					$sensorDescription = new Entities\Messages\SensorDescriptionEntity(
 						intval($sensor->I),
 						Types\SensorTypeType::get($sensor->T),
 						strval($sensor->D),
@@ -240,13 +240,13 @@ final class Gen1Parser
 	 * @param string $description
 	 * @param string|string[]|null $rawRange
 	 *
-	 * @return Entities\Messages\SensorRange
+	 * @return Entities\Messages\SensorRangeEntity
 	 */
     private function parseSensorRange(
 		string $block,
 		string $description,
         string|array|null $rawRange
-    ): Entities\Messages\SensorRange {
+    ): Entities\Messages\SensorRangeEntity {
 		$invalidValue = null;
 
 		if (is_array($rawRange) && count($rawRange) === 2) {
@@ -257,7 +257,7 @@ final class Gen1Parser
 			$normalValue = $rawRange;
 
 		} else {
-			return new Entities\Messages\SensorRange(
+			return new Entities\Messages\SensorRangeEntity(
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -269,7 +269,7 @@ final class Gen1Parser
 		}
 
 		if ($normalValue === '0/1') {
-			return new Entities\Messages\SensorRange(
+			return new Entities\Messages\SensorRangeEntity(
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -281,7 +281,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'U8') {
-			return new Entities\Messages\SensorRange(
+			return new Entities\Messages\SensorRangeEntity(
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -293,7 +293,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'U16') {
-			return new Entities\Messages\SensorRange(
+			return new Entities\Messages\SensorRangeEntity(
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -305,7 +305,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'U32') {
-			return new Entities\Messages\SensorRange(
+			return new Entities\Messages\SensorRangeEntity(
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -317,7 +317,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'I8') {
-			return new Entities\Messages\SensorRange(
+			return new Entities\Messages\SensorRangeEntity(
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -329,7 +329,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'I16') {
-			return new Entities\Messages\SensorRange(
+			return new Entities\Messages\SensorRangeEntity(
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -341,7 +341,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'I32') {
-			return new Entities\Messages\SensorRange(
+			return new Entities\Messages\SensorRangeEntity(
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -360,7 +360,7 @@ final class Gen1Parser
 				&& $normalValueParts[0] === (string) (int) $normalValueParts[0]
 				&& $normalValueParts[1] === (string) (int) $normalValueParts[1]
 			) {
-				return new Entities\Messages\SensorRange(
+				return new Entities\Messages\SensorRangeEntity(
 					$this->adjustSensorDataType(
 						$block,
 						$description,
@@ -380,7 +380,7 @@ final class Gen1Parser
 				&& $normalValueParts[0] === (string) (float) $normalValueParts[0]
 				&& $normalValueParts[1] === (string) (float) $normalValueParts[1]
 			) {
-				return new Entities\Messages\SensorRange(
+				return new Entities\Messages\SensorRangeEntity(
 					$this->adjustSensorDataType(
 						$block,
 						$description,
@@ -395,7 +395,7 @@ final class Gen1Parser
 				);
 			}
 
-			return new Entities\Messages\SensorRange(
+			return new Entities\Messages\SensorRangeEntity(
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -412,7 +412,7 @@ final class Gen1Parser
 			);
 		}
 
-		return new Entities\Messages\SensorRange(
+		return new Entities\Messages\SensorRangeEntity(
 			$this->adjustSensorDataType(
 				$block,
 				$description,

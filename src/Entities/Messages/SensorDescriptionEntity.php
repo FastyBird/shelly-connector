@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
 /**
- * SensorDescription.php
+ * SensorDescriptionEntity.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  * @since          0.37.0
  *
@@ -22,12 +22,12 @@ use Nette;
 /**
  * Block sensor description entity
  *
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class SensorDescription implements IEntity
+final class SensorDescriptionEntity implements IEntity
 {
 
 	use Nette\SmartObject;

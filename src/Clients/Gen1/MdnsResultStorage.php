@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
 /**
- * MdnsClient.php
+ * MdnsResultStorage.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Clients
  * @since          0.37.0
  *
@@ -21,7 +21,7 @@ use SplObjectStorage;
 /**
  * mDNS search results storage
  *
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

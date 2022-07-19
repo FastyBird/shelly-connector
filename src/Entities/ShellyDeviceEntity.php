@@ -6,7 +6,7 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  * @since          0.1.0
  *
@@ -22,7 +22,7 @@ use FastyBird\Metadata\Types as MetadataTypes;
 /**
  * @ORM\Entity
  */
-class ShellyDevice extends DevicesModuleEntities\Devices\Device implements IShellyDevice
+class ShellyDeviceEntity extends DevicesModuleEntities\Devices\Device implements IShellyDeviceEntity
 {
 
 	public const DEVICE_TYPE = 'shelly';

@@ -6,7 +6,7 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Hydrators
  * @since          0.1.0
  *
@@ -21,12 +21,12 @@ use FastyBird\ShellyConnector\Entities;
 /**
  * Shelly connector entity hydrator
  *
- * @package        FastyBird:ShellyConnector!
+ * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Hydrators
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  *
- * @phpstan-extends DevicesModuleHydrators\Connectors\ConnectorHydrator<Entities\IShellyConnector>
+ * @phpstan-extends DevicesModuleHydrators\Connectors\ConnectorHydrator<Entities\IShellyConnectorEntity>
  */
 final class ShellyConnectorHydrator extends DevicesModuleHydrators\Connectors\ConnectorHydrator
 {
@@ -36,7 +36,7 @@ final class ShellyConnectorHydrator extends DevicesModuleHydrators\Connectors\Co
 	 */
 	public function getEntityName(): string
 	{
-		return Entities\ShellyConnector::class;
+		return Entities\ShellyConnectorEntity::class;
 	}
 
 }

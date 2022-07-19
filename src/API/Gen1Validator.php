@@ -6,8 +6,8 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnector!
- * @subpackage     Connector
+ * @package        FastyBird:ShellyConnectorEntity!
+ * @subpackage     API
  * @since          0.37.0
  *
  * @date           17.07.22
@@ -24,8 +24,8 @@ use Nette\Utils;
 /**
  * Generation 1 devices messages validator
  *
- * @package        FastyBird:ShellyConnector!
- * @subpackage     Connector
+ * @package        FastyBird:ShellyConnectorEntity!
+ * @subpackage     API
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
