@@ -23,7 +23,6 @@ use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\ShellyConnector\Clients;
-use Nette;
 use Nette\Utils;
 use Psr\Log;
 use React\EventLoop;
@@ -37,10 +36,8 @@ use Throwable;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Gen1Client implements IClient
+final class Gen1Client extends Client
 {
-
-	use Nette\SmartObject;
 
 	/** @var string[] */
 	private array $processedDevices = [];

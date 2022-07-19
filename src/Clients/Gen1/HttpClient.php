@@ -21,6 +21,7 @@ use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\ShellyConnector\Exceptions;
 use FastyBird\ShellyConnector\Types;
+use Nette;
 use Nette\Utils;
 use Psr\Log;
 use React\EventLoop;
@@ -36,6 +37,8 @@ use React\Http;
  */
 final class HttpClient
 {
+
+	use Nette\SmartObject;
 
 	private const SHELLY_INFO_ENDPOINT = 'http://{address}/shelly';
 	private const STATUS_ENDPOINT = 'http://{address}/status';

@@ -19,6 +19,7 @@ use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use Nette;
 use ReflectionClass;
 
 /**
@@ -31,6 +32,8 @@ use ReflectionClass;
  */
 final class ConnectorFactory implements DevicesModuleConnectors\IConnectorFactory
 {
+
+	use Nette\SmartObject;
 
 	/** @var Clients\ClientFactory[] */
 	private array $clientsFactories;

@@ -20,6 +20,7 @@ use FastyBird\Metadata;
 use FastyBird\ShellyConnector\API;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Exceptions;
+use Nette;
 use Psr\Log;
 use React\Datagram;
 use React\EventLoop;
@@ -35,11 +36,15 @@ use React\EventLoop;
 final class CoapClient
 {
 
+	use Nette\SmartObject;
+
 	private const COAP_ADDRESS = '224.0.1.187';
 	private const COAP_PORT = 5683;
 
 	private const STATUS_MESSAGE_CODE = 30;
 	private const DESCRIPTION_MESSAGE_CODE = 69;
+
+	private const AUTOMATIC_DISCOVERY_DELAY = 5;
 
 	/** @var API\Gen1Validator */
 	private API\Gen1Validator $validator;
@@ -131,7 +136,7 @@ final class CoapClient
 			$this->handlePacket($message, $remote);
 		});
 
-		$this->eventLoop->addTimer(5, function (): void {
+		$this->eventLoop->addTimer(self::AUTOMATIC_DISCOVERY_DELAY, function (): void {
 			$this->discover();
 		});
 	}
@@ -213,7 +218,10 @@ final class CoapClient
 				$pos = $pos + $length + 1;
 
 				if ($totDelta === 3332) {
-					[$deviceType, $deviceIdentifier] = explode('#', mb_convert_encoding($value, 'cp1252', 'utf8')) + [null, null];
+					[
+						$deviceType,
+						$deviceIdentifier,
+					] = explode('#', mb_convert_encoding($value, 'cp1252', 'utf8')) + [null, null];
 				}
 
 				$byte = $buffer[$pos];
@@ -243,7 +251,17 @@ final class CoapClient
 						)
 					);
 				} catch (Exceptions\ParseMessageException $ex) {
-					$this->logger->warning('Received message could not be parsed into entity');
+					$this->logger->warning(
+						'Received message could not be parsed into entity',
+						[
+							'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+							'type' => 'coap-client',
+							'exception' => [
+								'message' => $ex->getMessage(),
+								'code'    => $ex->getCode(),
+							],
+						]
+					);
 				}
 			} elseif (
 				$code === self::DESCRIPTION_MESSAGE_CODE
@@ -261,7 +279,17 @@ final class CoapClient
 						)
 					);
 				} catch (Exceptions\ParseMessageException $ex) {
-					$this->logger->warning('Received message could not be parsed into entity');
+					$this->logger->warning(
+						'Received message could not be parsed into entity',
+						[
+							'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+							'type' => 'coap-client',
+							'exception' => [
+								'message' => $ex->getMessage(),
+								'code'    => $ex->getCode(),
+							],
+						]
+					);
 				}
 			}
 		}

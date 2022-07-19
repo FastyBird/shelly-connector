@@ -15,6 +15,8 @@
 
 namespace FastyBird\ShellyConnector\Clients;
 
+use Nette;
+
 /**
  * Base client service
  *
@@ -25,6 +27,8 @@ namespace FastyBird\ShellyConnector\Clients;
  */
 abstract class Client implements IClient
 {
+
+	use Nette\SmartObject;
 
 	/**
 	 * @return void

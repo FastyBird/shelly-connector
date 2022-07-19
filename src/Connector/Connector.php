@@ -21,6 +21,8 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\ShellyConnector\Clients;
 use FastyBird\ShellyConnector\Consumers;
+use Nette;
+use React\EventLoop;
 
 /**
  * Connector service container
@@ -32,6 +34,13 @@ use FastyBird\ShellyConnector\Consumers;
  */
 final class Connector implements DevicesModuleConnectors\IConnector
 {
+
+	use Nette\SmartObject;
+
+	private const QUEUE_PROCESSING_INTERVAL = 0.01;
+
+	/** @var EventLoop\TimerInterface|null */
+	private ?EventLoop\TimerInterface $consumerTimer;
 
 	/** @var Clients\IClient */
 	private Clients\IClient $client;
@@ -48,19 +57,24 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	/** @var DevicesModuleModels\States\DeviceConnectionStateManager */
 	private DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager;
 
+	/** @var EventLoop\LoopInterface */
+	private EventLoop\LoopInterface $eventLoop;
+
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param Clients\IClient $client
 	 * @param Consumers\Consumer $consumer
 	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository
 	 * @param DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager
+	 * @param EventLoop\LoopInterface $eventLoop
 	 */
 	public function __construct(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		Clients\IClient $client,
 		Consumers\Consumer $consumer,
 		DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository,
-		DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager
+		DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager,
+		EventLoop\LoopInterface $eventLoop
 	) {
 		$this->connector = $connector;
 
@@ -70,6 +84,8 @@ final class Connector implements DevicesModuleConnectors\IConnector
 
 		$this->devicesRepository = $devicesRepository;
 		$this->deviceConnectionStateManager = $deviceConnectionStateManager;
+
+		$this->eventLoop = $eventLoop;
 	}
 
 	/**
@@ -85,6 +101,10 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		}
 
 		$this->client->connect();
+
+		$this->consumerTimer = $this->eventLoop->addPeriodicTimer(self::QUEUE_PROCESSING_INTERVAL, function (): void {
+			$this->consumer->consume();
+		});
 	}
 
 	/**
@@ -100,6 +120,10 @@ final class Connector implements DevicesModuleConnectors\IConnector
 				MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_DISCONNECTED)
 			);
 		}
+
+		if ($this->consumerTimer !== null) {
+			$this->eventLoop->cancelTimer($this->consumerTimer);
+		}
 	}
 
 	/**
@@ -107,7 +131,7 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 */
 	public function hasUnfinishedTasks(): bool
 	{
-		return !$this->consumer->isEmpty();
+		return !$this->consumer->isEmpty() && $this->consumerTimer !== null;
 	}
 
 	/**

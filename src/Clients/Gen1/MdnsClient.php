@@ -20,6 +20,7 @@ use FastyBird\Metadata;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Entities\Messages\DeviceFoundEntity;
 use InvalidArgumentException;
+use Nette;
 use Nette\Utils;
 use Psr\Log;
 use React\Datagram;
@@ -36,6 +37,8 @@ use React\EventLoop;
  */
 final class MdnsClient
 {
+
+	use Nette\SmartObject;
 
 	private const DNS_ADDRESS = '224.0.0.251';
 	private const DNS_PORT = 5353;
