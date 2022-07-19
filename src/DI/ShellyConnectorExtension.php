@@ -122,6 +122,9 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('api.gen1validator'), new DI\Definitions\ServiceDefinition())
 			->setType(API\Gen1Validator::class);
 
+		$builder->addDefinition($this->prefix('api.gen1transformer'), new DI\Definitions\ServiceDefinition())
+			->setType(API\Gen1Transformer::class);
+
 		// Consumers
 		$builder->addDefinition($this->prefix('consumer.proxy'), new DI\Definitions\ServiceDefinition())
 			->setType(Consumers\Consumer::class);

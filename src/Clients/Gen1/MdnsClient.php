@@ -175,16 +175,6 @@ final class MdnsClient
 			$queryData = $dumper->toBinary(Dns\Model\Message::createRequestForQuery($query));
 
 			$server->send($queryData, self::DNS_ADDRESS . ':' . self::DNS_PORT);
-
-			$query = new Dns\Query\Query(
-				'_shelly._tcp.local',
-				Dns\Model\Message::TYPE_PTR,
-				Dns\Model\Message::CLASS_IN
-			);
-
-			$queryData = $dumper->toBinary(Dns\Model\Message::createRequestForQuery($query));
-
-			$server->send($queryData, self::DNS_ADDRESS . ':' . self::DNS_PORT);
 		});
 	}
 
