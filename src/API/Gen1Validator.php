@@ -71,7 +71,7 @@ final class Gen1Validator
 
 		try {
 			$this->schemaValidator->validate($message, $schema);
-		} catch (MetadataExceptions\MalformedInputException|MetadataExceptions\LogicException|MetadataExceptions\InvalidDataException) {
+		} catch (MetadataExceptions\MalformedInputException | MetadataExceptions\LogicException | MetadataExceptions\InvalidDataException) {
 			return false;
 		}
 
@@ -96,7 +96,7 @@ final class Gen1Validator
 
 		try {
 			$this->schemaValidator->validate($message, $schema);
-		} catch (MetadataExceptions\MalformedInputException|MetadataExceptions\LogicException|MetadataExceptions\InvalidDataException) {
+		} catch (MetadataExceptions\MalformedInputException | MetadataExceptions\LogicException | MetadataExceptions\InvalidDataException) {
 			return false;
 		}
 
