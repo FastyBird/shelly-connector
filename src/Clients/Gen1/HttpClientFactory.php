@@ -1,21 +1,19 @@
 <?php declare(strict_types = 1);
 
 /**
- * FbMqttV1Client.php
+ * HttpClientFactory.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
- * @since          0.25.0
+ * @since          0.37.0
  *
- * @date           05.07.22
+ * @date           18.07.22
  */
 
-namespace FastyBird\ShellyConnector\Clients;
-
-use FastyBird\Metadata\Entities as MetadataEntities;
+namespace FastyBird\ShellyConnector\Clients\Gen1;
 
 /**
  * CoAP client factory
@@ -25,14 +23,12 @@ use FastyBird\Metadata\Entities as MetadataEntities;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface CoapClientFactory extends ClientFactory
+interface HttpClientFactory
 {
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 *
-	 * @return CoapClient
+	 * @return HttpClient
 	 */
-	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): CoapClient;
+	public function create(): HttpClient;
 
 }

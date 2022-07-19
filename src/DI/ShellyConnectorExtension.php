@@ -16,8 +16,10 @@
 namespace FastyBird\ShellyConnector\DI;
 
 use Doctrine\Persistence;
+use FastyBird\ShellyConnector\API;
 use FastyBird\ShellyConnector\Clients;
 use FastyBird\ShellyConnector\Connector;
+use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Hydrators;
 use FastyBird\ShellyConnector\Schemas;
 use Nette;
@@ -86,10 +88,36 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 			->setFactory(Connector\ConnectorFactory::class);
 
 		// Clients
-		$builder->addFactoryDefinition($this->prefix('client.coap'))
-			->setImplement(Clients\CoapClientFactory::class)
+		$builder->addFactoryDefinition($this->prefix('client.gen1'))
+			->setImplement(Clients\Gen1ClientFactory::class)
 			->getResultDefinition()
-			->setType(Clients\CoapClient::class);
+			->setType(Clients\Gen1Client::class);
+
+		$builder->addFactoryDefinition($this->prefix('client.gen1.coap'))
+			->setImplement(Clients\Gen1\CoapClientFactory::class)
+			->getResultDefinition()
+			->setType(Clients\Gen1\CoapClient::class);
+
+		$builder->addFactoryDefinition($this->prefix('client.gen1.mdns'))
+			->setImplement(Clients\Gen1\MdnsClientFactory::class)
+			->getResultDefinition()
+			->setType(Clients\Gen1\MdnsClient::class);
+
+		$builder->addFactoryDefinition($this->prefix('client.gen1.http'))
+			->setImplement(Clients\Gen1\HttpClientFactory::class)
+			->getResultDefinition()
+			->setType(Clients\Gen1\HttpClient::class);
+
+		// Messages API
+		$builder->addDefinition($this->prefix('api.gen1parser'), new DI\Definitions\ServiceDefinition())
+			->setType(API\Gen1Parser::class);
+
+		$builder->addDefinition($this->prefix('api.gen1validator'), new DI\Definitions\ServiceDefinition())
+			->setType(API\Gen1Validator::class);
+
+		// Consumers
+		$builder->addDefinition($this->prefix('consumer.proxy'), new DI\Definitions\ServiceDefinition())
+			->setType(Consumers\Consumer::class);
 
 		// API schemas
 		$builder->addDefinition($this->prefix('schemas.connector.shelly'), new DI\Definitions\ServiceDefinition())

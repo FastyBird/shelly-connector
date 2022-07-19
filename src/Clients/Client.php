@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * ClientFactory.php
+ * Client.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -10,20 +10,25 @@
  * @subpackage     Clients
  * @since          0.37.0
  *
- * @date           14.07.22
+ * @date           17.07.22
  */
 
 namespace FastyBird\ShellyConnector\Clients;
 
 /**
- * Base client factory
+ * Base client service
  *
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface ClientFactory
+abstract class Client implements IClient
 {
+
+	/**
+	 * @return void
+	 */
+	abstract protected function handleCommunication(): void;
 
 }

@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * Constants.php
+ * ConnectorFactory.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -17,9 +17,9 @@ namespace FastyBird\ShellyConnector\Connector;
 
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
+use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\ShellyConnector\Clients;
 use FastyBird\ShellyConnector\Entities;
-use FastyBird\Metadata\Entities as MetadataEntities;
 
 /**
  * Connector service container factory

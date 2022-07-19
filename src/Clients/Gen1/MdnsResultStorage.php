@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * ClientFactory.php
+ * MdnsClient.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -13,17 +13,36 @@
  * @date           14.07.22
  */
 
-namespace FastyBird\ShellyConnector\Clients;
+namespace FastyBird\ShellyConnector\Clients\Gen1;
+
+use Nette;
+use SplObjectStorage;
 
 /**
- * Base client factory
+ * mDNS search results storage
  *
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
+ *
+ * @extends SplObjectStorage<MdnsResult, null>
  */
-interface ClientFactory
+class MdnsResultStorage extends SplObjectStorage
 {
+
+	use Nette\SmartObject;
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @phpstan-param MdnsResult $object
+	 *
+	 * @return string
+	 */
+	public function getHash(object $object): string
+	{
+		return serialize($object);
+	}
 
 }

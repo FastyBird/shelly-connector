@@ -1,29 +1,34 @@
 <?php declare(strict_types = 1);
 
 /**
- * ClientFactory.php
+ * IEntity.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:ShellyConnector!
- * @subpackage     Clients
+ * @subpackage     Entities
  * @since          0.37.0
  *
- * @date           14.07.22
+ * @date           16.07.22
  */
 
-namespace FastyBird\ShellyConnector\Clients;
+namespace FastyBird\ShellyConnector\Entities\Messages;
 
 /**
- * Base client factory
+ * Shelly base message data entity interface
  *
  * @package        FastyBird:ShellyConnector!
- * @subpackage     Clients
+ * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface ClientFactory
+interface IEntity
 {
+
+	/**
+	 * @return Array<string, mixed>
+	 */
+	public function toArray(): array;
 
 }

@@ -8,18 +8,17 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
- * @since          0.1.0
+ * @since          0.37.0
  *
  * @date           23.02.20
  */
 
 namespace FastyBird\ShellyConnector\Clients;
 
-use FastyBird\ShellyConnector;
 use FastyBird\Metadata\Entities as MetadataEntities;
 
 /**
- * FastyBird MQTT client interface
+ * Shelly device client interface
  *
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients

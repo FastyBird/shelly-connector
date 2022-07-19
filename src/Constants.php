@@ -1,29 +1,31 @@
 <?php declare(strict_types = 1);
 
 /**
- * ClientFactory.php
+ * ShellyDeviceSchema.php
  *
- * @license        More in license.md
+ * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:ShellyConnector!
- * @subpackage     Clients
+ * @subpackage     common
  * @since          0.37.0
  *
- * @date           14.07.22
+ * @date           17.07.22
  */
 
-namespace FastyBird\ShellyConnector\Clients;
+namespace FastyBird\ShellyConnector;
 
 /**
- * Base client factory
+ * Connector constants
  *
  * @package        FastyBird:ShellyConnector!
- * @subpackage     Clients
+ * @subpackage     common
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface ClientFactory
+final class Constants
 {
+
+	public const RESOURCES_FOLDER = __DIR__ . '/../resources';
 
 }

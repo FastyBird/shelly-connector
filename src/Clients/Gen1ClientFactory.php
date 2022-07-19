@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * ClientFactory.php
+ * Gen1ClientFactory.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -10,20 +10,29 @@
  * @subpackage     Clients
  * @since          0.37.0
  *
- * @date           14.07.22
+ * @date           17.07.22
  */
 
 namespace FastyBird\ShellyConnector\Clients;
 
+use FastyBird\Metadata\Entities as MetadataEntities;
+
 /**
- * Base client factory
+ * Generation 1 devices client factory
  *
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface ClientFactory
+interface Gen1ClientFactory extends ClientFactory
 {
+
+	/**
+	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
+	 *
+	 * @return Gen1Client
+	 */
+	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Gen1Client;
 
 }

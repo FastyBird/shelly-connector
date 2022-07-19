@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * Constants.php
+ * Connector.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -16,9 +16,9 @@
 namespace FastyBird\ShellyConnector\Connector;
 
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
-use FastyBird\ShellyConnector\Clients;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
+use FastyBird\ShellyConnector\Clients;
 
 /**
  * Connector service container
@@ -40,7 +40,6 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	public function __construct(
 		array $clients
 	) {
-		var_dump(count($clients));
 		$this->clients = $clients;
 	}
 
