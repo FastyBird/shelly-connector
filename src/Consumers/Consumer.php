@@ -93,4 +93,12 @@ final class Consumer
 		}
 	}
 
+	/**
+	 * @return bool
+	 */
+	public function isEmpty(): bool
+	{
+		return $this->queue->isEmpty();
+	}
+
 }

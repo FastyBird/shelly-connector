@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\Clients\Gen1;
 
 use Clue\React\Multicast;
+use FastyBird\Metadata;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Entities\Messages\DeviceFound;
 use InvalidArgumentException;
@@ -100,7 +101,7 @@ final class MdnsClient
 
 			} catch (InvalidArgumentException) {
 				$this->logger->warning('Invalid DNS question response received', [
-					'source' => 'shelly-connector',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 					'type'   => 'mdns-client',
 				]);
 
@@ -109,7 +110,7 @@ final class MdnsClient
 
 			if ($response->tc) {
 				$this->logger->warning('The server set the truncated bit although we issued a TCP request', [
-					'source' => 'shelly-connector',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 					'type'   => 'mdns-client',
 				]);
 

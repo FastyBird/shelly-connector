@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\Clients;
 
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\ShellyConnector\Types;
 
 /**
  * Generation 1 devices client factory
@@ -27,6 +28,8 @@ use FastyBird\Metadata\Entities as MetadataEntities;
  */
 interface Gen1ClientFactory extends ClientFactory
 {
+
+	public const VERSION = Types\ClientVersionType::GEN_1;
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector

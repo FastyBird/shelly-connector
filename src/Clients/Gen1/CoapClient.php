@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\Clients\Gen1;
 
 use Clue\React\Multicast;
+use FastyBird\Metadata;
 use FastyBird\ShellyConnector\API;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Exceptions;
@@ -98,7 +99,7 @@ final class CoapClient
 			$this->logger->warning(
 				'CoAP client is not running, discovery process could not be processed',
 				[
-					'source' => 'shelly-connector',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 					'type'   => 'coap-client',
 				]
 			);

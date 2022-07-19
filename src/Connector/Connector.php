@@ -16,9 +16,11 @@
 namespace FastyBird\ShellyConnector\Connector;
 
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
+use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\ShellyConnector\Clients;
+use FastyBird\ShellyConnector\Consumers;
 
 /**
  * Connector service container
@@ -31,16 +33,43 @@ use FastyBird\ShellyConnector\Clients;
 final class Connector implements DevicesModuleConnectors\IConnector
 {
 
-	/** @var Clients\IClient[] */
-	private array $clients;
+	/** @var Clients\IClient */
+	private Clients\IClient $client;
+
+	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
+	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
+
+	/** @var Consumers\Consumer */
+	private Consumers\Consumer $consumer;
+
+	/** @var DevicesModuleModels\DataStorage\IDevicesRepository */
+	private DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository;
+
+	/** @var DevicesModuleModels\States\DeviceConnectionStateManager */
+	private DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager;
 
 	/**
-	 * @param Clients\IClient[] $clients
+	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
+	 * @param Clients\IClient $client
+	 * @param Consumers\Consumer $consumer
+	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository
+	 * @param DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager
 	 */
 	public function __construct(
-		array $clients
+		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		Clients\IClient $client,
+		Consumers\Consumer $consumer,
+		DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository,
+		DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager
 	) {
-		$this->clients = $clients;
+		$this->connector = $connector;
+
+		$this->client = $client;
+
+		$this->consumer = $consumer;
+
+		$this->devicesRepository = $devicesRepository;
+		$this->deviceConnectionStateManager = $deviceConnectionStateManager;
 	}
 
 	/**
@@ -48,9 +77,14 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 */
 	public function execute(): void
 	{
-		foreach ($this->clients as $client) {
-			$client->connect();
+		foreach ($this->devicesRepository->findAllByConnector($this->connector->getId()) as $device) {
+			$this->deviceConnectionStateManager->setState(
+				$device,
+				MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_UNKNOWN)
+			);
 		}
+
+		$this->client->connect();
 	}
 
 	/**
@@ -58,8 +92,13 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 */
 	public function terminate(): void
 	{
-		foreach ($this->clients as $client) {
-			$client->disconnect();
+		$this->client->disconnect();
+
+		foreach ($this->devicesRepository->findAllByConnector($this->connector->getId()) as $device) {
+			$this->deviceConnectionStateManager->setState(
+				$device,
+				MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_DISCONNECTED)
+			);
 		}
 	}
 
@@ -68,7 +107,7 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 */
 	public function hasUnfinishedTasks(): bool
 	{
-		return false;
+		return !$this->consumer->isEmpty();
 	}
 
 	/**
@@ -82,9 +121,7 @@ final class Connector implements DevicesModuleConnectors\IConnector
 			return;
 		}
 
-		foreach ($this->clients as $client) {
-			$client->writeDeviceControl($action);
-		}
+		$this->client->writeDeviceControl($action);
 	}
 
 	/**
@@ -98,9 +135,7 @@ final class Connector implements DevicesModuleConnectors\IConnector
 			return;
 		}
 
-		foreach ($this->clients as $client) {
-			$client->writeChannelControl($action);
-		}
+		$this->client->writeChannelControl($action);
 	}
 
 }

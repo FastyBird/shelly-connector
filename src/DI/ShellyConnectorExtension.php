@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\DI;
 
 use Doctrine\Persistence;
+use FastyBird\ShellyConnector;
 use FastyBird\ShellyConnector\API;
 use FastyBird\ShellyConnector\Clients;
 use FastyBird\ShellyConnector\Connector;
@@ -83,9 +84,15 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 				->setFactory('React\EventLoop\Factory::create');
 		}
 
+		// Service factory
+		$builder->addDefinition($this->prefix('service.factory'), new DI\Definitions\ServiceDefinition())
+			->setType(ShellyConnector\ConnectorFactory::class);
+
 		// Connector
-		$builder->addDefinition($this->prefix('connector.factory'), new DI\Definitions\ServiceDefinition())
-			->setFactory(Connector\ConnectorFactory::class);
+		$builder->addFactoryDefinition($this->prefix('connector'))
+			->setImplement(Connector\ConnectorFactory::class)
+			->getResultDefinition()
+			->setType(Connector\Connector::class);
 
 		// Clients
 		$builder->addFactoryDefinition($this->prefix('client.gen1'))

@@ -17,10 +17,10 @@ namespace FastyBird\ShellyConnector\Clients\Gen1;
 
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
+use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
-use FastyBird\Metadata\Types\DevicePropertyNameType;
 use FastyBird\ShellyConnector\Exceptions;
-use FastyBird\ShellyConnector\Types\WritableSensorTypeType;
+use FastyBird\ShellyConnector\Types;
 use Nette\Utils;
 use Psr\Log;
 use React\EventLoop;
@@ -90,6 +90,158 @@ final class HttpClient
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
+	 * @param callable $successCallback
+	 * @param callable $errorCallback
+	 *
+	 * @return void
+	 *
+	 * @throws DevicesModuleExceptions\TerminateException
+	 */
+	public function readDeviceInfo(
+		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
+		callable $successCallback,
+		callable $errorCallback
+	): void
+	{
+		$address = $this->buildDeviceAddress($device);
+
+		if ($address === null) {
+			return;
+		}
+
+		// @phpstan-ignore-next-line
+		$this->getClient()->get(
+			Utils\Strings::replace(
+				self::SHELLY_INFO_ENDPOINT,
+				[
+					'{address}' => $address,
+				]
+			)
+		)
+			->then(function () use ($device, $successCallback): void {
+				$successCallback($device);
+			})
+			->otherwise(function () use ($device, $errorCallback): void {
+				$errorCallback($device);
+			});
+	}
+
+	/**
+	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
+	 * @param callable $successCallback
+	 * @param callable $errorCallback
+	 *
+	 * @return void
+	 *
+	 * @throws DevicesModuleExceptions\TerminateException
+	 */
+	public function readDeviceStatus(
+		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
+		callable $successCallback,
+		callable $errorCallback
+	): void
+	{
+		$address = $this->buildDeviceAddress($device);
+
+		if ($address === null) {
+			return;
+		}
+
+		// @phpstan-ignore-next-line
+		$this->getClient()->get(
+			Utils\Strings::replace(
+				self::STATUS_ENDPOINT,
+				[
+					'{address}' => $address,
+				]
+			)
+		)
+			->then(function () use ($device, $successCallback): void {
+				$successCallback($device);
+			})
+			->otherwise(function () use ($device, $errorCallback): void {
+				$errorCallback($device);
+			});
+	}
+
+	/**
+	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
+	 * @param callable $successCallback
+	 * @param callable $errorCallback
+	 *
+	 * @return void
+	 *
+	 * @throws DevicesModuleExceptions\TerminateException
+	 */
+	public function readDeviceSettings(
+		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
+		callable $successCallback,
+		callable $errorCallback
+	): void
+	{
+		$address = $this->buildDeviceAddress($device);
+
+		if ($address === null) {
+			return;
+		}
+
+		// @phpstan-ignore-next-line
+		$this->getClient()->get(
+			Utils\Strings::replace(
+				self::SETTINGS_ENDPOINT,
+				[
+					'{address}' => $address,
+				]
+			)
+		)
+			->then(function () use ($device, $successCallback): void {
+				$successCallback($device);
+			})
+			->otherwise(function () use ($device, $errorCallback): void {
+				$errorCallback($device);
+			});
+	}
+
+	/**
+	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
+	 * @param callable $successCallback
+	 * @param callable $errorCallback
+	 *
+	 * @return void
+	 *
+	 * @throws DevicesModuleExceptions\TerminateException
+	 */
+	public function readDeviceDescription(
+		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
+		callable $successCallback,
+		callable $errorCallback
+	): void
+	{
+		$address = $this->buildDeviceAddress($device);
+
+		if ($address === null) {
+			return;
+		}
+
+		// @phpstan-ignore-next-line
+		$this->getClient()->get(
+			Utils\Strings::replace(
+				self::DESCRIPTION_ENDPOINT,
+				[
+					'{address}' => $address,
+				]
+			)
+		)
+			->then(function () use ($device, $successCallback): void {
+				$successCallback($device);
+			})
+			->otherwise(function () use ($device, $errorCallback): void {
+				$errorCallback($device);
+			});
+	}
+
+	/**
+	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
 	 * @param MetadataEntities\Modules\DevicesModule\IChannelEntity $channel
 	 * @param MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property
 	 * @param float|bool|int|string|null $valueToWrite
@@ -108,36 +260,9 @@ final class HttpClient
 		callable $successCallback,
 		callable $errorCallback
 	): void {
-		if ($this->browser === null) {
-			$this->connect();
-		}
+		$address = $this->buildDeviceAddress($device);
 
-		if ($this->browser === null) {
-			throw new DevicesModuleExceptions\TerminateException('HTTP client could not be established');
-		}
-
-		try {
-			$address = $this->buildDeviceAddress($device);
-
-		} catch (Exceptions\InvalidStateException $ex) {
-			$this->logger->error('Device IP address could not be determined', [
-				'source' => 'shelly-connector',
-				'type'   => 'http-client',
-				'device' => [
-					'id' => $device->getId()->toString(),
-				],
-				'channel' => [
-					'id' => $channel->getId()->toString(),
-				],
-				'property' => [
-					'id' => $property->getId()->toString(),
-				],
-				'exception' => [
-					'message' => $ex->getMessage(),
-					'code'    => $ex->getCode(),
-				],
-			]);
-
+		if ($address === null) {
 			return;
 		}
 
@@ -147,7 +272,7 @@ final class HttpClient
 			|| array_key_exists('description', $channelMatches)
 		) {
 			$this->logger->error('Channel identifier is not in expected format', [
-				'source' => 'shelly-connector',
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'http-client',
 				'device' => [
 					'id' => $device->getId()->toString(),
@@ -169,7 +294,7 @@ final class HttpClient
 			|| array_key_exists('channelIndex', $blockMatches)
 		) {
 			$this->logger->error('Channel - block description is not in expected format', [
-				'source' => 'shelly-connector',
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'http-client',
 				'device' => [
 					'id' => $device->getId()->toString(),
@@ -194,7 +319,7 @@ final class HttpClient
 
 		} catch (Exceptions\InvalidStateException $ex) {
 			$this->logger->error('Sensor action could not be created', [
-				'source' => 'shelly-connector',
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'http-client',
 				'device' => [
 					'id' => $device->getId()->toString(),
@@ -215,7 +340,7 @@ final class HttpClient
 		}
 
 		// @phpstan-ignore-next-line
-		$this->browser->get(
+		$this->getClient()->get(
 			Utils\Strings::replace(
 				self::SET_CHANNEL_SENSOR_ENDPOINT,
 				[
@@ -258,25 +383,33 @@ final class HttpClient
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	private function buildDeviceAddress(MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): string
+	private function buildDeviceAddress(MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): ?string
 	{
 		$ipAddressProperty = $this->devicePropertiesRepository->findByIdentifier(
 			$device->getId(),
-			DevicePropertyNameType::NAME_IP_ADDRESS,
+			Types\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS
 		);
 
 		if (
 			!$ipAddressProperty instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
 			|| is_string($ipAddressProperty->getValue())
 		) {
-			throw new Exceptions\InvalidStateException('Device IP address could not be determined');
+			$this->logger->error('Device IP address could not be determined', [
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'   => 'http-client',
+				'device' => [
+					'id' => $device->getId()->toString(),
+				],
+			]);
+
+			return null;
 		}
 
 		$usernameProperty = $this->devicePropertiesRepository->findByIdentifier(
 			$device->getId(),
-			'username',
+			Types\DevicePropertyIdentifierType::IDENTIFIER_USERNAME,
 		);
 
 		$username = null;
@@ -290,7 +423,7 @@ final class HttpClient
 
 		$passwordProperty = $this->devicePropertiesRepository->findByIdentifier(
 			$device->getId(),
-			'password',
+			Types\DevicePropertyIdentifierType::IDENTIFIER_PASSWORD,
 		);
 
 		$password = null;
@@ -329,15 +462,33 @@ final class HttpClient
 			throw new Exceptions\InvalidStateException('Property identifier is not valid');
 		}
 
-		if ($propertyMatches['description'] === WritableSensorTypeType::TYPE_OUTPUT) {
+		if ($propertyMatches['description'] === Types\WritableSensorTypeType::TYPE_OUTPUT) {
 			return 'turn';
 		}
 
-		if ($propertyMatches['description'] === WritableSensorTypeType::TYPE_COLOR_TEMP) {
+		if ($propertyMatches['description'] === Types\WritableSensorTypeType::TYPE_COLOR_TEMP) {
 			return 'temp';
 		}
 
 		return $propertyMatches['description'];
+	}
+
+	/**
+	 * @return Http\Browser
+	 *
+	 * @throws DevicesModuleExceptions\TerminateException
+	 */
+	private function getClient(): Http\Browser
+	{
+		if ($this->browser === null) {
+			$this->connect();
+		}
+
+		if ($this->browser === null) {
+			throw new DevicesModuleExceptions\TerminateException('HTTP client could not be established');
+		}
+
+		return $this->browser;
 	}
 
 }

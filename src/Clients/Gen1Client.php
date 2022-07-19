@@ -19,6 +19,7 @@ use DateTimeInterface;
 use FastyBird\DateTimeFactory;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
+use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\ShellyConnector\Clients;
@@ -83,6 +84,9 @@ final class Gen1Client implements IClient
 	/** @var DevicesModuleModels\States\ChannelPropertiesManager */
 	private DevicesModuleModels\States\ChannelPropertiesManager $channelPropertiesStatesManager;
 
+	/** @var DevicesModuleModels\States\DeviceConnectionStateManager */
+	private DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager;
+
 	/** @var EventLoop\LoopInterface */
 	private EventLoop\LoopInterface $eventLoop;
 
@@ -105,6 +109,7 @@ final class Gen1Client implements IClient
 	 * @param DevicesModuleModels\States\DevicePropertiesManager $devicePropertiesStatesManager
 	 * @param DevicesModuleModels\States\ChannelPropertiesRepository $channelPropertiesStatesRepository
 	 * @param DevicesModuleModels\States\ChannelPropertiesManager $channelPropertiesStatesManager
+	 * @param DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager
 	 * @param DateTimeFactory\DateTimeFactory $dateTimeFactory
 	 * @param EventLoop\LoopInterface $eventLoop
 	 * @param Log\LoggerInterface|null $logger
@@ -122,6 +127,7 @@ final class Gen1Client implements IClient
 		DevicesModuleModels\States\DevicePropertiesManager $devicePropertiesStatesManager,
 		DevicesModuleModels\States\ChannelPropertiesRepository $channelPropertiesStatesRepository,
 		DevicesModuleModels\States\ChannelPropertiesManager $channelPropertiesStatesManager,
+		DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager,
 		DateTimeFactory\DateTimeFactory $dateTimeFactory,
 		EventLoop\LoopInterface $eventLoop,
 		?Log\LoggerInterface $logger = null
@@ -142,6 +148,8 @@ final class Gen1Client implements IClient
 		$this->channelPropertiesStatesRepository = $channelPropertiesStatesRepository;
 		$this->channelPropertiesStatesManager = $channelPropertiesStatesManager;
 
+		$this->deviceConnectionStateManager = $deviceConnectionStateManager;
+
 		$this->dateTimeFactory = $dateTimeFactory;
 		$this->eventLoop = $eventLoop;
 
@@ -160,7 +168,7 @@ final class Gen1Client implements IClient
 			$this->coapClient->connect();
 		} catch (Throwable $ex) {
 			$this->logger->error('CoAP client could not be started', [
-				'source' => 'shelly-connector',
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'gen1-client',
 			]);
 
@@ -176,7 +184,7 @@ final class Gen1Client implements IClient
 			$this->mdnsClient->connect();
 		} catch (Throwable $ex) {
 			$this->logger->error('mDNS client could not be started', [
-				'source' => 'shelly-connector',
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'gen1-client',
 			]);
 
@@ -191,7 +199,7 @@ final class Gen1Client implements IClient
 			$this->httpClient->connect();
 		} catch (Throwable $ex) {
 			$this->logger->error('Http api client could not be started', [
-				'source' => 'shelly-connector',
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'gen1-client',
 			]);
 
@@ -212,7 +220,7 @@ final class Gen1Client implements IClient
 			$this->coapClient->disconnect();
 		} catch (Throwable) {
 			$this->logger->error('CoAP client could not be disconnected', [
-				'source' => 'shelly-connector',
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'gen1-client',
 			]);
 		}
@@ -221,7 +229,7 @@ final class Gen1Client implements IClient
 			$this->mdnsClient->disconnect();
 		} catch (Throwable) {
 			$this->logger->error('mDNS client could not be disconnected', [
-				'source' => 'shelly-connector',
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'gen1-client',
 			]);
 		}
@@ -267,7 +275,7 @@ final class Gen1Client implements IClient
 		foreach ($this->devicesRepository->findAllByConnector($this->connector->getId()) as $device) {
 			if (
 				!in_array($device->getId()->toString(), $this->processedDevices, true)
-				&& $this->getDeviceState($device)->equalsValue(MetadataTypes\ConnectionStateType::STATE_READY)
+				&& $this->deviceConnectionStateManager->getState($device)->equalsValue(MetadataTypes\ConnectionStateType::STATE_READY)
 			) {
 				$this->processedDevices[] = $device->getId()->toString();
 
@@ -382,105 +390,6 @@ final class Gen1Client implements IClient
 		MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property
 	): void {
 		unset($this->processedProperties[$property->getId()->toString()]);
-	}
-
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 *
-	 * @return MetadataTypes\ConnectionStateType
-	 */
-	private function getDeviceState(
-		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	): MetadataTypes\ConnectionStateType {
-		$stateProperty = $this->devicePropertiesRepository->findByIdentifier(
-			$device->getId(),
-			MetadataTypes\DevicePropertyNameType::NAME_STATE
-		);
-
-		if (
-			$stateProperty instanceof MetadataEntities\Modules\DevicesModule\IDeviceDynamicPropertyEntity
-			&& $stateProperty->getActualValue() !== null
-			&& MetadataTypes\ConnectionStateType::isValidValue($stateProperty->getActualValue())
-		) {
-			return MetadataTypes\ConnectionStateType::get($stateProperty->getActualValue());
-		}
-
-		return MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_UNKNOWN);
-	}
-
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 * @param MetadataTypes\ConnectionStateType $state
-	 *
-	 * @return void
-	 */
-	private function setDeviceState(
-		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
-		MetadataTypes\ConnectionStateType $state
-	): void {
-		$stateProperty = $this->devicePropertiesRepository->findByIdentifier(
-			$device->getId(),
-			MetadataTypes\DevicePropertyNameType::NAME_STATE
-		);
-
-		if ($stateProperty instanceof MetadataEntities\Modules\DevicesModule\IDeviceDynamicPropertyEntity) {
-			try {
-				$statePropertyState = $this->devicePropertiesStatesRepository->findOne($stateProperty);
-
-			} catch (DevicesModuleExceptions\NotImplementedException $ex) {
-				$this->logger->warning(
-					'States repository is not configured. State could not be fetched',
-					[
-						'source' => 'fastybird-fb-mqtt-connector',
-						'type'   => 'client',
-					]
-				);
-
-				return;
-			}
-
-			if ($statePropertyState === null) {
-				try {
-					$this->devicePropertiesStatesManager->create($stateProperty, Utils\ArrayHash::from([
-						'actualValue'   => $state->getValue(),
-						'expectedValue' => null,
-						'pending'       => false,
-						'valid'         => true,
-					]));
-
-				} catch (DevicesModuleExceptions\NotImplementedException $ex) {
-					$this->logger->warning(
-						'States manager is not configured. State could not be saved',
-						[
-							'source' => 'fastybird-fb-mqtt-connector',
-							'type'   => 'client',
-						]
-					);
-				}
-			} else {
-				try {
-					$this->devicePropertiesStatesManager->update(
-						$stateProperty,
-						$statePropertyState,
-						Utils\ArrayHash::from([
-							'actualValue'   => $state->getValue(),
-							'expectedValue' => null,
-							'pending'       => false,
-							'valid'         => true,
-						])
-					);
-
-				} catch (DevicesModuleExceptions\NotImplementedException $ex) {
-					$this->logger->warning(
-						'States manager is not configured. State could not be saved',
-						[
-							'source' => 'fastybird-fb-mqtt-connector',
-							'type'   => 'consumer',
-						]
-					);
-				}
-			}
-		}
 	}
 
 }

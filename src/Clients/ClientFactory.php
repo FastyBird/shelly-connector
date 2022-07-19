@@ -26,4 +26,6 @@ namespace FastyBird\ShellyConnector\Clients;
 interface ClientFactory
 {
 
+	public const VERSION_CONSTANT_NAME = 'VERSION';
+
 }
