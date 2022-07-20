@@ -60,20 +60,11 @@ final class Gen1Client extends Client
 	/** @var DevicesModuleModels\DataStorage\IDevicesRepository */
 	private DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository;
 
-	/** @var DevicesModuleModels\DataStorage\IDevicePropertiesRepository */
-	private DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository;
-
 	/** @var DevicesModuleModels\DataStorage\IChannelsRepository */
 	private DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository;
 
 	/** @var DevicesModuleModels\DataStorage\IChannelPropertiesRepository */
 	private DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository;
-
-	/** @var DevicesModuleModels\States\DevicePropertiesRepository */
-	private DevicesModuleModels\States\DevicePropertiesRepository $devicePropertiesStatesRepository;
-
-	/** @var DevicesModuleModels\States\DevicePropertiesManager */
-	private DevicesModuleModels\States\DevicePropertiesManager $devicePropertiesStatesManager;
 
 	/** @var DevicesModuleModels\States\ChannelPropertiesRepository */
 	private DevicesModuleModels\States\ChannelPropertiesRepository $channelPropertiesStatesRepository;
@@ -83,9 +74,6 @@ final class Gen1Client extends Client
 
 	/** @var DevicesModuleModels\States\DeviceConnectionStateManager */
 	private DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager;
-
-	/** @var EventLoop\LoopInterface */
-	private EventLoop\LoopInterface $eventLoop;
 
 	/** @var DateTimeFactory\DateTimeFactory */
 	private DateTimeFactory\DateTimeFactory $dateTimeFactory;
@@ -99,11 +87,8 @@ final class Gen1Client extends Client
 	 * @param Gen1\MdnsClientFactory $mdnsClientFactory
 	 * @param Gen1\HttpClientFactory $httpClientFactory
 	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository
-	 * @param DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository
 	 * @param DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository
 	 * @param DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository
-	 * @param DevicesModuleModels\States\DevicePropertiesRepository $devicePropertiesStatesRepository
-	 * @param DevicesModuleModels\States\DevicePropertiesManager $devicePropertiesStatesManager
 	 * @param DevicesModuleModels\States\ChannelPropertiesRepository $channelPropertiesStatesRepository
 	 * @param DevicesModuleModels\States\ChannelPropertiesManager $channelPropertiesStatesManager
 	 * @param DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager
@@ -117,11 +102,8 @@ final class Gen1Client extends Client
 		Clients\Gen1\MdnsClientFactory $mdnsClientFactory,
 		Clients\Gen1\HttpClientFactory $httpClientFactory,
 		DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository,
-		DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository,
 		DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository,
 		DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository,
-		DevicesModuleModels\States\DevicePropertiesRepository $devicePropertiesStatesRepository,
-		DevicesModuleModels\States\DevicePropertiesManager $devicePropertiesStatesManager,
 		DevicesModuleModels\States\ChannelPropertiesRepository $channelPropertiesStatesRepository,
 		DevicesModuleModels\States\ChannelPropertiesManager $channelPropertiesStatesManager,
 		DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager,
@@ -129,6 +111,8 @@ final class Gen1Client extends Client
 		EventLoop\LoopInterface $eventLoop,
 		?Log\LoggerInterface $logger = null
 	) {
+		parent::__construct($eventLoop);
+
 		$this->connector = $connector;
 
 		$this->coapClient = $coapClientFactory->create();
@@ -136,19 +120,15 @@ final class Gen1Client extends Client
 		$this->httpClient = $httpClientFactory->create();
 
 		$this->devicesRepository = $devicesRepository;
-		$this->devicePropertiesRepository = $devicePropertiesRepository;
 		$this->channelsRepository = $channelsRepository;
 		$this->channelPropertiesRepository = $channelPropertiesRepository;
 
-		$this->devicePropertiesStatesRepository = $devicePropertiesStatesRepository;
-		$this->devicePropertiesStatesManager = $devicePropertiesStatesManager;
 		$this->channelPropertiesStatesRepository = $channelPropertiesStatesRepository;
 		$this->channelPropertiesStatesManager = $channelPropertiesStatesManager;
 
 		$this->deviceConnectionStateManager = $deviceConnectionStateManager;
 
 		$this->dateTimeFactory = $dateTimeFactory;
-		$this->eventLoop = $eventLoop;
 
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
@@ -160,7 +140,6 @@ final class Gen1Client extends Client
 	 */
 	public function connect(): void
 	{
-		/*
 		try {
 			$this->coapClient->connect();
 		} catch (Throwable $ex) {
@@ -175,7 +154,6 @@ final class Gen1Client extends Client
 				$ex
 			);
 		}
-		*/
 
 		try {
 			$this->mdnsClient->connect();
@@ -206,6 +184,8 @@ final class Gen1Client extends Client
 				$ex
 			);
 		}
+
+		parent::connect();
 	}
 
 	/**
@@ -230,6 +210,8 @@ final class Gen1Client extends Client
 				'type'   => 'gen1-client',
 			]);
 		}
+
+		parent::disconnect();
 	}
 
 	/**
