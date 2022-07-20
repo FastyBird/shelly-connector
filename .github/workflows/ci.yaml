@@ -140,7 +140,7 @@ jobs:
   tests:
     name: "Tests of PHP code"
     runs-on: "${{ matrix.operating-system }}"
-    needs: ["php-qa", "php-static-analysis"]
+    needs: ["qa", "static-analysis"]
 
     strategy:
       fail-fast: false
@@ -212,7 +212,7 @@ jobs:
   tests-code-coverage:
     name: "Tests of PHP code with code coverage"
     runs-on: "${{ matrix.operating-system }}"
-    needs: ["php-tests"]
+    needs: ["tests"]
 
     strategy:
       matrix:
