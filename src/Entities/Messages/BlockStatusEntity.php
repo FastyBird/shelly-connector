@@ -45,7 +45,7 @@ final class BlockStatusEntity implements IEntity
 		array $sensors = []
 	) {
 		$this->identifier = $identifier;
-		$this->sensors = array_unique($sensors);
+		$this->sensors = array_unique($sensors, SORT_REGULAR);
 	}
 
 	/**
@@ -73,7 +73,7 @@ final class BlockStatusEntity implements IEntity
 	{
 		$this->sensors[] = $sensor;
 
-		$this->sensors = array_unique($this->sensors);
+		$this->sensors = array_unique($this->sensors, SORT_REGULAR);
 	}
 
 	/**

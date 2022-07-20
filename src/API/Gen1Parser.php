@@ -108,7 +108,7 @@ final class Gen1Parser
 		string $identifier,
 		string $message
 	): Entities\Messages\DeviceStatusEntity {
-		if (!$this->validator->isValidCoapDescriptionMessage($message)) {
+		if (!$this->validator->isValidCoapStatusMessage($message)) {
 			throw new Exceptions\ParseMessageException('Provided description message is not valid');
 		}
 
@@ -124,16 +124,15 @@ final class Gen1Parser
 		$parsedMessage = $this->schemaValidator->validate($message, $schema);
 
 		if (
-			!is_object($parsedMessage)
-			|| !property_exists($parsedMessage, 'G')
-			|| !is_array($parsedMessage->G)
+			!$parsedMessage->offsetExists('G')
+			|| !$parsedMessage['G'] instanceof Utils\ArrayHash
 		) {
 			throw new Exceptions\ParseMessageException('Provided message is not valid');
 		}
 
 		$blocks = [];
 
-		foreach ($parsedMessage->G as $sensorState) {
+		foreach ($parsedMessage['G'] as $sensorState) {
 			if (count($sensorState) === 3) {
 				[$blockIdentifier, $sensorIdentifier, $sensorValue] = $sensorState;
 
@@ -186,11 +185,10 @@ final class Gen1Parser
 		$parsedMessage = $this->schemaValidator->validate($message, $schema);
 
 		if (
-			!is_object($parsedMessage)
-			|| !property_exists($parsedMessage, 'type')
-			|| !property_exists($parsedMessage, 'mac')
-			|| !property_exists($parsedMessage, 'auth')
-			|| !property_exists($parsedMessage, 'fw')
+			!$parsedMessage->offsetExists('type')
+			|| !$parsedMessage->offsetExists('mac')
+			|| !$parsedMessage->offsetExists('auth')
+			|| !$parsedMessage->offsetExists('fw')
 		) {
 			throw new Exceptions\ParseMessageException('Provided message is not valid');
 		}
@@ -198,10 +196,10 @@ final class Gen1Parser
 		return new Entities\Messages\DeviceInfoEntity(
 			$identifier,
 			$address,
-			Utils\Strings::lower($parsedMessage->type),
-			$parsedMessage->mac,
-			$parsedMessage->auth,
-			$parsedMessage->fw
+			Utils\Strings::lower($parsedMessage['type']),
+			$parsedMessage['mac'],
+			$parsedMessage['auth'],
+			$parsedMessage['fw']
 		);
 	}
 
@@ -256,7 +254,7 @@ final class Gen1Parser
 		$blocks = $description->offsetGet('blk');
 		$sensors = $description->offsetGet('sen');
 
-		if (!is_array($blocks) || !is_array($sensors)) {
+		if (!$blocks instanceof Utils\ArrayHash || !$sensors instanceof Utils\ArrayHash) {
 			return [];
 		}
 
@@ -264,49 +262,47 @@ final class Gen1Parser
 
 		foreach ($blocks as $block) {
 			if (
-				!is_object($block)
-				|| !property_exists($block, 'I')
-				|| !property_exists($block, 'D')
+				!$block->offsetExists('I')
+				|| !$block->offsetExists('D')
 			) {
 				continue;
 			}
 
 			$blockDescription = new Entities\Messages\BlockDescriptionEntity(
-				intval($block->I),
-				$block->D,
+				intval($block['I']),
+				$block['D'],
 			);
 
 			foreach ($sensors as $sensor) {
 				if (
-					!is_object($sensor)
-					|| !property_exists($sensor, 'I')
-					|| !property_exists($sensor, 'T')
-					|| !property_exists($sensor, 'D')
-					|| !property_exists($sensor, 'L')
+					!$sensor->offsetExists('I')
+					|| !$sensor->offsetExists('T')
+					|| !$sensor->offsetExists('D')
+					|| !$sensor->offsetExists('L')
 				) {
 					continue;
 				}
 
 				if (
-					(is_array($sensor->L) && in_array($block->D, $sensor->L, true))
-					|| $block->D === (int) $sensor->L
+					($sensor['L'] instanceof Utils\ArrayHash && in_array($block['D'], (array) $sensor['L'], true))
+					|| $block['D'] === (int) $sensor['L']
 				) {
 					$sensorRange = $this->parseSensorRange(
-						$block->D,
-						$sensor->D,
-						property_exists($sensor, 'R') ? $sensor->R : null
+						$block['D'],
+						$sensor['D'],
+						$sensor->offsetExists('R') ? $sensor['R'] : null
 					);
 
 					$sensorDescription = new Entities\Messages\SensorDescriptionEntity(
-						intval($sensor->I),
-						Types\SensorTypeType::get($sensor->T),
-						strval($sensor->D),
+						intval($sensor['I']),
+						Types\SensorTypeType::get($sensor['T']),
+						strval($sensor['D']),
 						$sensorRange->getDataType(),
-						property_exists($sensor, 'U') && $sensor->U !== null ? Types\SensorUnitType::get($sensor->U) : null,
+						$sensor->offsetExists('U') && $sensor['U'] !== null ? Types\SensorUnitType::get($sensor['U']) : null,
 						$sensorRange->getFormat(),
 						$sensorRange->getInvalid(),
 						false,
-						Types\WritableSensorTypeType::isValidValue($sensor->D)
+						Types\WritableSensorTypeType::isValidValue($sensor['D'])
 					);
 
 					$blockDescription->addSensor($sensorDescription);

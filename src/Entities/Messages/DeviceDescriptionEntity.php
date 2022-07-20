@@ -47,7 +47,7 @@ final class DeviceDescriptionEntity extends DeviceEntity
 		parent::__construct($identifier, $ipAddress);
 
 		$this->type = $type;
-		$this->blocks = array_unique($blocks);
+		$this->blocks = array_unique($blocks, SORT_REGULAR);
 	}
 
 	/**
@@ -75,7 +75,7 @@ final class DeviceDescriptionEntity extends DeviceEntity
 	{
 		$this->blocks[] = $block;
 
-		$this->blocks = array_unique($this->blocks);
+		$this->blocks = array_unique($this->blocks, SORT_REGULAR);
 	}
 
 	/**

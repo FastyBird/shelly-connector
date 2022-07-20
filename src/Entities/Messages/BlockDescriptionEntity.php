@@ -51,7 +51,7 @@ final class BlockDescriptionEntity implements IEntity
 	) {
 		$this->identifier = $identifier;
 		$this->description = $description;
-		$this->sensors = array_unique($sensors);
+		$this->sensors = array_unique($sensors, SORT_REGULAR);
 	}
 
 	/**
@@ -87,7 +87,7 @@ final class BlockDescriptionEntity implements IEntity
 	{
 		$this->sensors[] = $sensor;
 
-		$this->sensors = array_unique($this->sensors);
+		$this->sensors = array_unique($this->sensors, SORT_REGULAR);
 	}
 
 	/**

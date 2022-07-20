@@ -1,26 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "definitions": {
-    "types": {
-      "nullable_string": {
-        "oneOf": [
-          {
-            "type": "null"
-          },
-          {
-            "type": "string"
-          }
-        ]
-      }
-    },
-    "ipv4_method": {
-      "type": "string",
-      "enum": [
-        "dhcp",
-        "static"
-      ]
-    }
-  },
   "type": "object",
   "properties": {
     "device": {
@@ -75,27 +54,66 @@
           "description": "Whether STA mode is active"
         },
         "ssid": {
-          "$ref": "#/definitions/types/nullable_string",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "description": "SSID of STA the device will associate with"
         },
         "ipv4_method": {
-          "$ref": "#/definitions/ipv4_method",
+          "type": "string",
+          "enum": [
+            "dhcp",
+            "static"
+          ],
           "description": "dhcp or static"
         },
         "ip": {
-          "$ref": "#/definitions/types/nullable_string",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "description": "Local IP address if ipv4_method is static"
         },
         "gw": {
-          "$ref": "#/definitions/types/nullable_string",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "description": "Local gateway IP address if ipv4_method is static"
         },
         "mask": {
-          "$ref": "#/definitions/types/nullable_string",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "description": "Mask if ipv4_method is static"
         },
         "dns": {
-          "$ref": "#/definitions/types/nullable_string",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "description": "DNS address if ipv4_method is static"
         }
       },
@@ -117,27 +135,66 @@
           "description": "Whether STA mode is active"
         },
         "ssid": {
-          "$ref": "#/definitions/types/nullable_string",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "description": "SSID of STA the device will associate with"
         },
         "ipv4_method": {
-          "$ref": "#/definitions/ipv4_method",
+          "type": "string",
+          "enum": [
+            "dhcp",
+            "static"
+          ],
           "description": "dhcp or static"
         },
         "ip": {
-          "$ref": "#/definitions/types/nullable_string",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "description": "Local IP address if ipv4_method is static"
         },
         "gw": {
-          "$ref": "#/definitions/types/nullable_string",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "description": "Local gateway IP address if ipv4_method is static"
         },
         "mask": {
-          "$ref": "#/definitions/types/nullable_string",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "description": "Mask if ipv4_method is static"
         },
         "dns": {
-          "$ref": "#/definitions/types/nullable_string",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "description": "DNS address if ipv4_method is static"
         }
       },
