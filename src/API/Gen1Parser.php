@@ -165,12 +165,12 @@ final class Gen1Parser
 	 *
 	 * @return Entities\Messages\DeviceInfoEntity
 	 */
-	public function parseHttpInfoMessage(
+	public function parseHttpShellyMessage(
 		string $identifier,
 		string $address,
 		string $message
 	): Entities\Messages\DeviceInfoEntity {
-		if (!$this->validator->isValidHttpInfoMessage($message)) {
+		if (!$this->validator->isValidHttpShellyMessage($message)) {
 			throw new Exceptions\ParseMessageException('Provided description message is not valid');
 		}
 
@@ -202,90 +202,6 @@ final class Gen1Parser
 			$parsedMessage->mac,
 			$parsedMessage->auth,
 			$parsedMessage->fw
-		);
-	}
-
-	/**
-	 * @param string $identifier
-	 * @param string $address
-	 * @param string $message
-	 *
-	 * @return Entities\Messages\DeviceOnlineEntity
-	 */
-	public function parseHttpStatusMessage(
-		string $identifier,
-		string $address,
-		string $message
-	): Entities\Messages\DeviceOnlineEntity {
-		if (!$this->validator->isValidHttpStatusMessage($message)) {
-			throw new Exceptions\ParseMessageException('Provided description message is not valid');
-		}
-
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::HTTP_STATUS_MESSAGE_SCHEMA_FILENAME;
-
-		try {
-			$schema = Utils\FileSystem::read($filePath);
-
-		} catch (Nette\IOException) {
-			throw new Exceptions\ParseMessageException('Validation schema for message could not be loaded');
-		}
-
-		$parsedMessage = $this->schemaValidator->validate($message, $schema);
-
-		if (
-			!is_object($parsedMessage)
-			|| !property_exists($parsedMessage, 'time')
-			|| !property_exists($parsedMessage, 'unixtime')
-		) {
-			throw new Exceptions\ParseMessageException('Provided message is not valid');
-		}
-
-		return new Entities\Messages\DeviceOnlineEntity(
-			$identifier,
-			$address,
-			$parsedMessage->time,
-			$parsedMessage->unixtime
-		);
-	}
-
-	/**
-	 * @param string $identifier
-	 * @param string $address
-	 * @param string $message
-	 *
-	 * @return Entities\Messages\DeviceSettingsEntity
-	 */
-	public function parseHttpSettingsMessage(
-		string $identifier,
-		string $address,
-		string $message
-	): Entities\Messages\DeviceSettingsEntity {
-		if (!$this->validator->isValidHttpSettingsMessage($message)) {
-			throw new Exceptions\ParseMessageException('Provided description message is not valid');
-		}
-
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::HTTP_SETTINGS_MESSAGE_SCHEMA_FILENAME;
-
-		try {
-			$schema = Utils\FileSystem::read($filePath);
-
-		} catch (Nette\IOException) {
-			throw new Exceptions\ParseMessageException('Validation schema for message could not be loaded');
-		}
-
-		$parsedMessage = $this->schemaValidator->validate($message, $schema);
-
-		if (
-			!is_object($parsedMessage)
-			|| !property_exists($parsedMessage, 'name')
-		) {
-			throw new Exceptions\ParseMessageException('Provided message is not valid');
-		}
-
-		return new Entities\Messages\DeviceSettingsEntity(
-			$identifier,
-			$address,
-			$parsedMessage->name
 		);
 	}
 

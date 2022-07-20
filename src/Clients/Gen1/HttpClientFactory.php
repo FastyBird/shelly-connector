@@ -15,6 +15,8 @@
 
 namespace FastyBird\ShellyConnector\Clients\Gen1;
 
+use FastyBird\Metadata\Entities as MetadataEntities;
+
 /**
  * CoAP client factory
  *
@@ -27,8 +29,10 @@ interface HttpClientFactory
 {
 
 	/**
+	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
+	 *
 	 * @return HttpClient
 	 */
-	public function create(): HttpClient;
+	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): HttpClient;
 
 }

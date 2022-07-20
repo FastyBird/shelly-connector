@@ -108,59 +108,9 @@ final class Gen1Validator
 	 *
 	 * @return bool
 	 */
-	public function isValidHttpInfoMessage(string $message): bool
+	public function isValidHttpShellyMessage(string $message): bool
 	{
 		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::HTTP_SHELLY_INFO_MESSAGE_SCHEMA_FILENAME;
-
-		try {
-			$schema = Utils\FileSystem::read($filePath);
-
-		} catch (Nette\IOException) {
-			return false;
-		}
-
-		try {
-			$this->schemaValidator->validate($message, $schema);
-		} catch (MetadataExceptions\MalformedInputException | MetadataExceptions\LogicException | MetadataExceptions\InvalidDataException) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * @param string $message
-	 *
-	 * @return bool
-	 */
-	public function isValidHttpStatusMessage(string $message): bool
-	{
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::HTTP_STATUS_MESSAGE_SCHEMA_FILENAME;
-
-		try {
-			$schema = Utils\FileSystem::read($filePath);
-
-		} catch (Nette\IOException) {
-			return false;
-		}
-
-		try {
-			$this->schemaValidator->validate($message, $schema);
-		} catch (MetadataExceptions\MalformedInputException | MetadataExceptions\LogicException | MetadataExceptions\InvalidDataException) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * @param string $message
-	 *
-	 * @return bool
-	 */
-	public function isValidHttpSettingsMessage(string $message): bool
-	{
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::HTTP_SETTINGS_MESSAGE_SCHEMA_FILENAME;
 
 		try {
 			$schema = Utils\FileSystem::read($filePath);
