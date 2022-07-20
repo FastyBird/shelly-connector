@@ -18,7 +18,7 @@ namespace FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Entities;
 
 /**
- * Shelly messages consumer interface
+ * Clients messages consumer interface
  *
  * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Consumers

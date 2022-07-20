@@ -18,7 +18,7 @@ namespace FastyBird\ShellyConnector\Types;
 use Consistence;
 
 /**
- * Connector property name types
+ * Connector property identifier types
  *
  * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Types

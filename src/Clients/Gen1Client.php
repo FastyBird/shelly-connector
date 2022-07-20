@@ -25,12 +25,6 @@ use Throwable;
 /**
  * Generation 1 devices client
  *
- * When device is in state:
- * STOPPED - is stopped by connected and is no longer processed. This state mark device which is not reachable
- * LOST - is not reachable by connector (disconnected from network, invalid connection, etc.)
- * INIT - connector is trying to load device basic information
- * RUNNING - is ready to handle sensors write requests
- *
  * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Clients
  *

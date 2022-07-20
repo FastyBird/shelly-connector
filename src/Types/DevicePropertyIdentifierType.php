@@ -19,7 +19,7 @@ use Consistence;
 use FastyBird\Metadata\Types as MetadataTypes;
 
 /**
- * Device property name types
+ * Device property identifier types
  *
  * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Types

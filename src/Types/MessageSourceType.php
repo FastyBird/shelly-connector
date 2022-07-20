@@ -18,7 +18,7 @@ namespace FastyBird\ShellyConnector\Types;
 use Consistence;
 
 /**
- * Message client source type types
+ * Message client source types
  *
  * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Types

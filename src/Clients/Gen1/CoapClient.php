@@ -120,6 +120,14 @@ final class CoapClient
 			$message .= pack('C', $value);
 		}
 
+		$this->logger->debug(
+			'Sending CoAP discover UDP',
+			[
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'   => 'coap-client',
+			]
+		);
+
 		$this->server->send($message, self::COAP_ADDRESS . ':' . self::COAP_PORT);
 	}
 
@@ -234,6 +242,20 @@ final class CoapClient
 			}
 
 			$message = mb_convert_encoding($message, 'cp1252', 'utf8');
+
+			$this->logger->debug(
+				sprintf(
+					'CoAP Code: %d, Type: %s, Id: %s, Payload: %s',
+					$code,
+					$deviceType,
+					$deviceIdentifier,
+					str_replace(' ', '', $message),
+				),
+				[
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'coap-client',
+				]
+			);
 
 			if (
 				$code === self::STATUS_MESSAGE_CODE

@@ -21,7 +21,7 @@ use SplObjectStorage;
 use SplQueue;
 
 /**
- * Shelly message consumer proxy
+ * Clients message consumer proxy
  *
  * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Consumers
