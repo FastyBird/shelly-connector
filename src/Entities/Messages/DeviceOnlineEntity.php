@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * DeviceStatus.php
+ * DeviceOnlineEntity.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -10,60 +10,60 @@
  * @subpackage     Entities
  * @since          0.37.0
  *
- * @date           18.07.22
+ * @date           19.07.22
  */
 
 namespace FastyBird\ShellyConnector\Entities\Messages;
 
 /**
- * Device status message entity
+ * Device online status message entity
  *
  * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class DeviceEntityStatus extends DeviceEntity
+final class DeviceOnlineEntity extends DeviceEntity
 {
 
 	/** @var string */
-	private string $type;
+	private string $time;
 
-	/** @var BlockStatusEntity[] */
-	private array $blocks;
+	/** @var string */
+	private string $unixtime;
 
 	/**
 	 * @param string $identifier
-	 * @param string $type
 	 * @param string $ipAddress
-	 * @param BlockStatusEntity[] $blocks
+	 * @param string $time
+	 * @param string $unixtime
 	 */
 	public function __construct(
 		string $identifier,
-		string $type,
 		string $ipAddress,
-		array $blocks
+		string $time,
+		string $unixtime
 	) {
 		parent::__construct($identifier, $ipAddress);
 
-		$this->type = $type;
-		$this->blocks = $blocks;
+		$this->time = $time;
+		$this->unixtime = $unixtime;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getType(): string
+	public function getTime(): string
 	{
-		return $this->type;
+		return $this->time;
 	}
 
 	/**
-	 * @return BlockStatusEntity[]
+	 * @return string
 	 */
-	public function getBlocks(): array
+	public function getUnixtime(): string
 	{
-		return $this->blocks;
+		return $this->unixtime;
 	}
 
 	/**
@@ -72,10 +72,8 @@ final class DeviceEntityStatus extends DeviceEntity
 	public function toArray(): array
 	{
 		return array_merge(parent::toArray(), [
-			'type'   => $this->getType(),
-			'blocks' => array_map(function (BlockStatusEntity $block): array {
-				return $block->toArray();
-			}, $this->getBlocks()),
+			'time'     => $this->getTime(),
+			'unixtime' => $this->getUnixtime(),
 		]);
 	}
 

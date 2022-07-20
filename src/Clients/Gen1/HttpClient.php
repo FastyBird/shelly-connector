@@ -19,13 +19,17 @@ use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\ShellyConnector\API;
+use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Exceptions;
 use FastyBird\ShellyConnector\Types;
 use Nette;
 use Nette\Utils;
+use Psr\Http\Message;
 use Psr\Log;
 use React\EventLoop;
 use React\Http;
+use Throwable;
 
 /**
  * HTTP api client
@@ -49,7 +53,16 @@ final class HttpClient
 	private const CHANNEL_BLOCK = '/^(?P<identifier>[0-9]+)_(?P<description>[a-zA-Z0-9_]+)$/';
 	private const PROPERTY_SENSOR = '/^(?P<identifier>[0-9]+)_(?P<type>[a-zA-Z]{1,3})_(?P<description>[a-zA-Z0-9]+)$/';
 
-	private const BLOCK_TEST = '/^(?P<channelName>[a-zA-Z]+)_(?P<channelIndex>[0-9_]+)$/';
+	private const BLOCK_PARTS = '/^(?P<channelName>[a-zA-Z]+)_(?P<channelIndex>[0-9_]+)$/';
+
+	/** @var API\Gen1Validator */
+	private API\Gen1Validator $validator;
+
+	/** @var API\Gen1Parser */
+	private API\Gen1Parser $parser;
+
+	/** @var Consumers\Consumer */
+	private Consumers\Consumer $consumer;
 
 	/** @var Http\Browser|null */
 	private ?Http\Browser $browser = null;
@@ -63,11 +76,26 @@ final class HttpClient
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
+	/**
+	 * @param API\Gen1Validator $validator
+	 * @param API\Gen1Parser $parser
+	 * @param Consumers\Consumer $consumer
+	 * @param DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository
+	 * @param EventLoop\LoopInterface $eventLoop
+	 * @param Log\LoggerInterface|null $logger
+	 */
 	public function __construct(
+		API\Gen1Validator $validator,
+		API\Gen1Parser $parser,
+		Consumers\Consumer $consumer,
 		DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository,
 		EventLoop\LoopInterface $eventLoop,
 		?Log\LoggerInterface $logger = null
 	) {
+		$this->validator = $validator;
+		$this->parser = $parser;
+		$this->consumer = $consumer;
+
 		$this->devicePropertiesRepository = $devicePropertiesRepository;
 
 		$this->eventLoop = $eventLoop;
@@ -104,8 +132,7 @@ final class HttpClient
 		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
 		callable $successCallback,
 		callable $errorCallback
-	): void
-	{
+	): void {
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
@@ -121,10 +148,36 @@ final class HttpClient
 				]
 			)
 		)
-			->then(function () use ($device, $successCallback): void {
+			->then(function (Message\ResponseInterface $response) use ($device, $address, $successCallback): void {
+				$message = $response->getBody()->getContents();
+
+				if ($this->validator->isValidHttpInfoMessage($message)) {
+					try {
+						$this->consumer->append(
+							$this->parser->parseHttpInfoMessage(
+								$device->getIdentifier(),
+								$address,
+								$message
+							)
+						);
+					} catch (Exceptions\ParseMessageException $ex) {
+						$this->logger->warning(
+							'Received message could not be parsed into entity',
+							[
+								'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+								'type'      => 'http-client',
+								'exception' => [
+									'message' => $ex->getMessage(),
+									'code'    => $ex->getCode(),
+								],
+							]
+						);
+					}
+				}
+
 				$successCallback($device);
 			})
-			->otherwise(function () use ($device, $errorCallback): void {
+			->otherwise(function (Throwable $ex) use ($device, $errorCallback): void {
 				$errorCallback($device);
 			});
 	}
@@ -142,8 +195,7 @@ final class HttpClient
 		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
 		callable $successCallback,
 		callable $errorCallback
-	): void
-	{
+	): void {
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
@@ -159,10 +211,54 @@ final class HttpClient
 				]
 			)
 		)
-			->then(function () use ($device, $successCallback): void {
+			->then(function (Message\ResponseInterface $response) use ($device, $address, $successCallback): void {
+				$message = $response->getBody()->getContents();
+
+				if ($this->validator->isValidHttpStatusMessage($message)) {
+					try {
+						$this->consumer->append(
+							$this->parser->parseHttpStatusMessage(
+								$device->getIdentifier(),
+								$address,
+								$message
+							)
+						);
+					} catch (Exceptions\ParseMessageException $ex) {
+						$this->logger->warning(
+							'Received message could not be parsed into entity',
+							[
+								'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+								'type'      => 'http-client',
+								'exception' => [
+									'message' => $ex->getMessage(),
+									'code'    => $ex->getCode(),
+								],
+							]
+						);
+					}
+				}
+
 				$successCallback($device);
 			})
-			->otherwise(function () use ($device, $errorCallback): void {
+			->otherwise(function (Throwable $ex) use ($address, $device, $errorCallback): void {
+				$this->logger->error(
+					'Failed to call device http api',
+					[
+						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type'      => 'http-client',
+						'endpoint'  => Utils\Strings::replace(
+							self::STATUS_ENDPOINT,
+							[
+								'{address}' => $address,
+							]
+						),
+						'exception' => [
+							'message' => $ex->getMessage(),
+							'code'    => $ex->getCode(),
+						],
+					]
+				);
+
 				$errorCallback($device);
 			});
 	}
@@ -180,8 +276,7 @@ final class HttpClient
 		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
 		callable $successCallback,
 		callable $errorCallback
-	): void
-	{
+	): void {
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
@@ -197,10 +292,54 @@ final class HttpClient
 				]
 			)
 		)
-			->then(function () use ($device, $successCallback): void {
+			->then(function (Message\ResponseInterface $response) use ($device, $address, $successCallback): void {
+				$message = $response->getBody()->getContents();
+
+				if ($this->validator->isValidHttpSettingsMessage($message)) {
+					try {
+						$this->consumer->append(
+							$this->parser->parseHttpSettingsMessage(
+								$device->getIdentifier(),
+								$address,
+								$message
+							)
+						);
+					} catch (Exceptions\ParseMessageException $ex) {
+						$this->logger->warning(
+							'Received message could not be parsed into entity',
+							[
+								'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+								'type'      => 'http-client',
+								'exception' => [
+									'message' => $ex->getMessage(),
+									'code'    => $ex->getCode(),
+								],
+							]
+						);
+					}
+				}
+
 				$successCallback($device);
 			})
-			->otherwise(function () use ($device, $errorCallback): void {
+			->otherwise(function (Throwable $ex) use ($address, $device, $errorCallback): void {
+				$this->logger->error(
+					'Failed to call device http api',
+					[
+						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type'      => 'http-client',
+						'endpoint'  => Utils\Strings::replace(
+							self::SETTINGS_ENDPOINT,
+							[
+								'{address}' => $address,
+							]
+						),
+						'exception' => [
+							'message' => $ex->getMessage(),
+							'code'    => $ex->getCode(),
+						],
+					]
+				);
+
 				$errorCallback($device);
 			});
 	}
@@ -218,8 +357,7 @@ final class HttpClient
 		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
 		callable $successCallback,
 		callable $errorCallback
-	): void
-	{
+	): void {
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
@@ -235,10 +373,54 @@ final class HttpClient
 				]
 			)
 		)
-			->then(function () use ($device, $successCallback): void {
+			->then(function (Message\ResponseInterface $response) use ($device, $address, $successCallback): void {
+				$message = $response->getBody()->getContents();
+
+				if ($this->validator->isValidHttpDescriptionMessage($message)) {
+					try {
+						$this->consumer->append(
+							$this->parser->parseHttpDescriptionMessage(
+								$device->getIdentifier(),
+								$address,
+								$message
+							)
+						);
+					} catch (Exceptions\ParseMessageException $ex) {
+						$this->logger->warning(
+							'Received message could not be parsed into entity',
+							[
+								'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+								'type'      => 'http-client',
+								'exception' => [
+									'message' => $ex->getMessage(),
+									'code'    => $ex->getCode(),
+								],
+							]
+						);
+					}
+				}
+
 				$successCallback($device);
 			})
-			->otherwise(function () use ($device, $errorCallback): void {
+			->otherwise(function (Throwable $ex) use ($address, $device, $errorCallback): void {
+				$this->logger->error(
+					'Failed to call device http api',
+					[
+						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type'      => 'http-client',
+						'endpoint'  => Utils\Strings::replace(
+							self::DESCRIPTION_ENDPOINT,
+							[
+								'{address}' => $address,
+							]
+						),
+						'exception' => [
+							'message' => $ex->getMessage(),
+							'code'    => $ex->getCode(),
+						],
+					]
+				);
+
 				$errorCallback($device);
 			});
 	}
@@ -275,12 +457,12 @@ final class HttpClient
 			|| array_key_exists('description', $channelMatches)
 		) {
 			$this->logger->error('Channel identifier is not in expected format', [
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'http-client',
-				'device' => [
+				'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'     => 'http-client',
+				'device'   => [
 					'id' => $device->getId()->toString(),
 				],
-				'channel' => [
+				'channel'  => [
 					'id' => $channel->getId()->toString(),
 				],
 				'property' => [
@@ -292,17 +474,17 @@ final class HttpClient
 		}
 
 		if (
-			preg_match(self::BLOCK_TEST, $channelMatches['description'], $blockMatches) !== 1
+			preg_match(self::BLOCK_PARTS, $channelMatches['description'], $blockMatches) !== 1
 			|| array_key_exists('channelName', $blockMatches)
 			|| array_key_exists('channelIndex', $blockMatches)
 		) {
 			$this->logger->error('Channel - block description is not in expected format', [
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'http-client',
-				'device' => [
+				'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'     => 'http-client',
+				'device'   => [
 					'id' => $device->getId()->toString(),
 				],
-				'channel' => [
+				'channel'  => [
 					'id' => $channel->getId()->toString(),
 				],
 				'property' => [
@@ -322,15 +504,15 @@ final class HttpClient
 
 		} catch (Exceptions\InvalidStateException $ex) {
 			$this->logger->error('Sensor action could not be created', [
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'http-client',
-				'device' => [
+				'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'      => 'http-client',
+				'device'    => [
 					'id' => $device->getId()->toString(),
 				],
-				'channel' => [
+				'channel'   => [
 					'id' => $channel->getId()->toString(),
 				],
-				'property' => [
+				'property'  => [
 					'id' => $property->getId()->toString(),
 				],
 				'exception' => [
@@ -355,10 +537,32 @@ final class HttpClient
 				]
 			)
 		)
-			->then(function () use ($property, $successCallback): void {
+			->then(function (Message\ResponseInterface $response) use ($property, $successCallback): void {
 				$successCallback($property);
 			})
-			->otherwise(function () use ($property, $errorCallback): void {
+			->otherwise(function (Throwable $ex) use ($address, $blockMatches, $sensorAction, $valueToWrite, $property, $errorCallback): void {
+				$this->logger->error(
+					'Failed to call device http api',
+					[
+						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type'      => 'http-client',
+						'endpoint'  => Utils\Strings::replace(
+							self::SET_CHANNEL_SENSOR_ENDPOINT,
+							[
+								'{address}' => $address,
+								'{channel}' => $blockMatches['channelName'],
+								'{index}'   => $blockMatches['channelIndex'],
+								'{action}'  => $sensorAction,
+								'{value}'   => $valueToWrite,
+							]
+						),
+						'exception' => [
+							'message' => $ex->getMessage(),
+							'code'    => $ex->getCode(),
+						],
+					]
+				);
+
 				$errorCallback($property);
 			});
 	}
