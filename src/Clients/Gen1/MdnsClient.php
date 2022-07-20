@@ -18,7 +18,8 @@ namespace FastyBird\ShellyConnector\Clients\Gen1;
 use Clue\React\Multicast;
 use FastyBird\Metadata;
 use FastyBird\ShellyConnector\Consumers;
-use FastyBird\ShellyConnector\Entities\Messages\DeviceFoundEntity;
+use FastyBird\ShellyConnector\Entities;
+use FastyBird\ShellyConnector\Types;
 use InvalidArgumentException;
 use Nette;
 use Nette\Utils;
@@ -154,7 +155,8 @@ final class MdnsClient
 
 						preg_match(self::MATCH_NAME, $serviceName, $matches);
 
-						$this->consumer->append(new DeviceFoundEntity(
+						$this->consumer->append(new Entities\Messages\DeviceFoundEntity(
+							Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_MDNS),
 							$results[1],
 							Utils\Strings::lower($matches['id'])
 						));

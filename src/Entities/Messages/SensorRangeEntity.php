@@ -32,6 +32,9 @@ final class SensorRangeEntity implements IEntity
 
 	use Nette\SmartObject;
 
+	/** @var Types\MessageSourceType */
+	private Types\MessageSourceType $source;
+
 	/** @var MetadataTypes\DataTypeType */
 	private MetadataTypes\DataTypeType $dataType;
 
@@ -42,18 +45,29 @@ final class SensorRangeEntity implements IEntity
 	private int|float|string|null $invalid;
 
 	/**
+	 * @param Types\MessageSourceType $source
 	 * @param MetadataTypes\DataTypeType $dataType
 	 * @param string[]|int[]|float[]|Array<int, Array<int, string|null>>|Array<int, int|null>|Array<int, float|null>|Array<int, MetadataTypes\SwitchPayloadType|string|Types\RelayPayloadType|null>|null $format
 	 * @param int|float|string|null $invalid
 	 */
 	public function __construct(
+		Types\MessageSourceType $source,
 		MetadataTypes\DataTypeType $dataType,
 		?array $format,
 		int|float|string|null $invalid
 	) {
+		$this->source = $source;
 		$this->dataType = $dataType;
 		$this->format = $format;
 		$this->invalid = $invalid;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getSource(): Types\MessageSourceType
+	{
+		return $this->source;
 	}
 
 	/**
@@ -86,6 +100,7 @@ final class SensorRangeEntity implements IEntity
 	public function toArray(): array
 	{
 		return [
+			'source'    => $this->getSource()->getValue(),
 			'data_type' => $this->dataType->getValue(),
 			'format'    => $this->format,
 			'invalid'   => $this->invalid,

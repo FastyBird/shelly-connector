@@ -15,6 +15,7 @@
 
 namespace FastyBird\ShellyConnector\Entities\Messages;
 
+use FastyBird\ShellyConnector\Types;
 use Nette;
 
 /**
@@ -30,6 +31,9 @@ final class SensorStatusEntity implements IEntity
 
 	use Nette\SmartObject;
 
+	/** @var Types\MessageSourceType */
+	private Types\MessageSourceType $source;
+
 	/** @var int */
 	private int $identifier;
 
@@ -37,15 +41,26 @@ final class SensorStatusEntity implements IEntity
 	private string|int|float $value;
 
 	/**
+	 * @param Types\MessageSourceType $source
 	 * @param int $identifier
 	 * @param string|int|float $value
 	 */
 	public function __construct(
+		Types\MessageSourceType $source,
 		int $identifier,
 		string|int|float $value
 	) {
+		$this->source = $source;
 		$this->identifier = $identifier;
 		$this->value = $value;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getSource(): Types\MessageSourceType
+	{
+		return $this->source;
 	}
 
 	/**
@@ -70,6 +85,7 @@ final class SensorStatusEntity implements IEntity
 	public function toArray(): array
 	{
 		return [
+			'source'     => $this->getSource()->getValue(),
 			'identifier' => $this->getIdentifier(),
 			'value'      => $this->getValue(),
 		];

@@ -15,6 +15,7 @@
 
 namespace FastyBird\ShellyConnector\Entities\Messages;
 
+use FastyBird\ShellyConnector\Types;
 use Nette;
 
 /**
@@ -30,6 +31,9 @@ final class BlockDescriptionEntity implements IEntity
 
 	use Nette\SmartObject;
 
+	/** @var Types\MessageSourceType */
+	private Types\MessageSourceType $source;
+
 	/** @var int */
 	private int $identifier;
 
@@ -40,18 +44,29 @@ final class BlockDescriptionEntity implements IEntity
 	private array $sensors;
 
 	/**
+	 * @param Types\MessageSourceType $source
 	 * @param int $identifier
 	 * @param string $description
 	 * @param SensorDescriptionEntity[] $sensors
 	 */
 	public function __construct(
+		Types\MessageSourceType $source,
 		int $identifier,
 		string $description,
 		array $sensors = []
 	) {
+		$this->source = $source;
 		$this->identifier = $identifier;
 		$this->description = $description;
 		$this->sensors = array_unique($sensors, SORT_REGULAR);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getSource(): Types\MessageSourceType
+	{
+		return $this->source;
 	}
 
 	/**
@@ -96,6 +111,7 @@ final class BlockDescriptionEntity implements IEntity
 	public function toArray(): array
 	{
 		return [
+			'source'      => $this->getSource()->getValue(),
 			'identifier'  => $this->getIdentifier(),
 			'description' => $this->getDescription(),
 			'sensors'     => array_map(function (SensorDescriptionEntity $sensor): array {

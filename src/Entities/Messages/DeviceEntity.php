@@ -15,6 +15,7 @@
 
 namespace FastyBird\ShellyConnector\Entities\Messages;
 
+use FastyBird\ShellyConnector\Types;
 use Nette;
 
 /**
@@ -30,6 +31,9 @@ abstract class DeviceEntity implements IEntity
 
 	use Nette\SmartObject;
 
+	/** @var Types\MessageSourceType */
+	private Types\MessageSourceType $source;
+
 	/** @var string */
 	private string $identifier;
 
@@ -37,15 +41,26 @@ abstract class DeviceEntity implements IEntity
 	private string $ipAddress;
 
 	/**
+	 * @param Types\MessageSourceType $source
 	 * @param string $identifier
 	 * @param string $ipAddress
 	 */
 	public function __construct(
+		Types\MessageSourceType $source,
 		string $identifier,
 		string $ipAddress
 	) {
+		$this->source = $source;
 		$this->identifier = $identifier;
 		$this->ipAddress = $ipAddress;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getSource(): Types\MessageSourceType
+	{
+		return $this->source;
 	}
 
 	/**
@@ -70,6 +85,7 @@ abstract class DeviceEntity implements IEntity
 	public function toArray(): array
 	{
 		return [
+			'source'     => $this->getSource()->getValue(),
 			'identifier' => $this->getIdentifier(),
 			'ip_address' => $this->getIpAddress(),
 		];

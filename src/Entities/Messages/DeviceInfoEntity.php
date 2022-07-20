@@ -15,6 +15,8 @@
 
 namespace FastyBird\ShellyConnector\Entities\Messages;
 
+use FastyBird\ShellyConnector\Types;
+
 /**
  * Device info message entity
  *
@@ -39,6 +41,7 @@ final class DeviceInfoEntity extends DeviceEntity
 	private string $firmwareVersion;
 
 	/**
+	 * @param Types\MessageSourceType $source
 	 * @param string $identifier
 	 * @param string $ipAddress
 	 * @param string $type
@@ -47,6 +50,7 @@ final class DeviceInfoEntity extends DeviceEntity
 	 * @param string $firmwareVersion
 	 */
 	public function __construct(
+		Types\MessageSourceType $source,
 		string $identifier,
 		string $ipAddress,
 		string $type,
@@ -54,7 +58,7 @@ final class DeviceInfoEntity extends DeviceEntity
 		bool $authEnabled,
 		string $firmwareVersion
 	) {
-		parent::__construct($identifier, $ipAddress);
+		parent::__construct($source, $identifier, $ipAddress);
 
 		$this->type = $type;
 		$this->macAddress = $macAddress;

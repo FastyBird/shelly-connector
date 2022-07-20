@@ -15,6 +15,8 @@
 
 namespace FastyBird\ShellyConnector\Entities\Messages;
 
+use FastyBird\ShellyConnector\Types;
+
 /**
  * Shelly base message data entity interface
  *
@@ -25,6 +27,11 @@ namespace FastyBird\ShellyConnector\Entities\Messages;
  */
 interface IEntity
 {
+
+	/**
+	 * @return Types\MessageSourceType
+	 */
+	public function getSource(): Types\MessageSourceType;
 
 	/**
 	 * @return Array<string, mixed>

@@ -32,6 +32,9 @@ final class SensorDescriptionEntity implements IEntity
 
 	use Nette\SmartObject;
 
+	/** @var Types\MessageSourceType */
+	private Types\MessageSourceType $source;
+
 	/** @var int */
 	private int $identifier;
 
@@ -60,6 +63,7 @@ final class SensorDescriptionEntity implements IEntity
 	private bool $settable;
 
 	/**
+	 * @param Types\MessageSourceType $source
 	 * @param int $identifier
 	 * @param Types\SensorTypeType $type
 	 * @param string $description
@@ -71,6 +75,7 @@ final class SensorDescriptionEntity implements IEntity
 	 * @param bool $settable
 	 */
 	public function __construct(
+		Types\MessageSourceType $source,
 		int $identifier,
 		Types\SensorTypeType $type,
 		string $description,
@@ -81,6 +86,7 @@ final class SensorDescriptionEntity implements IEntity
 		bool $queryable = false,
 		bool $settable = false
 	) {
+		$this->source = $source;
 		$this->identifier = $identifier;
 		$this->type = $type;
 		$this->description = $description;
@@ -90,6 +96,14 @@ final class SensorDescriptionEntity implements IEntity
 		$this->invalid = $invalid;
 		$this->queryable = $queryable;
 		$this->settable = $settable;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getSource(): Types\MessageSourceType
+	{
+		return $this->source;
 	}
 
 	/**
@@ -170,6 +184,7 @@ final class SensorDescriptionEntity implements IEntity
 	public function toArray(): array
 	{
 		return [
+			'source'      => $this->getSource()->getValue(),
 			'identifier'  => $this->getIdentifier(),
 			'type'        => $this->getType()->getValue(),
 			'description' => $this->getDescription(),

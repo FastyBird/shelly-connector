@@ -15,6 +15,8 @@
 
 namespace FastyBird\ShellyConnector\Entities\Messages;
 
+use FastyBird\ShellyConnector\Types;
+
 /**
  * Device status message entity
  *
@@ -33,18 +35,20 @@ final class DeviceStatusEntity extends DeviceEntity
 	private array $blocks;
 
 	/**
+	 * @param Types\MessageSourceType $source,
 	 * @param string $identifier
 	 * @param string $type
 	 * @param string $ipAddress
 	 * @param BlockStatusEntity[] $blocks
 	 */
 	public function __construct(
+		Types\MessageSourceType $source,
 		string $identifier,
 		string $type,
 		string $ipAddress,
 		array $blocks
 	) {
-		parent::__construct($identifier, $ipAddress);
+		parent::__construct($source, $identifier, $ipAddress);
 
 		$this->type = $type;
 		$this->blocks = $blocks;

@@ -84,9 +84,13 @@ final class Gen1Parser
 
 		$parsedMessage = $this->schemaValidator->validate($message, $schema);
 
-		$blocks = $this->extractBlocksDescription($parsedMessage);
+		$blocks = $this->extractBlocksDescription(
+			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
+			$parsedMessage
+		);
 
 		return new Entities\Messages\DeviceDescriptionEntity(
+			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
 			$identifier,
 			$type,
 			$address,
@@ -137,11 +141,15 @@ final class Gen1Parser
 				[$blockIdentifier, $sensorIdentifier, $sensorValue] = $sensorState;
 
 				if (!array_key_exists($blockIdentifier, $blocks)) {
-					$blocks[$blockIdentifier] = new Entities\Messages\BlockStatusEntity($blockIdentifier);
+					$blocks[$blockIdentifier] = new Entities\Messages\BlockStatusEntity(
+						Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
+						$blockIdentifier
+					);
 				}
 
 				$blocks[$blockIdentifier]->addSensor(
 					new Entities\Messages\SensorStatusEntity(
+						Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
 						$sensorIdentifier,
 						$sensorValue
 					)
@@ -150,6 +158,7 @@ final class Gen1Parser
 		}
 
 		return new Entities\Messages\DeviceStatusEntity(
+			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
 			$identifier,
 			$type,
 			$address,
@@ -194,6 +203,7 @@ final class Gen1Parser
 		}
 
 		return new Entities\Messages\DeviceInfoEntity(
+			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_HTTP),
 			$identifier,
 			$address,
 			Utils\Strings::lower($parsedMessage['type']),
@@ -230,9 +240,13 @@ final class Gen1Parser
 
 		$parsedMessage = $this->schemaValidator->validate($message, $schema);
 
-		$blocks = $this->extractBlocksDescription($parsedMessage);
+		$blocks = $this->extractBlocksDescription(
+			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_HTTP),
+			$parsedMessage
+		);
 
 		return new Entities\Messages\DeviceDescriptionEntity(
+			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_HTTP),
 			$identifier,
 			null,
 			$address,
@@ -241,12 +255,15 @@ final class Gen1Parser
 	}
 
 	/**
+	 * @param Types\MessageSourceType $source
 	 * @param Utils\ArrayHash $description
 	 *
 	 * @return Entities\Messages\BlockDescriptionEntity[]
 	 */
-	private function extractBlocksDescription(Utils\ArrayHash $description): array
-	{
+	private function extractBlocksDescription(
+		Types\MessageSourceType $source,
+		Utils\ArrayHash $description
+	): array {
 		if (!$description->offsetExists('blk') || !$description->offsetExists('sen')) {
 			return [];
 		}
@@ -269,6 +286,7 @@ final class Gen1Parser
 			}
 
 			$blockDescription = new Entities\Messages\BlockDescriptionEntity(
+				$source,
 				intval($block['I']),
 				$block['D'],
 			);
@@ -288,12 +306,14 @@ final class Gen1Parser
 					|| $block['D'] === (int) $sensor['L']
 				) {
 					$sensorRange = $this->parseSensorRange(
+						$source,
 						$block['D'],
 						$sensor['D'],
 						$sensor->offsetExists('R') ? $sensor['R'] : null
 					);
 
 					$sensorDescription = new Entities\Messages\SensorDescriptionEntity(
+						$source,
 						intval($sensor['I']),
 						Types\SensorTypeType::get($sensor['T']),
 						strval($sensor['D']),
@@ -316,6 +336,7 @@ final class Gen1Parser
 	}
 
 	/**
+	 * @param Types\MessageSourceType $source
 	 * @param string $block
 	 * @param string $description
 	 * @param string|string[]|null $rawRange
@@ -323,6 +344,7 @@ final class Gen1Parser
 	 * @return Entities\Messages\SensorRangeEntity
 	 */
     private function parseSensorRange(
+		Types\MessageSourceType $source,
 		string $block,
 		string $description,
         string|array|null $rawRange
@@ -338,6 +360,7 @@ final class Gen1Parser
 
 		} else {
 			return new Entities\Messages\SensorRangeEntity(
+				$source,
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -350,6 +373,7 @@ final class Gen1Parser
 
 		if ($normalValue === '0/1') {
 			return new Entities\Messages\SensorRangeEntity(
+				$source,
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -362,6 +386,7 @@ final class Gen1Parser
 
         if ($normalValue === 'U8') {
 			return new Entities\Messages\SensorRangeEntity(
+				$source,
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -374,6 +399,7 @@ final class Gen1Parser
 
         if ($normalValue === 'U16') {
 			return new Entities\Messages\SensorRangeEntity(
+				$source,
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -386,6 +412,7 @@ final class Gen1Parser
 
         if ($normalValue === 'U32') {
 			return new Entities\Messages\SensorRangeEntity(
+				$source,
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -398,6 +425,7 @@ final class Gen1Parser
 
         if ($normalValue === 'I8') {
 			return new Entities\Messages\SensorRangeEntity(
+				$source,
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -410,6 +438,7 @@ final class Gen1Parser
 
         if ($normalValue === 'I16') {
 			return new Entities\Messages\SensorRangeEntity(
+				$source,
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -422,6 +451,7 @@ final class Gen1Parser
 
         if ($normalValue === 'I32') {
 			return new Entities\Messages\SensorRangeEntity(
+				$source,
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -441,6 +471,7 @@ final class Gen1Parser
 				&& $normalValueParts[1] === (string) (int) $normalValueParts[1]
 			) {
 				return new Entities\Messages\SensorRangeEntity(
+					$source,
 					$this->adjustSensorDataType(
 						$block,
 						$description,
@@ -461,6 +492,7 @@ final class Gen1Parser
 				&& $normalValueParts[1] === (string) (float) $normalValueParts[1]
 			) {
 				return new Entities\Messages\SensorRangeEntity(
+					$source,
 					$this->adjustSensorDataType(
 						$block,
 						$description,
@@ -476,6 +508,7 @@ final class Gen1Parser
 			}
 
 			return new Entities\Messages\SensorRangeEntity(
+				$source,
 				$this->adjustSensorDataType(
 					$block,
 					$description,
@@ -493,6 +526,7 @@ final class Gen1Parser
 		}
 
 		return new Entities\Messages\SensorRangeEntity(
+			$source,
 			$this->adjustSensorDataType(
 				$block,
 				$description,
