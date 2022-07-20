@@ -115,6 +115,11 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 			->getResultDefinition()
 			->setType(Clients\Gen1\HttpClient::class);
 
+		$builder->addFactoryDefinition($this->prefix('client.gen1.mqtt'))
+			->setImplement(Clients\Gen1\MqttClientFactory::class)
+			->getResultDefinition()
+			->setType(Clients\Gen1\MqttClient::class);
+
 		// Messages API
 		$builder->addDefinition($this->prefix('api.gen1parser'), new DI\Definitions\ServiceDefinition())
 			->setType(API\Gen1Parser::class);

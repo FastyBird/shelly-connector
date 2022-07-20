@@ -42,6 +42,9 @@ final class Gen1Client extends Client
 	/** @var Clients\Gen1\HttpClient */
 	private Clients\Gen1\HttpClient $httpClient;
 
+	/** @var Gen1\MqttClient */
+	private Clients\Gen1\MqttClient $mqttClient;
+
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
@@ -50,6 +53,7 @@ final class Gen1Client extends Client
 	 * @param Gen1\CoapClientFactory $coapClientFactory
 	 * @param Gen1\MdnsClientFactory $mdnsClientFactory
 	 * @param Gen1\HttpClientFactory $httpClientFactory
+	 * @param Clients\Gen1\MqttClientFactory $mqttClientFactory
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
@@ -57,11 +61,13 @@ final class Gen1Client extends Client
 		Clients\Gen1\CoapClientFactory $coapClientFactory,
 		Clients\Gen1\MdnsClientFactory $mdnsClientFactory,
 		Clients\Gen1\HttpClientFactory $httpClientFactory,
+		Clients\Gen1\MqttClientFactory $mqttClientFactory,
 		?Log\LoggerInterface $logger = null
 	) {
 		$this->coapClient = $coapClientFactory->create();
 		$this->mdnsClient = $mdnsClientFactory->create();
 		$this->httpClient = $httpClientFactory->create($connector);
+		$this->mqttClient = $mqttClientFactory->create($connector);
 
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
