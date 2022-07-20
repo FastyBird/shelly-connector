@@ -53,16 +53,6 @@ final class Consumer
 	}
 
 	/**
-	 * @param IConsumer $consumer
-	 *
-	 * @return void
-	 */
-	public function addConsumer(IConsumer $consumer): void
-	{
-		$this->consumers->attach($consumer);
-	}
-
-	/**
 	 * @param Entities\Messages\IEntity $entity
 	 *
 	 * @return void

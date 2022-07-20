@@ -129,6 +129,9 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('consumer.proxy'), new DI\Definitions\ServiceDefinition())
 			->setType(Consumers\Consumer::class);
 
+		$builder->addDefinition($this->prefix('consumer.device.message'), new DI\Definitions\ServiceDefinition())
+			->setType(Consumers\DeviceMessageConsumer::class);
+
 		// API schemas
 		$builder->addDefinition($this->prefix('schemas.connector.shelly'), new DI\Definitions\ServiceDefinition())
 			->setType(Schemas\ShellyConnectorSchema::class);

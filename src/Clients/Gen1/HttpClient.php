@@ -29,6 +29,7 @@ use Psr\Http\Message;
 use Psr\Log;
 use React\EventLoop;
 use React\Http;
+use React\Promise;
 use Throwable;
 
 /**
@@ -48,6 +49,7 @@ final class HttpClient
 	private const STATUS_ENDPOINT = 'http://{address}/status';
 	private const SETTINGS_ENDPOINT = 'http://{address}/settings';
 	private const DESCRIPTION_ENDPOINT = 'http://{address}/cit/d';
+
 	private const SET_CHANNEL_SENSOR_ENDPOINT = 'http://{address}/{channel}/{index}?{action}={value}';
 
 	private const CHANNEL_BLOCK = '/^(?P<identifier>[0-9]+)_(?P<description>[a-zA-Z0-9_]+)$/';
@@ -121,26 +123,21 @@ final class HttpClient
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 * @param callable $successCallback
-	 * @param callable $errorCallback
 	 *
-	 * @return void
+	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
 	 */
 	public function readDeviceInfo(
-		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
-		callable $successCallback,
-		callable $errorCallback
-	): void {
+		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
+	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface {
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
-			return;
+			return Promise\reject(new Exceptions\InvalidStateException('Device address could not be determined'));
 		}
 
-		// @phpstan-ignore-next-line
-		$this->getClient()->get(
+		return $this->getClient()->get(
 			Utils\Strings::replace(
 				self::SHELLY_INFO_ENDPOINT,
 				[
@@ -148,7 +145,7 @@ final class HttpClient
 				]
 			)
 		)
-			->then(function (Message\ResponseInterface $response) use ($device, $address, $successCallback): void {
+			->then(function (Message\ResponseInterface $response) use ($device, $address): void {
 				$message = $response->getBody()->getContents();
 
 				if ($this->validator->isValidHttpInfoMessage($message)) {
@@ -174,36 +171,26 @@ final class HttpClient
 						);
 					}
 				}
-
-				$successCallback($device);
-			})
-			->otherwise(function (Throwable $ex) use ($device, $errorCallback): void {
-				$errorCallback($device);
 			});
 	}
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 * @param callable $successCallback
-	 * @param callable $errorCallback
 	 *
-	 * @return void
+	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
 	 */
 	public function readDeviceStatus(
-		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
-		callable $successCallback,
-		callable $errorCallback
-	): void {
+		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
+	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface {
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
-			return;
+			return Promise\reject(new Exceptions\InvalidStateException('Device address could not be determined'));
 		}
 
-		// @phpstan-ignore-next-line
-		$this->getClient()->get(
+		return $this->getClient()->get(
 			Utils\Strings::replace(
 				self::STATUS_ENDPOINT,
 				[
@@ -211,7 +198,7 @@ final class HttpClient
 				]
 			)
 		)
-			->then(function (Message\ResponseInterface $response) use ($device, $address, $successCallback): void {
+			->then(function (Message\ResponseInterface $response) use ($device, $address): void {
 				$message = $response->getBody()->getContents();
 
 				if ($this->validator->isValidHttpStatusMessage($message)) {
@@ -237,10 +224,8 @@ final class HttpClient
 						);
 					}
 				}
-
-				$successCallback($device);
 			})
-			->otherwise(function (Throwable $ex) use ($address, $device, $errorCallback): void {
+			->otherwise(function (Throwable $ex) use ($address, $device): void {
 				$this->logger->error(
 					'Failed to call device http api',
 					[
@@ -252,39 +237,35 @@ final class HttpClient
 								'{address}' => $address,
 							]
 						),
+						'device'    => [
+							'id' => $device->getId()->toString(),
+						],
 						'exception' => [
 							'message' => $ex->getMessage(),
 							'code'    => $ex->getCode(),
 						],
 					]
 				);
-
-				$errorCallback($device);
 			});
 	}
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 * @param callable $successCallback
-	 * @param callable $errorCallback
 	 *
-	 * @return void
+	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
 	 */
 	public function readDeviceSettings(
-		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
-		callable $successCallback,
-		callable $errorCallback
-	): void {
+		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
+	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface {
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
-			return;
+			return Promise\reject(new Exceptions\InvalidStateException('Device address could not be determined'));
 		}
 
-		// @phpstan-ignore-next-line
-		$this->getClient()->get(
+		return $this->getClient()->get(
 			Utils\Strings::replace(
 				self::SETTINGS_ENDPOINT,
 				[
@@ -292,7 +273,7 @@ final class HttpClient
 				]
 			)
 		)
-			->then(function (Message\ResponseInterface $response) use ($device, $address, $successCallback): void {
+			->then(function (Message\ResponseInterface $response) use ($device, $address): void {
 				$message = $response->getBody()->getContents();
 
 				if ($this->validator->isValidHttpSettingsMessage($message)) {
@@ -318,10 +299,8 @@ final class HttpClient
 						);
 					}
 				}
-
-				$successCallback($device);
 			})
-			->otherwise(function (Throwable $ex) use ($address, $device, $errorCallback): void {
+			->otherwise(function (Throwable $ex) use ($address, $device): void {
 				$this->logger->error(
 					'Failed to call device http api',
 					[
@@ -333,39 +312,35 @@ final class HttpClient
 								'{address}' => $address,
 							]
 						),
+						'device'    => [
+							'id' => $device->getId()->toString(),
+						],
 						'exception' => [
 							'message' => $ex->getMessage(),
 							'code'    => $ex->getCode(),
 						],
 					]
 				);
-
-				$errorCallback($device);
 			});
 	}
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 * @param callable $successCallback
-	 * @param callable $errorCallback
 	 *
-	 * @return void
+	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
 	 */
 	public function readDeviceDescription(
-		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
-		callable $successCallback,
-		callable $errorCallback
-	): void {
+		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
+	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface {
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
-			return;
+			return Promise\reject(new Exceptions\InvalidStateException('Device address could not be determined'));
 		}
 
-		// @phpstan-ignore-next-line
-		$this->getClient()->get(
+		return $this->getClient()->get(
 			Utils\Strings::replace(
 				self::DESCRIPTION_ENDPOINT,
 				[
@@ -373,7 +348,7 @@ final class HttpClient
 				]
 			)
 		)
-			->then(function (Message\ResponseInterface $response) use ($device, $address, $successCallback): void {
+			->then(function (Message\ResponseInterface $response) use ($device, $address): void {
 				$message = $response->getBody()->getContents();
 
 				if ($this->validator->isValidHttpDescriptionMessage($message)) {
@@ -399,10 +374,8 @@ final class HttpClient
 						);
 					}
 				}
-
-				$successCallback($device);
 			})
-			->otherwise(function (Throwable $ex) use ($address, $device, $errorCallback): void {
+			->otherwise(function (Throwable $ex) use ($address, $device): void {
 				$this->logger->error(
 					'Failed to call device http api',
 					[
@@ -414,14 +387,15 @@ final class HttpClient
 								'{address}' => $address,
 							]
 						),
+						'device'    => [
+							'id' => $device->getId()->toString(),
+						],
 						'exception' => [
 							'message' => $ex->getMessage(),
 							'code'    => $ex->getCode(),
 						],
 					]
 				);
-
-				$errorCallback($device);
 			});
 	}
 
@@ -430,10 +404,8 @@ final class HttpClient
 	 * @param MetadataEntities\Modules\DevicesModule\IChannelEntity $channel
 	 * @param MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property
 	 * @param float|bool|int|string|null $valueToWrite
-	 * @param callable $successCallback
-	 * @param callable $errorCallback
 	 *
-	 * @return void
+	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
 	 */
@@ -441,14 +413,12 @@ final class HttpClient
 		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
 		MetadataEntities\Modules\DevicesModule\IChannelEntity $channel,
 		MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property,
-		float|bool|int|string|null $valueToWrite,
-		callable $successCallback,
-		callable $errorCallback
-	): void {
+		float|bool|int|string|null $valueToWrite
+	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface {
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
-			return;
+			return Promise\reject(new Exceptions\InvalidStateException('Device address could not be determined'));
 		}
 
 		if (
@@ -470,7 +440,7 @@ final class HttpClient
 				],
 			]);
 
-			return;
+			return Promise\reject(new Exceptions\InvalidStateException('Channel identifier is not in expected format'));
 		}
 
 		if (
@@ -492,11 +462,11 @@ final class HttpClient
 				],
 			]);
 
-			return;
+			return Promise\reject(new Exceptions\InvalidStateException('Channel - block description is not in expected format'));
 		}
 
 		if ($valueToWrite === null) {
-			return;
+			return Promise\resolve('Nullable value will not be written into device');
 		}
 
 		try {
@@ -521,11 +491,11 @@ final class HttpClient
 				],
 			]);
 
-			return;
+			return Promise\reject(new Exceptions\InvalidStateException('Sensor action could not be created'));
 		}
 
 		// @phpstan-ignore-next-line
-		$this->getClient()->get(
+		return $this->getClient()->get(
 			Utils\Strings::replace(
 				self::SET_CHANNEL_SENSOR_ENDPOINT,
 				[
@@ -537,10 +507,15 @@ final class HttpClient
 				]
 			)
 		)
-			->then(function (Message\ResponseInterface $response) use ($property, $successCallback): void {
-				$successCallback($property);
-			})
-			->otherwise(function (Throwable $ex) use ($address, $blockMatches, $sensorAction, $valueToWrite, $property, $errorCallback): void {
+			->otherwise(function (Throwable $ex) use (
+				$address,
+				$blockMatches,
+				$sensorAction,
+				$valueToWrite,
+				$device,
+				$channel,
+				$property
+			): void {
 				$this->logger->error(
 					'Failed to call device http api',
 					[
@@ -556,14 +531,21 @@ final class HttpClient
 								'{value}'   => $valueToWrite,
 							]
 						),
+						'device'    => [
+							'id' => $device->getId()->toString(),
+						],
+						'channel'   => [
+							'id' => $channel->getId()->toString(),
+						],
+						'property'  => [
+							'id' => $property->getId()->toString(),
+						],
 						'exception' => [
 							'message' => $ex->getMessage(),
 							'code'    => $ex->getCode(),
 						],
 					]
 				);
-
-				$errorCallback($property);
 			});
 	}
 

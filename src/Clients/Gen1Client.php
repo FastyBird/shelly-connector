@@ -26,10 +26,17 @@ use FastyBird\ShellyConnector\Clients;
 use Nette\Utils;
 use Psr\Log;
 use React\EventLoop;
+use React\Http\Message;
 use Throwable;
 
 /**
  * Generation 1 devices client
+ *
+ * When device is in state:
+ * STOPPED - is stopped by connected and is no longer processed. This state mark device which is not reachable
+ * LOST - is not reachable by connector (disconnected from network, invalid connection, etc.)
+ * INIT - connector is trying to load device basic information
+ * RUNNING - is ready to handle sensors write requests
  *
  * @package        FastyBird:ShellyConnectorEntity!
  * @subpackage     Clients
@@ -39,8 +46,18 @@ use Throwable;
 final class Gen1Client extends Client
 {
 
+	private const HTTP_CMD_INFO = 'info';
+	private const HTTP_CMD_SETTINGS = 'settings';
+	private const HTTP_CMD_DESCRIPTION = 'description';
+	private const HTTP_CMD_STATUS = 'status';
+
+	private const SENDING_CMD_DELAY = 60;
+
 	/** @var string[] */
 	private array $processedDevices = [];
+
+	/** @var Array<string, Array<string, DateTimeInterface|bool>> */
+	private array $processedDevicesCommands = [];
 
 	/** @var Array<string, DateTimeInterface> */
 	private array $processedProperties = [];
@@ -254,7 +271,7 @@ final class Gen1Client extends Client
 		foreach ($this->devicesRepository->findAllByConnector($this->connector->getId()) as $device) {
 			if (
 				!in_array($device->getId()->toString(), $this->processedDevices, true)
-				&& $this->deviceConnectionStateManager->getState($device)->equalsValue(MetadataTypes\ConnectionStateType::STATE_READY)
+				&& !$this->deviceConnectionStateManager->getState($device)->equalsValue(MetadataTypes\ConnectionStateType::STATE_STOPPED)
 			) {
 				$this->processedDevices[] = $device->getId()->toString();
 
@@ -276,7 +293,122 @@ final class Gen1Client extends Client
 	 */
 	private function processDevice(MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): bool
 	{
-		return $this->writeChannelsProperty($device);
+		$deviceConnectionState = $this->deviceConnectionStateManager->getState($device);
+
+		if ($this->readDeviceData(self::HTTP_CMD_INFO, $device)) {
+			return true;
+		}
+
+		if ($this->readDeviceData(self::HTTP_CMD_DESCRIPTION, $device)) {
+			return true;
+		}
+
+		if ($this->readDeviceData(self::HTTP_CMD_SETTINGS, $device)) {
+			return true;
+		}
+
+		if ($this->readDeviceData(self::HTTP_CMD_STATUS, $device)) {
+			return true;
+		}
+
+		if ($deviceConnectionState->equalsValue(MetadataTypes\ConnectionStateType::STATE_INIT)) {
+			// Initialization is finished, switch device to running mode
+			$this->deviceConnectionStateManager->setState(
+				$device,
+				MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_RUNNING)
+			);
+		}
+
+		if ($deviceConnectionState->equalsValue(MetadataTypes\ConnectionStateType::STATE_RUNNING)) {
+			return $this->writeChannelsProperty($device);
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param string $cmd
+	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
+	 *
+	 * @return bool
+	 *
+	 * @throws DevicesModuleExceptions\TerminateException
+	 */
+	private function readDeviceData(string $cmd, MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): bool
+	{
+		$httpCmdResult = null;
+
+		if (!array_key_exists($device->getId()->toString(), $this->processedDevicesCommands)) {
+			$this->processedDevicesCommands[$device->getId()->toString()] = [];
+		}
+
+		if (array_key_exists($cmd, $this->processedDevicesCommands[$device->getId()->toString()])) {
+			$httpCmdResult = $this->processedDevicesCommands[$device->getId()->toString()][$cmd];
+		}
+
+		if ($httpCmdResult === true) {
+			return true;
+		}
+
+		if (
+			$httpCmdResult instanceof DateTimeInterface
+			&& ($this->dateTimeFactory->getNow()->getTimestamp() - $httpCmdResult->getTimestamp()) < self::SENDING_CMD_DELAY
+		) {
+			return false;
+		}
+
+		$result = null;
+
+		$this->processedDevicesCommands[$device->getId()->toString()][$cmd] = $this->dateTimeFactory->getNow();
+
+		if ($cmd === self::HTTP_CMD_INFO) {
+			$result = $this->httpClient->readDeviceInfo($device);
+
+		} elseif ($cmd === self::HTTP_CMD_SETTINGS) {
+			$result = $this->httpClient->readDeviceSettings($device);
+
+		} elseif ($cmd === self::HTTP_CMD_DESCRIPTION) {
+			$result = $this->httpClient->readDeviceDescription($device);
+
+		} elseif ($cmd === self::HTTP_CMD_STATUS) {
+			$result = $this->httpClient->readDeviceStatus($device);
+		}
+
+		$result
+			?->then(function () use ($cmd, $device): void {
+				$this->processedDevicesCommands[$device->getId()->toString()][$cmd] = true;
+
+				$this->deviceConnectionStateManager->setState(
+					$device,
+					MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_INIT)
+				);
+			})
+			->otherwise(function (Throwable $ex) use ($cmd, $device): void {
+				if ($ex instanceof Message\ResponseException) {
+					if ($ex->getCode() >= 400 && $ex->getCode() < 499) {
+						$this->deviceConnectionStateManager->setState(
+							$device,
+							MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_STOPPED)
+						);
+
+					} elseif ($ex->getCode() >= 500 && $ex->getCode() < 599) {
+						$this->deviceConnectionStateManager->setState(
+							$device,
+							MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_LOST)
+						);
+
+					} else {
+						$this->deviceConnectionStateManager->setState(
+							$device,
+							MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_UNKNOWN)
+						);
+					}
+				}
+
+				$this->processedDevicesCommands[$device->getId()->toString()][$cmd] = $this->dateTimeFactory->getNow();
+			});
+
+		return false;
 	}
 
 	/**
@@ -325,10 +457,24 @@ final class Gen1Client extends Client
 							$device,
 							$channel,
 							$property,
-							$property->getExpectedValue(),
-							[$this, 'writeSensorSuccess'],
-							[$this, 'writeSensorError'],
-						);
+							$property->getExpectedValue()
+						)
+							->then(function () use ($property): void {
+								$state = $this->channelPropertiesStatesRepository->findOne($property);
+
+								if ($state !== null) {
+									$this->channelPropertiesStatesManager->update(
+										$property,
+										$state,
+										Utils\ArrayHash::from([
+											'pending' => $this->dateTimeFactory->getNow()->format(DateTimeInterface::ATOM),
+										])
+									);
+								}
+							})
+							->otherwise(function () use ($property): void {
+								unset($this->processedProperties[$property->getId()->toString()]);
+							});
 
 						return true;
 					}
@@ -337,38 +483,6 @@ final class Gen1Client extends Client
 		}
 
 		return false;
-	}
-
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property
-	 *
-	 * @return void
-	 */
-	private function writeSensorSuccess(
-		MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property
-	): void {
-		$state = $this->channelPropertiesStatesRepository->findOne($property);
-
-		if ($state !== null) {
-			$this->channelPropertiesStatesManager->update(
-				$property,
-				$state,
-				Utils\ArrayHash::from([
-					'pending' => $this->dateTimeFactory->getNow()->format(DateTimeInterface::ATOM),
-				])
-			);
-		}
-	}
-
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property
-	 *
-	 * @return void
-	 */
-	private function writeSensorError(
-		MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property
-	): void {
-		unset($this->processedProperties[$property->getId()->toString()]);
 	}
 
 }
