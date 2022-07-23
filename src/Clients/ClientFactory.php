@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  * @since          0.37.0
  *
@@ -18,7 +18,7 @@ namespace FastyBird\ShellyConnector\Clients;
 /**
  * Base client factory
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

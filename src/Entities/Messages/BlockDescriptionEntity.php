@@ -6,7 +6,7 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  * @since          0.37.0
  *
@@ -21,7 +21,7 @@ use Nette;
 /**
  * Block description entity
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

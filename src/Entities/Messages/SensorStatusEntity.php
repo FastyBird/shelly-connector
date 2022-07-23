@@ -6,7 +6,7 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  * @since          0.37.0
  *
@@ -15,13 +15,14 @@
 
 namespace FastyBird\ShellyConnector\Entities\Messages;
 
+use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\ShellyConnector\Types;
 use Nette;
 
 /**
  * Sensor status entity
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -37,18 +38,18 @@ final class SensorStatusEntity implements IEntity
 	/** @var int */
 	private int $identifier;
 
-	/** @var string|int|float */
-	private string|int|float $value;
+	/** @var float|int|string|bool|MetadataTypes\SwitchPayloadType|null */
+	private float|int|string|bool|MetadataTypes\SwitchPayloadType|null $value;
 
 	/**
 	 * @param Types\MessageSourceType $source
 	 * @param int $identifier
-	 * @param string|int|float $value
+	 * @param float|int|string|bool|MetadataTypes\SwitchPayloadType|null $value
 	 */
 	public function __construct(
 		Types\MessageSourceType $source,
 		int $identifier,
-		string|int|float $value
+		float|int|string|bool|MetadataTypes\SwitchPayloadType|null $value
 	) {
 		$this->source = $source;
 		$this->identifier = $identifier;
@@ -72,9 +73,9 @@ final class SensorStatusEntity implements IEntity
 	}
 
 	/**
-	 * @return float|int|string
+	 * @return float|int|string|bool|MetadataTypes\SwitchPayloadType|null
 	 */
-	public function getValue(): float|int|string
+	public function getValue(): float|int|string|bool|MetadataTypes\SwitchPayloadType|null
 	{
 		return $this->value;
 	}
@@ -87,7 +88,7 @@ final class SensorStatusEntity implements IEntity
 		return [
 			'source'     => $this->getSource()->getValue(),
 			'identifier' => $this->getIdentifier(),
-			'value'      => $this->getValue(),
+			'value'      => is_scalar($this->getValue()) ? $this->getValue() : strval($this->getValue()),
 		];
 	}
 

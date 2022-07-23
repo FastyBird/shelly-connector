@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     API
  * @since          0.37.0
  *
@@ -24,7 +24,7 @@ use Nette\Utils;
 /**
  * Generation 1 devices data transformers
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     API
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -99,9 +99,9 @@ final class Gen1Transformer
 
 		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)) {
 			if (is_array($format)) {
-				$filteredFormat = array_filter($format, function ($item) use ($value): bool {
+				$filteredFormat = array_values(array_filter($format, function ($item) use ($value): bool {
 					return ((is_array($item) || is_string($item))) && $this->filterEnumFormat($item, $value);
-				});
+				}));
 
 				if (count($filteredFormat) === 1) {
 					if (is_array($filteredFormat[0])) {
@@ -117,18 +117,18 @@ final class Gen1Transformer
 
 		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)) {
 			if (is_array($format)) {
-				$filteredFormat = array_filter($format, function ($item) use ($value): bool {
+				$filteredFormat = array_values(array_filter($format, function ($item) use ($value): bool {
 					return ((is_array($item) || is_string($item))) && $this->filterEnumFormat($item, $value);
-				});
+				}));
 
 				if (
 					count($filteredFormat) === 1
 					&& is_array($filteredFormat[0])
 					&& count($filteredFormat[0]) === 3
 					&& Utils\Strings::lower(strval($filteredFormat[0][1])) === Utils\Strings::lower(strval($value))
-					&& MetadataTypes\SwitchPayloadType::isValidValue(strval($value))
+					&& MetadataTypes\SwitchPayloadType::isValidValue($filteredFormat[0][0])
 				) {
-					return MetadataTypes\SwitchPayloadType::get(strval($value));
+					return MetadataTypes\SwitchPayloadType::get($filteredFormat[0][0]);
 				}
 			}
 		}
@@ -162,9 +162,9 @@ final class Gen1Transformer
 
 		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)) {
 			if (is_array($format)) {
-				$filteredFormat = array_filter($format, function ($item) use ($value): bool {
+				$filteredFormat = array_values(array_filter($format, function ($item) use ($value): bool {
 					return ((is_array($item) || is_string($item))) && $this->filterEnumFormat($item, $value);
-				});
+				}));
 
 				if (
 					count($filteredFormat) === 1
@@ -188,9 +188,9 @@ final class Gen1Transformer
 
 		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)) {
 			if (is_array($format)) {
-				$filteredFormat = array_filter($format, function ($item) use ($value): bool {
+				$filteredFormat = array_values(array_filter($format, function ($item) use ($value): bool {
 					return ((is_array($item) || is_string($item))) && $this->filterEnumFormat($item, $value);
-				});
+				}));
 
 				if (
 					count($filteredFormat) === 1

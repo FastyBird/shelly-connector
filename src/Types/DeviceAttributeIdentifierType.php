@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * LightSwitchPayloadType.php
+ * DeviceAttributeIdentifierType.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -10,30 +10,30 @@
  * @subpackage     Types
  * @since          0.37.0
  *
- * @date           17.07.22
+ * @date           22.07.22
  */
 
 namespace FastyBird\ShellyConnector\Types;
 
 use Consistence;
+use FastyBird\Metadata\Types as MetadataTypes;
 
 /**
- * Light switch payload value types
+ * Device attribute identifier types
  *
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Types
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class LightSwitchPayloadType extends Consistence\Enum\Enum
+class DeviceAttributeIdentifierType extends Consistence\Enum\Enum
 {
 
 	/**
 	 * Define device states
 	 */
-	public const PAYLOAD_ON = 'on';
-	public const PAYLOAD_OFF = 'off';
-	public const PAYLOAD_TOGGLE = 'toggle';
+	public const IDENTIFIER_FIRMWARE_VERSION = MetadataTypes\DeviceAttributeNameType::ATTRIBUTE_FIRMWARE_VERSION;
+	public const IDENTIFIER_MAC_ADDRESS = MetadataTypes\DeviceAttributeNameType::ATTRIBUTE_HARDWARE_MAC_ADDRESS;
 
 	/**
 	 * @return string

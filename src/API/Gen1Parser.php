@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     API
  * @since          0.37.0
  *
@@ -20,14 +20,16 @@ use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\ShellyConnector;
 use FastyBird\ShellyConnector\Entities;
 use FastyBird\ShellyConnector\Exceptions;
+use FastyBird\ShellyConnector\Mappers;
 use FastyBird\ShellyConnector\Types;
 use Nette;
 use Nette\Utils;
+use Ramsey\Uuid;
 
 /**
  * Generation 1 devices messages parser
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     API
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -40,22 +42,37 @@ final class Gen1Parser
 	/** @var Gen1Validator */
 	private Gen1Validator $validator;
 
+	/** @var Gen1Transformer */
+	private Gen1Transformer $transformer;
+
+	/** @var Mappers\SensorMapper */
+	private Mappers\SensorMapper $sensorMapper;
+
 	/** @var MetadataSchemas\IValidator */
 	private MetadataSchemas\IValidator $schemaValidator;
 
 	/**
 	 * @param Gen1Validator $validator
+	 * @param Gen1Transformer $transformer
+	 * @param Mappers\SensorMapper $sensorMapper
 	 * @param MetadataSchemas\IValidator $schemaValidator
 	 */
 	public function __construct(
 		Gen1Validator $validator,
+		Gen1Transformer $transformer,
+		Mappers\SensorMapper $sensorMapper,
 		MetadataSchemas\IValidator $schemaValidator
 	) {
 		$this->validator = $validator;
+		$this->transformer = $transformer;
+
+		$this->sensorMapper = $sensorMapper;
+
 		$this->schemaValidator = $schemaValidator;
 	}
 
 	/**
+	 * @param Uuid\UuidInterface $connector
 	 * @param string $address
 	 * @param string $type
 	 * @param string $identifier
@@ -64,6 +81,7 @@ final class Gen1Parser
 	 * @return Entities\Messages\DeviceDescriptionEntity
 	 */
 	public function parseCoapDescriptionMessage(
+		Uuid\UuidInterface $connector,
 		string $address,
 		string $type,
 		string $identifier,
@@ -91,6 +109,7 @@ final class Gen1Parser
 
 		return new Entities\Messages\DeviceDescriptionEntity(
 			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
+			$connector,
 			$identifier,
 			$type,
 			$address,
@@ -99,6 +118,7 @@ final class Gen1Parser
 	}
 
 	/**
+	 * @param Uuid\UuidInterface $connector
 	 * @param string $address
 	 * @param string $type
 	 * @param string $identifier
@@ -107,6 +127,7 @@ final class Gen1Parser
 	 * @return Entities\Messages\DeviceStatusEntity
 	 */
 	public function parseCoapStatusMessage(
+		Uuid\UuidInterface $connector,
 		string $address,
 		string $type,
 		string $identifier,
@@ -134,39 +155,49 @@ final class Gen1Parser
 			throw new Exceptions\ParseMessageException('Provided message is not valid');
 		}
 
-		$blocks = [];
+		$channels = [];
 
 		foreach ($parsedMessage['G'] as $sensorState) {
 			if (count($sensorState) === 3) {
-				[$blockIdentifier, $sensorIdentifier, $sensorValue] = $sensorState;
+				[$channel, $sensorIdentifier, $sensorValue] = $sensorState;
 
-				if (!array_key_exists($blockIdentifier, $blocks)) {
-					$blocks[$blockIdentifier] = new Entities\Messages\BlockStatusEntity(
+				if (!array_key_exists($channel, $channels)) {
+					$channels[$channel] = new Entities\Messages\ChannelStatusEntity(
 						Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
-						$blockIdentifier
+						$channel
 					);
 				}
 
-				$blocks[$blockIdentifier]->addSensor(
-					new Entities\Messages\SensorStatusEntity(
-						Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
-						$sensorIdentifier,
-						$sensorValue
-					)
-				);
+				$property = $this->sensorMapper->findProperty($connector, $identifier, $sensorIdentifier);
+
+				if ($property !== null) {
+					$channels[$channel]->addSensor(
+						new Entities\Messages\SensorStatusEntity(
+							Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
+							$sensorIdentifier,
+							$this->transformer->transformValueFromDevice(
+								$property->getDataType(),
+								$property->getFormat(),
+								$sensorValue
+							)
+						)
+					);
+				}
 			}
 		}
 
 		return new Entities\Messages\DeviceStatusEntity(
 			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
+			$connector,
 			$identifier,
 			$type,
 			$address,
-			array_values($blocks)
+			array_values($channels)
 		);
 	}
 
 	/**
+	 * @param Uuid\UuidInterface $connector
 	 * @param string $identifier
 	 * @param string $address
 	 * @param string $message
@@ -174,6 +205,7 @@ final class Gen1Parser
 	 * @return Entities\Messages\DeviceInfoEntity
 	 */
 	public function parseHttpShellyMessage(
+		Uuid\UuidInterface $connector,
 		string $identifier,
 		string $address,
 		string $message
@@ -204,6 +236,7 @@ final class Gen1Parser
 
 		return new Entities\Messages\DeviceInfoEntity(
 			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_HTTP),
+			$connector,
 			$identifier,
 			$address,
 			Utils\Strings::lower($parsedMessage['type']),
@@ -214,6 +247,7 @@ final class Gen1Parser
 	}
 
 	/**
+	 * @param Uuid\UuidInterface $connector
 	 * @param string $identifier
 	 * @param string $address
 	 * @param string $message
@@ -221,6 +255,7 @@ final class Gen1Parser
 	 * @return Entities\Messages\DeviceDescriptionEntity
 	 */
 	public function parseHttpDescriptionMessage(
+		Uuid\UuidInterface $connector,
 		string $identifier,
 		string $address,
 		string $message
@@ -247,6 +282,7 @@ final class Gen1Parser
 
 		return new Entities\Messages\DeviceDescriptionEntity(
 			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_HTTP),
+			$connector,
 			$identifier,
 			null,
 			$address,

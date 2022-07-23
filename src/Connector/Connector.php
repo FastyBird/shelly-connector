@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Connector
  * @since          0.37.0
  *
@@ -27,7 +27,7 @@ use React\EventLoop;
 /**
  * Connector service container
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Connector
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

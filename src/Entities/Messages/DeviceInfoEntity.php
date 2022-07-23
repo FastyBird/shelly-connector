@@ -6,7 +6,7 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  * @since          0.37.0
  *
@@ -16,11 +16,12 @@
 namespace FastyBird\ShellyConnector\Entities\Messages;
 
 use FastyBird\ShellyConnector\Types;
+use Ramsey\Uuid;
 
 /**
  * Device info message entity
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -42,6 +43,7 @@ final class DeviceInfoEntity extends DeviceEntity
 
 	/**
 	 * @param Types\MessageSourceType $source
+	 * @param Uuid\UuidInterface $connector
 	 * @param string $identifier
 	 * @param string $ipAddress
 	 * @param string $type
@@ -51,6 +53,7 @@ final class DeviceInfoEntity extends DeviceEntity
 	 */
 	public function __construct(
 		Types\MessageSourceType $source,
+		Uuid\UuidInterface $connector,
 		string $identifier,
 		string $ipAddress,
 		string $type,
@@ -58,7 +61,7 @@ final class DeviceInfoEntity extends DeviceEntity
 		bool $authEnabled,
 		string $firmwareVersion
 	) {
-		parent::__construct($source, $identifier, $ipAddress);
+		parent::__construct($source, $connector, $identifier, $ipAddress);
 
 		$this->type = $type;
 		$this->macAddress = $macAddress;

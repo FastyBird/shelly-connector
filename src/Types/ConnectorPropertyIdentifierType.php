@@ -6,7 +6,7 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Types
  * @since          0.37.0
  *
@@ -20,7 +20,7 @@ use Consistence;
 /**
  * Connector property identifier types
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Types
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -32,6 +32,7 @@ class ConnectorPropertyIdentifierType extends Consistence\Enum\Enum
 	 * Define device states
 	 */
 	public const IDENTIFIER_CLIENT_VERSION = 'version';
+	public const IDENTIFIER_CLIENT_MODE = 'mode';
 
 	/**
 	 * @return string

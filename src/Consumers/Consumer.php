@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Consumers
  * @since          0.37.0
  *
@@ -15,15 +15,17 @@
 
 namespace FastyBird\ShellyConnector\Consumers;
 
+use FastyBird\Metadata;
 use FastyBird\ShellyConnector\Entities;
 use Nette;
+use Psr\Log;
 use SplObjectStorage;
 use SplQueue;
 
 /**
  * Clients message consumer proxy
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Consumers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -39,17 +41,33 @@ final class Consumer
 	/** @var SplQueue<Entities\Messages\IEntity> */
 	private SplQueue $queue;
 
+	/** @var Log\LoggerInterface */
+	private Log\LoggerInterface $logger;
+
 	/**
 	 * @param IConsumer[] $consumers
+	 * @param Log\LoggerInterface|null $logger
 	 */
-	public function __construct(array $consumers)
-	{
+	public function __construct(
+		array $consumers,
+		?Log\LoggerInterface $logger = null
+	) {
 		$this->consumers = new SplObjectStorage();
 		$this->queue = new SplQueue();
+
+		$this->logger = $logger ?? new Log\NullLogger();
 
 		foreach ($consumers as $consumer) {
 			$this->consumers->attach($consumer);
 		}
+
+		$this->logger->debug(
+			sprintf('Registered %d messages consumers', count($this->consumers)),
+			[
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'   => 'consumer',
+			]
+		);
 	}
 
 	/**
@@ -60,6 +78,15 @@ final class Consumer
 	public function append(Entities\Messages\IEntity $entity): void
 	{
 		$this->queue->enqueue($entity);
+
+		$this->logger->debug(
+			'Appended new message into consumers queue',
+			[
+				'source'  => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'    => 'consumer',
+				'message' => $entity->toArray(),
+			]
+		);
 	}
 
 	/**
@@ -73,14 +100,37 @@ final class Consumer
 			return;
 		}
 
-		$entity = $this->queue->dequeue();
-
 		$this->consumers->rewind();
+
+		if ($this->consumers->count() === 0) {
+			$this->logger->error(
+				'No consumer is registered, messages could not be consumed',
+				[
+					'source'  => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'    => 'consumer',
+				]
+			);
+
+			return;
+		}
+
+		$entity = $this->queue->dequeue();
 
 		/** @var IConsumer $consumer */
 		foreach ($this->consumers as $consumer) {
-			$consumer->consume($entity);
+			if ($consumer->consume($entity) === true) {
+				return;
+			}
 		}
+
+		$this->logger->error(
+			'Message could not be consumed',
+			[
+				'source'  => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'    => 'consumer',
+				'message' => $entity->toArray(),
+			]
+		);
 	}
 
 	/**

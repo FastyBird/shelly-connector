@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  * @since          0.37.0
  *
@@ -17,6 +17,7 @@ namespace FastyBird\ShellyConnector\Clients\Gen1;
 
 use Clue\React\Multicast;
 use FastyBird\Metadata;
+use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Entities;
 use FastyBird\ShellyConnector\Types;
@@ -31,7 +32,7 @@ use React\EventLoop;
 /**
  * mDNS client
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -45,6 +46,9 @@ final class MdnsClient
 	private const DNS_PORT = 5353;
 
 	private const MATCH_NAME = '/^(?P<devtype>shelly.+)-(?P<id>[0-9A-Fa-f]+)._(http|shelly)._tcp.local$/';
+
+	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
+	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
 
 	/** @var MdnsResultStorage */
 	private MdnsResultStorage $searchResult;
@@ -62,15 +66,19 @@ final class MdnsClient
 	private Log\LoggerInterface $logger;
 
 	/**
+	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param Consumers\Consumer $consumer
 	 * @param EventLoop\LoopInterface $eventLoop
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
+		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		Consumers\Consumer $consumer,
 		EventLoop\LoopInterface $eventLoop,
 		?Log\LoggerInterface $logger = null
 	) {
+		$this->connector = $connector;
+
 		$this->consumer = $consumer;
 
 		$this->eventLoop = $eventLoop;
@@ -157,6 +165,7 @@ final class MdnsClient
 
 						$this->consumer->append(new Entities\Messages\DeviceFoundEntity(
 							Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_MDNS),
+							$this->connector->getId(),
 							$results[1],
 							Utils\Strings::lower($matches['id'])
 						));

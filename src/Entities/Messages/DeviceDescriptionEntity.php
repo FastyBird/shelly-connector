@@ -6,7 +6,7 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  * @since          0.37.0
  *
@@ -16,11 +16,12 @@
 namespace FastyBird\ShellyConnector\Entities\Messages;
 
 use FastyBird\ShellyConnector\Types;
+use Ramsey\Uuid;
 
 /**
  * Device description message entity
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -36,6 +37,7 @@ final class DeviceDescriptionEntity extends DeviceEntity
 
 	/**
 	 * @param Types\MessageSourceType $source
+	 * @param Uuid\UuidInterface $connector
 	 * @param string $identifier
 	 * @param string|null $type
 	 * @param string $ipAddress
@@ -43,12 +45,13 @@ final class DeviceDescriptionEntity extends DeviceEntity
 	 */
 	public function __construct(
 		Types\MessageSourceType $source,
+		Uuid\UuidInterface $connector,
 		string $identifier,
 		?string $type,
 		string $ipAddress,
 		array $blocks
 	) {
-		parent::__construct($source, $identifier, $ipAddress);
+		parent::__construct($source, $connector, $identifier, $ipAddress);
 
 		$this->type = $type;
 		$this->blocks = array_unique($blocks, SORT_REGULAR);

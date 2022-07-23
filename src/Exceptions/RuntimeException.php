@@ -1,23 +1,23 @@
 <?php declare(strict_types = 1);
 
 /**
- * InvalidArgumentException.php
+ * RuntimeException.php
  *
- * @license        More in LICENSE.md
+ * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Exceptions
  * @since          0.37.0
  *
- * @date           18.07.22
+ * @date           22.07.22
  */
 
 namespace FastyBird\ShellyConnector\Exceptions;
 
-use InvalidArgumentException as PHPInvalidArgumentException;
+use RuntimeException as PHPRuntimeException;
 
-class InvalidArgumentException extends PHPInvalidArgumentException implements IException
+class RuntimeException extends PHPRuntimeException implements IException
 {
 
 }

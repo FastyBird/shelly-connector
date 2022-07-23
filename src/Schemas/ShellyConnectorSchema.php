@@ -6,7 +6,7 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Schemas
  * @since          0.1.0
  *
@@ -22,7 +22,7 @@ use FastyBird\ShellyConnector\Entities;
 /**
  * Shelly connector entity schema
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Schemas
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>

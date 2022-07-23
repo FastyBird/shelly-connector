@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  * @since          0.37.0
  *
@@ -39,7 +39,7 @@ use Throwable;
 /**
  * HTTP api client
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -66,7 +66,7 @@ final class HttpClient
 	private const CMD_DESCRIPTION = 'description';
 	private const CMD_STATUS = 'status';
 
-	private const SENDING_CMD_DELAY = 60;
+	private const SENDING_CMD_DELAY = 120;
 
 	private const HANDLER_START_DELAY = 2;
 	private const HANDLER_PROCESSING_INTERVAL = 0.01;
@@ -497,6 +497,7 @@ final class HttpClient
 					try {
 						$this->consumer->append(
 							$this->parser->parseHttpShellyMessage(
+								$this->connector->getId(),
 								$device->getIdentifier(),
 								$address,
 								$message
@@ -572,6 +573,7 @@ final class HttpClient
 					try {
 						$this->consumer->append(
 							$this->parser->parseHttpDescriptionMessage(
+								$this->connector->getId(),
 								$device->getIdentifier(),
 								$address,
 								$message

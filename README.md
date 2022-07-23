@@ -30,15 +30,13 @@ in [PHP](https://www.php.net) with [Nette framework](https://nette.org).
 
 ## Requirements
 
-PHP part of [FastyBird](https://www.fastybird.com) Shelly connector is tested against PHP 7.4
-and [ReactPHP http](https://github.com/reactphp/http) 0.8 event-driven, streaming plaintext HTTP server
+[FastyBird](https://www.fastybird.com) Shelly connector is tested against PHP 8.1
+and [ReactPHP Socket](https://github.com/reactphp/socket) 1.11 async, streaming plaintext TCP/IP and secure TLS socket server and client connections
 and [Nette framework](https://nette.org/en/) 3.0 PHP framework for real programmers
 
 ## Installation
 
 ### Manual installation
-
-#### Application backend in PHP
 
 The best way to install **fastybird/shelly-connector** is using [Composer](http://getcomposer.org/):
 
@@ -53,7 +51,7 @@ section
 
 ## Documentation
 
-Learn how to connect Shelly devices to FastyBird IoT system
+Learn how to connect Shelly devices and manage them in [FastyBird IoT](https://www.fastybird.com) system
 in [documentation](https://github.com/FastyBird/shelly-connector/blob/master/.docs/en/index.md).
 
 ## Feedback

@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  * @since          0.37.0
  *
@@ -17,6 +17,7 @@ namespace FastyBird\ShellyConnector\Clients\Gen1;
 
 use Clue\React\Multicast;
 use FastyBird\Metadata;
+use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\ShellyConnector\API;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Exceptions;
@@ -28,7 +29,7 @@ use React\EventLoop;
 /**
  * CoAP client
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -45,6 +46,9 @@ final class CoapClient
 	private const DESCRIPTION_MESSAGE_CODE = 69;
 
 	private const AUTOMATIC_DISCOVERY_DELAY = 5;
+
+	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
+	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
 
 	/** @var API\Gen1Validator */
 	private API\Gen1Validator $validator;
@@ -65,6 +69,7 @@ final class CoapClient
 	private Log\LoggerInterface $logger;
 
 	/**
+	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param API\Gen1Validator $validator
 	 * @param API\Gen1Parser $parser
 	 * @param Consumers\Consumer $consumer
@@ -72,12 +77,15 @@ final class CoapClient
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
+		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		API\Gen1Validator $validator,
 		API\Gen1Parser $parser,
 		Consumers\Consumer $consumer,
 		EventLoop\LoopInterface $eventLoop,
 		?Log\LoggerInterface $logger = null
 	) {
+		$this->connector = $connector;
+
 		$this->validator = $validator;
 		$this->parser = $parser;
 		$this->consumer = $consumer;
@@ -266,6 +274,7 @@ final class CoapClient
 				try {
 					$this->consumer->append(
 						$this->parser->parseCoapStatusMessage(
+							$this->connector->getId(),
 							$address,
 							$deviceType,
 							$deviceIdentifier,
@@ -294,6 +303,7 @@ final class CoapClient
 				try {
 					$this->consumer->append(
 						$this->parser->parseCoapDescriptionMessage(
+							$this->connector->getId(),
 							$address,
 							$deviceType,
 							$deviceIdentifier,

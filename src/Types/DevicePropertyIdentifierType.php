@@ -6,7 +6,7 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Types
  * @since          0.37.0
  *
@@ -21,7 +21,7 @@ use FastyBird\Metadata\Types as MetadataTypes;
 /**
  * Device property identifier types
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Types
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -35,6 +35,7 @@ class DevicePropertyIdentifierType extends Consistence\Enum\Enum
 	public const IDENTIFIER_IP_ADDRESS = MetadataTypes\DevicePropertyNameType::NAME_IP_ADDRESS;
 	public const IDENTIFIER_USERNAME = 'username';
 	public const IDENTIFIER_PASSWORD = 'password';
+	public const IDENTIFIER_AUTH_ENABLED = 'auth-enabled';
 
 	/**
 	 * @return string

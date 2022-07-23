@@ -6,7 +6,7 @@
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  * @since          0.37.0
  *
@@ -17,11 +17,12 @@ namespace FastyBird\ShellyConnector\Entities\Messages;
 
 use FastyBird\ShellyConnector\Types;
 use Nette;
+use Ramsey\Uuid;
 
 /**
  * Base device message entity
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -34,6 +35,9 @@ abstract class DeviceEntity implements IEntity
 	/** @var Types\MessageSourceType */
 	private Types\MessageSourceType $source;
 
+	/** @var Uuid\UuidInterface */
+	private Uuid\UuidInterface $connector;
+
 	/** @var string */
 	private string $identifier;
 
@@ -42,15 +46,18 @@ abstract class DeviceEntity implements IEntity
 
 	/**
 	 * @param Types\MessageSourceType $source
+	 * @param Uuid\UuidInterface $connector
 	 * @param string $identifier
 	 * @param string $ipAddress
 	 */
 	public function __construct(
 		Types\MessageSourceType $source,
+		Uuid\UuidInterface $connector,
 		string $identifier,
 		string $ipAddress
 	) {
 		$this->source = $source;
+		$this->connector = $connector;
 		$this->identifier = $identifier;
 		$this->ipAddress = $ipAddress;
 	}
@@ -61,6 +68,14 @@ abstract class DeviceEntity implements IEntity
 	public function getSource(): Types\MessageSourceType
 	{
 		return $this->source;
+	}
+
+	/**
+	 * @return Uuid\UuidInterface
+	 */
+	public function getConnector(): Uuid\UuidInterface
+	{
+		return $this->connector;
 	}
 
 	/**

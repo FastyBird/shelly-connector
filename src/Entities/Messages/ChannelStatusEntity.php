@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
 /**
- * BlockStatusEntity.php
+ * ChannelStatusEntity.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  * @since          0.37.0
  *
@@ -21,12 +21,12 @@ use Nette;
 /**
  * Block status entity
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class BlockStatusEntity implements IEntity
+final class ChannelStatusEntity implements IEntity
 {
 
 	use Nette\SmartObject;
@@ -35,23 +35,23 @@ final class BlockStatusEntity implements IEntity
 	private Types\MessageSourceType $source;
 
 	/** @var int */
-	private int $identifier;
+	private int $channel;
 
 	/** @var SensorStatusEntity[] */
 	private array $sensors;
 
 	/**
 	 * @param Types\MessageSourceType $source
-	 * @param int $identifier
+	 * @param int $channel
 	 * @param SensorStatusEntity[] $sensors
 	 */
 	public function __construct(
 		Types\MessageSourceType $source,
-		int $identifier,
+		int $channel,
 		array $sensors = []
 	) {
 		$this->source = $source;
-		$this->identifier = $identifier;
+		$this->channel = $channel;
 		$this->sensors = array_unique($sensors, SORT_REGULAR);
 	}
 
@@ -66,9 +66,9 @@ final class BlockStatusEntity implements IEntity
 	/**
 	 * @return int
 	 */
-	public function getIdentifier(): int
+	public function getChannel(): int
 	{
-		return $this->identifier;
+		return $this->channel;
 	}
 
 	/**
@@ -97,9 +97,9 @@ final class BlockStatusEntity implements IEntity
 	public function toArray(): array
 	{
 		return [
-			'source'     => $this->getSource()->getValue(),
-			'identifier' => $this->getIdentifier(),
-			'sensors'    => array_map(function (SensorStatusEntity $sensor): array {
+			'source'  => $this->getSource()->getValue(),
+			'channel' => $this->getChannel(),
+			'sensors' => array_map(function (SensorStatusEntity $sensor): array {
 				return $sensor->toArray();
 			}, $this->getSensors()),
 		];

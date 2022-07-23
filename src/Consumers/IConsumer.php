@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Consumers
  * @since          0.37.0
  *
@@ -20,7 +20,7 @@ use FastyBird\ShellyConnector\Entities;
 /**
  * Clients messages consumer interface
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     Consumers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -31,8 +31,8 @@ interface IConsumer
 	/**
 	 * @param Entities\Messages\IEntity $entity
 	 *
-	 * @return void
+	 * @return bool
 	 */
-	public function consume(Entities\Messages\IEntity $entity): void;
+	public function consume(Entities\Messages\IEntity $entity): bool;
 
 }

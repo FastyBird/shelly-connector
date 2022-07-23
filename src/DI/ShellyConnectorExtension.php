@@ -6,7 +6,7 @@
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     DI
  * @since          0.1.0
  *
@@ -21,7 +21,9 @@ use FastyBird\ShellyConnector\API;
 use FastyBird\ShellyConnector\Clients;
 use FastyBird\ShellyConnector\Connector;
 use FastyBird\ShellyConnector\Consumers;
+use FastyBird\ShellyConnector\Helpers;
 use FastyBird\ShellyConnector\Hydrators;
+use FastyBird\ShellyConnector\Mappers;
 use FastyBird\ShellyConnector\Schemas;
 use Nette;
 use Nette\DI;
@@ -32,7 +34,7 @@ use stdClass;
 /**
  * Shelly connector
  *
- * @package        FastyBird:ShellyConnectorEntity!
+ * @package        FastyBird:ShellyConnector!
  * @subpackage     DI
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
@@ -134,8 +136,17 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('consumer.proxy'), new DI\Definitions\ServiceDefinition())
 			->setType(Consumers\Consumer::class);
 
-		$builder->addDefinition($this->prefix('consumer.device.message'), new DI\Definitions\ServiceDefinition())
-			->setType(Consumers\DeviceMessageConsumer::class);
+		$builder->addDefinition($this->prefix('consumer.device.description.message'), new DI\Definitions\ServiceDefinition())
+			->setType(Consumers\DescriptionMessageConsumer::class);
+
+		$builder->addDefinition($this->prefix('consumer.device.status.message'), new DI\Definitions\ServiceDefinition())
+			->setType(Consumers\StatusMessageConsumer::class);
+
+		$builder->addDefinition($this->prefix('consumer.device.info.message'), new DI\Definitions\ServiceDefinition())
+			->setType(Consumers\InfoMessageConsumer::class);
+
+		$builder->addDefinition($this->prefix('consumer.device.discovery.message'), new DI\Definitions\ServiceDefinition())
+			->setType(Consumers\DiscoveryMessageConsumer::class);
 
 		// API schemas
 		$builder->addDefinition($this->prefix('schemas.connector.shelly'), new DI\Definitions\ServiceDefinition())
@@ -150,6 +161,14 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 
 		$builder->addDefinition($this->prefix('hydrators.device.shelly'), new DI\Definitions\ServiceDefinition())
 			->setType(Hydrators\ShellyDeviceHydrator::class);
+
+		// Helpers
+		$builder->addDefinition($this->prefix('helpers.database'), new DI\Definitions\ServiceDefinition())
+			->setType(Helpers\DatabaseHelper::class);
+
+		// Mappers
+		$builder->addDefinition($this->prefix('mappers.sensor'), new DI\Definitions\ServiceDefinition())
+			->setType(Mappers\SensorMapper::class);
 	}
 
 	/**
