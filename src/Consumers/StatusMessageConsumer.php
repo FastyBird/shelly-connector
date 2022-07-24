@@ -47,6 +47,9 @@ final class StatusMessageConsumer implements IConsumer
 	/** @var DevicesModuleModels\States\ChannelPropertiesManager */
 	private DevicesModuleModels\States\ChannelPropertiesManager $propertiesStatesManager;
 
+	/** @var DevicesModuleModels\States\DeviceConnectionStateManager */
+	private DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager;
+
 	/** @var Mappers\ISensorMapper */
 	private Mappers\ISensorMapper $sensorMapper;
 
@@ -57,6 +60,7 @@ final class StatusMessageConsumer implements IConsumer
 	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository
 	 * @param DevicesModuleModels\States\ChannelPropertiesRepository $propertyStateRepository
 	 * @param DevicesModuleModels\States\ChannelPropertiesManager $propertiesStatesManager
+	 * @param DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager
 	 * @param Mappers\ISensorMapper $sensorMapper
 	 * @param Log\LoggerInterface|null $logger
 	 */
@@ -64,6 +68,7 @@ final class StatusMessageConsumer implements IConsumer
 		DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository,
 		DevicesModuleModels\States\ChannelPropertiesRepository $propertyStateRepository,
 		DevicesModuleModels\States\ChannelPropertiesManager $propertiesStatesManager,
+		DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager,
 		Mappers\ISensorMapper $sensorMapper,
 		?Log\LoggerInterface $logger,
 	) {
@@ -71,6 +76,7 @@ final class StatusMessageConsumer implements IConsumer
 
 		$this->propertyStateRepository = $propertyStateRepository;
 		$this->propertiesStatesManager = $propertiesStatesManager;
+		$this->deviceConnectionStateManager = $deviceConnectionStateManager;
 
 		$this->sensorMapper = $sensorMapper;
 
@@ -93,6 +99,17 @@ final class StatusMessageConsumer implements IConsumer
 
 		if ($device === null) {
 			return true;
+		}
+
+		// Check device state...
+		if (
+			!$this->deviceConnectionStateManager->getState($device)->equalsValue(Metadata\Types\ConnectionStateType::STATE_READY)
+		) {
+			// ... and if it is not ready, set it to ready
+			$this->deviceConnectionStateManager->setState(
+				$device,
+				Metadata\Types\ConnectionStateType::get(Metadata\Types\ConnectionStateType::STATE_READY)
+			);
 		}
 
 		foreach ($entity->getChannels() as $shellyChannel) {

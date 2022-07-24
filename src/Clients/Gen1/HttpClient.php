@@ -110,6 +110,9 @@ final class HttpClient
 	/** @var DevicesModuleModels\DataStorage\IChannelPropertiesRepository */
 	private DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository;
 
+	/** @var DevicesModuleModels\DataStorage\IDevicePropertiesRepository */
+	private DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository;
+
 	/** @var DevicesModuleModels\States\ChannelPropertiesRepository */
 	private DevicesModuleModels\States\ChannelPropertiesRepository $channelPropertiesStatesRepository;
 
@@ -118,9 +121,6 @@ final class HttpClient
 
 	/** @var DevicesModuleModels\States\DeviceConnectionStateManager */
 	private DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager;
-
-	/** @var DevicesModuleModels\DataStorage\IDevicePropertiesRepository */
-	private DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository;
 
 	/** @var DateTimeFactory\DateTimeFactory */
 	private DateTimeFactory\DateTimeFactory $dateTimeFactory;
@@ -253,6 +253,7 @@ final class HttpClient
 	 * @return void
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws Throwable
 	 */
 	private function handleCommunication(): void
 	{
@@ -266,8 +267,7 @@ final class HttpClient
 			if (
 				!in_array($device->getId()->toString(), $this->processedDevices, true)
 				&& $this->getDeviceAddress($device) !== null
-				&& !$this->deviceConnectionStateManager->getState($device)
-					->equalsValue(MetadataTypes\ConnectionStateType::STATE_STOPPED)
+				&& !$this->deviceConnectionStateManager->getState($device)->equalsValue(MetadataTypes\ConnectionStateType::STATE_STOPPED)
 			) {
 				$this->processedDevices[] = $device->getId()->toString();
 
@@ -286,6 +286,7 @@ final class HttpClient
 	 * @return bool
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws Throwable
 	 */
 	private function processDevice(MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): bool
 	{
@@ -297,7 +298,14 @@ final class HttpClient
 			return true;
 		}
 
-		return $this->writeChannelsProperty($device);
+		if (
+			$this->deviceConnectionStateManager->getState($device)->equalsValue(MetadataTypes\ConnectionStateType::STATE_READY)
+		) {
+			var_dump('property');
+			return $this->writeChannelsProperty($device);
+		}
+
+		return true;
 	}
 
 	/**
@@ -307,6 +315,7 @@ final class HttpClient
 	 * @return bool
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws Throwable
 	 */
 	private function readDeviceData(string $cmd, MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): bool
 	{
@@ -321,14 +330,14 @@ final class HttpClient
 		}
 
 		if ($httpCmdResult === true) {
-			return true;
+			return false;
 		}
 
 		if (
 			$httpCmdResult instanceof DateTimeInterface
 			&& ($this->dateTimeFactory->getNow()->getTimestamp() - $httpCmdResult->getTimestamp()) < self::SENDING_CMD_DELAY
 		) {
-			return false;
+			return true;
 		}
 
 		$result = null;
@@ -378,7 +387,7 @@ final class HttpClient
 				$this->processedDevicesCommands[$device->getId()->toString()][$cmd] = $this->dateTimeFactory->getNow();
 			});
 
-		return false;
+		return true;
 	}
 
 	/**
@@ -387,6 +396,7 @@ final class HttpClient
 	 * @return bool
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws Throwable
 	 */
 	private function writeChannelsProperty(MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): bool
 	{
@@ -430,7 +440,7 @@ final class HttpClient
 						);
 
 						if ($valueToWrite === null) {
-							return true;
+							return false;
 						}
 
 						$this->writeSensor(
@@ -472,6 +482,7 @@ final class HttpClient
 	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws Throwable
 	 */
 	private function readDeviceInfo(
 		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
@@ -539,6 +550,8 @@ final class HttpClient
 						],
 					]
 				);
+
+				throw $ex;
 			});
 	}
 
@@ -548,6 +561,7 @@ final class HttpClient
 	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws Throwable
 	 */
 	private function readDeviceDescription(
 		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
@@ -615,6 +629,8 @@ final class HttpClient
 						],
 					]
 				);
+
+				throw $ex;
 			});
 	}
 
@@ -627,6 +643,7 @@ final class HttpClient
 	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws Throwable
 	 */
 	private function writeSensor(
 		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
@@ -761,6 +778,8 @@ final class HttpClient
 						],
 					]
 				);
+
+				throw $ex;
 			});
 	}
 
