@@ -267,7 +267,8 @@ final class HttpClient
 			if (
 				!in_array($device->getId()->toString(), $this->processedDevices, true)
 				&& $this->getDeviceAddress($device) !== null
-				&& !$this->deviceConnectionStateManager->getState($device)->equalsValue(MetadataTypes\ConnectionStateType::STATE_STOPPED)
+				&& !$this->deviceConnectionStateManager->getState($device)
+					->equalsValue(MetadataTypes\ConnectionStateType::STATE_STOPPED)
 			) {
 				$this->processedDevices[] = $device->getId()->toString();
 
@@ -299,7 +300,8 @@ final class HttpClient
 		}
 
 		if (
-			$this->deviceConnectionStateManager->getState($device)->equalsValue(MetadataTypes\ConnectionStateType::STATE_READY)
+			$this->deviceConnectionStateManager->getState($device)
+				->equalsValue(MetadataTypes\ConnectionStateType::STATE_READY)
 		) {
 			return $this->writeChannelsProperty($device);
 		}
@@ -462,7 +464,51 @@ final class HttpClient
 									);
 								}
 							})
-							->otherwise(function () use ($property): void {
+							->otherwise(function (Throwable $ex) use ($device, $channel, $property): void {
+								if ($ex instanceof Http\Message\ResponseException) {
+									if ($ex->getCode() >= 400 && $ex->getCode() < 499) {
+										$state = $this->channelPropertiesStatesRepository->findOne($property);
+
+										if ($state !== null) {
+											$this->channelPropertiesStatesManager->update(
+												$property,
+												$state,
+												Utils\ArrayHash::from([
+													'expectedValue' => null,
+													'pending'       => false,
+												])
+											);
+										}
+
+										$this->logger->warning(
+											'Expected value could not be set',
+											[
+												'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+												'type'      => 'http-client',
+												'exception' => [
+													'message' => $ex->getMessage(),
+													'code'    => $ex->getCode(),
+												],
+												'device'    => [
+													'id' => $device->getId()->toString(),
+												],
+												'channel'    => [
+													'id' => $channel->getId()->toString(),
+												],
+												'property'    => [
+													'id' => $property->getId()->toString(),
+												],
+											]
+										);
+
+									} elseif ($ex->getCode() >= 500 && $ex->getCode() < 599) {
+										$this->deviceConnectionStateManager->setState(
+											$device,
+											MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_LOST)
+										);
+									}
+								}
+
 								unset($this->processedProperties[$property->getId()->toString()]);
 							});
 
