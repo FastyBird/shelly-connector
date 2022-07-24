@@ -18,6 +18,7 @@ namespace FastyBird\ShellyConnector\Consumers;
 use Doctrine\DBAL;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
+use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Metadata;
 use FastyBird\ShellyConnector\Entities;
 use FastyBird\ShellyConnector\Helpers;
@@ -39,28 +40,36 @@ final class DiscoveryMessageConsumer implements IConsumer
 	use Nette\SmartObject;
 	use TConsumeIpAddress;
 
+	/** @var DevicesModuleModels\Connectors\IConnectorsRepository */
+	private DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository;
+
+	/** @var DevicesModuleModels\Devices\IDevicesRepository */
+	private DevicesModuleModels\Devices\IDevicesRepository $devicesRepository;
+
 	/** @var DevicesModuleModels\Devices\IDevicesManager */
 	private DevicesModuleModels\Devices\IDevicesManager $devicesManager;
 
 	/** @var DevicesModuleModels\Devices\Properties\IPropertiesRepository */
-	protected DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository;
+	private DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository;
 
 	/** @var DevicesModuleModels\Devices\Properties\IPropertiesManager */
-	protected DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager;
+	private DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager;
 
 	/** @var DevicesModuleModels\DataStorage\IDevicesRepository */
 	private DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository;
 
 	/** @var DevicesModuleModels\DataStorage\IDevicePropertiesRepository */
-	protected DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository;
+	private DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository;
 
 	/** @var Helpers\DatabaseHelper */
-	protected Helpers\DatabaseHelper $databaseHelper;
+	private Helpers\DatabaseHelper $databaseHelper;
 
 	/** @var Log\LoggerInterface */
-	protected Log\LoggerInterface $logger;
+	private Log\LoggerInterface $logger;
 
 	/**
+	 * @param DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository
+	 * @param DevicesModuleModels\Devices\IDevicesRepository $devicesRepository
 	 * @param DevicesModuleModels\Devices\IDevicesManager $devicesManager
 	 * @param DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository
 	 * @param DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager
@@ -70,6 +79,8 @@ final class DiscoveryMessageConsumer implements IConsumer
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
+		DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository,
+		DevicesModuleModels\Devices\IDevicesRepository $devicesRepository,
 		DevicesModuleModels\Devices\IDevicesManager $devicesManager,
 		DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository,
 		DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager,
@@ -78,6 +89,8 @@ final class DiscoveryMessageConsumer implements IConsumer
 		Helpers\DatabaseHelper $databaseHelper,
 		?Log\LoggerInterface $logger = null
 	) {
+		$this->connectorsRepository = $connectorsRepository;
+		$this->devicesRepository = $devicesRepository;
 		$this->devicesManager = $devicesManager;
 		$this->propertiesRepository = $propertiesRepository;
 		$this->propertiesManager = $propertiesManager;
@@ -104,12 +117,25 @@ final class DiscoveryMessageConsumer implements IConsumer
 		$device = $this->devicesDataStorageRepository->findByIdentifier($entity->getConnector(), $entity->getIdentifier());
 
 		if ($device === null) {
+			$connector = $this->databaseHelper->query(
+				function () use ($entity): ?DevicesModuleEntities\Connectors\IConnector {
+					$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
+					$findConnectorQuery->byId($entity->getConnector());
+
+					return $this->connectorsRepository->findOneBy($findConnectorQuery);
+				}
+			);
+
+			if ($connector === null) {
+				return true;
+			}
+
 			/** @var DevicesModuleEntities\Devices\IDevice $device */
 			$device = $this->databaseHelper->transaction(
-				function () use ($entity): DevicesModuleEntities\Devices\IDevice {
+				function () use ($entity, $connector): DevicesModuleEntities\Devices\IDevice {
 					return $this->devicesManager->create(Utils\ArrayHash::from([
 						'entity'     => Entities\ShellyDeviceEntity::class,
-						'connector'  => $entity->getConnector(),
+						'connector'  => $connector,
 						'identifier' => $entity->getIdentifier(),
 					]));
 				}

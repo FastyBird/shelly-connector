@@ -36,6 +36,7 @@ use Ramsey\Uuid;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  *
+ * @property-read DevicesModuleModels\Devices\IDevicesRepository $devicesRepository
  * @property-read DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository
  * @property-read DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager
  * @property-read DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository
@@ -46,17 +47,17 @@ trait TConsumeIpAddress
 {
 
 	/**
-	 * @param Uuid\UuidInterface $device
+	 * @param Uuid\UuidInterface $deviceId
 	 * @param string $ipAddress
 	 *
 	 * @return void
 	 *
 	 * @throws DBAL\Exception
 	 */
-	protected function setDeviceIpAddress(Uuid\UuidInterface $device, string $ipAddress): void
+	private function setDeviceIpAddress(Uuid\UuidInterface $deviceId, string $ipAddress): void
 	{
 		$ipAddressProperty = $this->propertiesDataStorageRepository->findByIdentifier(
-			$device,
+			$deviceId,
 			Types\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS
 		);
 
@@ -92,7 +93,7 @@ trait TConsumeIpAddress
 						'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'     => 'message-consumer',
 						'device'   => [
-							'id' => $device->toString(),
+							'id' => $deviceId->toString(),
 						],
 						'property' => [
 							'id' => $property->getPlainId(),
@@ -105,6 +106,18 @@ trait TConsumeIpAddress
 		}
 
 		if ($ipAddressProperty === null) {
+			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
+			$device = $this->databaseHelper->query(function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
+				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
+				$findDeviceQuery->byId($deviceId);
+
+				return $this->devicesRepository->findOneBy($findDeviceQuery);
+			});
+
+			if ($device === null) {
+				return;
+			}
+
 			/** @var DevicesModuleEntities\Devices\Properties\IProperty $property */
 			$property = $this->databaseHelper->transaction(function () use ($device, $ipAddress): DevicesModuleEntities\Devices\Properties\IProperty {
 				return $this->propertiesManager->create(Utils\ArrayHash::from([
@@ -124,7 +137,7 @@ trait TConsumeIpAddress
 					'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 					'type'     => 'message-consumer',
 					'device'   => [
-						'id' => $device->toString(),
+						'id' => $deviceId->toString(),
 					],
 					'property' => [
 						'id' => $property->getPlainId(),
@@ -154,7 +167,7 @@ trait TConsumeIpAddress
 						'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'     => 'message-consumer',
 						'device'   => [
-							'id' => $device->toString(),
+							'id' => $deviceId->toString(),
 						],
 						'property' => [
 							'id' => $property->getPlainId(),
@@ -169,7 +182,7 @@ trait TConsumeIpAddress
 						'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'     => 'message-consumer',
 						'device'   => [
-							'id' => $device->toString(),
+							'id' => $deviceId->toString(),
 						],
 						'property' => [
 							'id' => $ipAddressProperty->getId()->toString(),

@@ -48,10 +48,13 @@ final class DescriptionMessageConsumer implements IConsumer
 	private DevicesModuleModels\Devices\IDevicesManager $devicesManager;
 
 	/** @var DevicesModuleModels\Devices\Properties\IPropertiesRepository */
-	protected DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository;
+	private DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository;
 
 	/** @var DevicesModuleModels\Devices\Properties\IPropertiesManager */
-	protected DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager;
+	private DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager;
+
+	/** @var DevicesModuleModels\Channels\IChannelsRepository */
+	private DevicesModuleModels\Channels\IChannelsRepository $channelsRepository;
 
 	/** @var DevicesModuleModels\Channels\IChannelsManager */
 	private DevicesModuleModels\Channels\IChannelsManager $channelsManager;
@@ -66,7 +69,7 @@ final class DescriptionMessageConsumer implements IConsumer
 	private DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository;
 
 	/** @var DevicesModuleModels\DataStorage\IDevicePropertiesRepository */
-	protected DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository;
+	private DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository;
 
 	/** @var DevicesModuleModels\DataStorage\IChannelsRepository */
 	private DevicesModuleModels\DataStorage\IChannelsRepository $channelsDataStorageRepository;
@@ -75,16 +78,17 @@ final class DescriptionMessageConsumer implements IConsumer
 	private Mappers\SensorMapper $sensorMapper;
 
 	/** @var Helpers\DatabaseHelper */
-	protected Helpers\DatabaseHelper $databaseHelper;
+	private Helpers\DatabaseHelper $databaseHelper;
 
 	/** @var Log\LoggerInterface */
-	protected Log\LoggerInterface $logger;
+	private Log\LoggerInterface $logger;
 
 	/**
 	 * @param DevicesModuleModels\Devices\IDevicesRepository $devicesRepository
 	 * @param DevicesModuleModels\Devices\IDevicesManager $devicesManager
 	 * @param DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository
 	 * @param DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager
+	 * @param DevicesModuleModels\Channels\IChannelsRepository $channelsRepository
 	 * @param DevicesModuleModels\Channels\IChannelsManager $channelsManager
 	 * @param DevicesModuleModels\Channels\Properties\IPropertiesRepository $channelsPropertiesRepository
 	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository
@@ -99,6 +103,7 @@ final class DescriptionMessageConsumer implements IConsumer
 		DevicesModuleModels\Devices\IDevicesManager $devicesManager,
 		DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository,
 		DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager,
+		DevicesModuleModels\Channels\IChannelsRepository $channelsRepository,
 		DevicesModuleModels\Channels\IChannelsManager $channelsManager,
 		DevicesModuleModels\Channels\Properties\IPropertiesRepository $channelsPropertiesRepository,
 		DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository,
@@ -112,6 +117,7 @@ final class DescriptionMessageConsumer implements IConsumer
 		$this->devicesManager = $devicesManager;
 		$this->propertiesRepository = $propertiesRepository;
 		$this->propertiesManager = $propertiesManager;
+		$this->channelsRepository = $channelsRepository;
 		$this->channelsManager = $channelsManager;
 		$this->channelsPropertiesRepository = $channelsPropertiesRepository;
 
@@ -177,11 +183,23 @@ final class DescriptionMessageConsumer implements IConsumer
 			);
 
 			if ($channel === null) {
+				/** @var DevicesModuleEntities\Devices\IDevice|null $device */
+				$device = $this->databaseHelper->query(function () use ($device): ?DevicesModuleEntities\Devices\IDevice {
+					$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
+					$findDeviceQuery->byId($device->getId());
+
+					return $this->devicesRepository->findOneBy($findDeviceQuery);
+				});
+
+				if ($device === null) {
+					return true;
+				}
+
 				/** @var DevicesModuleEntities\Channels\IChannel $channel */
 				$channel = $this->databaseHelper->transaction(
 					function () use ($block, $device): DevicesModuleEntities\Channels\IChannel {
 						return $this->channelsManager->create(Utils\ArrayHash::from([
-							'device'     => $device->getId(),
+							'device'     => $device,
 							'identifier' => sprintf('%d_%s', $block->getIdentifier(), $block->getDescription()),
 							'name'       => $block->getDescription(),
 						]));
@@ -197,11 +215,25 @@ final class DescriptionMessageConsumer implements IConsumer
 				);
 
 				if ($channelProperty === null) {
+					/** @var DevicesModuleEntities\Channels\IChannel|null $channelEntity */
+					$channelEntity = $this->databaseHelper->query(
+						function () use ($channel): ?DevicesModuleEntities\Channels\IChannel {
+							$findChannelQuery = new DevicesModuleQueries\FindChannelsQuery();
+							$findChannelQuery->byId($channel->getId());
+
+							return $this->channelsRepository->findOneBy($findChannelQuery);
+						}
+					);
+
+					if ($channelEntity === null) {
+						continue;
+					}
+
 					/** @var DevicesModuleEntities\Channels\Properties\IProperty $property */
 					$property = $this->databaseHelper->transaction(
-						function () use ($sensor, $channel): DevicesModuleEntities\Channels\Properties\IProperty {
+						function () use ($sensor, $channelEntity): DevicesModuleEntities\Channels\Properties\IProperty {
 							return $this->channelsPropertiesManager->create(Utils\ArrayHash::from([
-								'channel'    => $channel->getId(),
+								'channel'    => $channelEntity,
 								'identifier' => sprintf(
 									'%d_%s_%s',
 									$sensor->getIdentifier(),

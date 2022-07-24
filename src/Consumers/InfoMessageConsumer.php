@@ -51,10 +51,10 @@ final class InfoMessageConsumer implements IConsumer
 	private DevicesModuleModels\Devices\IDevicesManager $devicesManager;
 
 	/** @var DevicesModuleModels\Devices\Properties\IPropertiesRepository */
-	protected DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository;
+	private DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository;
 
 	/** @var DevicesModuleModels\Devices\Properties\IPropertiesManager */
-	protected DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager;
+	private DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager;
 
 	/** @var DevicesModuleModels\Devices\Attributes\IAttributesRepository */
 	private DevicesModuleModels\Devices\Attributes\IAttributesRepository $attributesRepository;
@@ -66,16 +66,16 @@ final class InfoMessageConsumer implements IConsumer
 	private DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository;
 
 	/** @var DevicesModuleModels\DataStorage\IDevicePropertiesRepository */
-	protected DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository;
+	private DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository;
 
 	/** @var DevicesModuleModels\DataStorage\IDeviceAttributesRepository */
 	private DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository;
 
 	/** @var Helpers\DatabaseHelper */
-	protected Helpers\DatabaseHelper $databaseHelper;
+	private Helpers\DatabaseHelper $databaseHelper;
 
 	/** @var Log\LoggerInterface */
-	protected Log\LoggerInterface $logger;
+	private Log\LoggerInterface $logger;
 
 	/**
 	 * @param DevicesModuleModels\Devices\IDevicesRepository $devicesRepository
@@ -185,17 +185,17 @@ final class InfoMessageConsumer implements IConsumer
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $device
+	 * @param Uuid\UuidInterface $deviceId
 	 * @param string $macAddress
 	 *
 	 * @return void
 	 *
 	 * @throws DBAL\Exception
 	 */
-	private function setDeviceMacAddress(Uuid\UuidInterface $device, string $macAddress): void
+	private function setDeviceMacAddress(Uuid\UuidInterface $deviceId, string $macAddress): void
 	{
 		$macAddressAttribute = $this->attributesDataStorageRepository->findByIdentifier(
-			$device,
+			$deviceId,
 			Types\DeviceAttributeIdentifierType::IDENTIFIER_MAC_ADDRESS
 		);
 
@@ -204,6 +204,18 @@ final class InfoMessageConsumer implements IConsumer
 		}
 
 		if ($macAddressAttribute === null) {
+			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
+			$device = $this->databaseHelper->query(function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
+				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
+				$findDeviceQuery->byId($deviceId);
+
+				return $this->devicesRepository->findOneBy($findDeviceQuery);
+			});
+
+			if ($device === null) {
+				return;
+			}
+
 			/** @var DevicesModuleEntities\Devices\Attributes\IAttribute $attribute */
 			$attribute = $this->databaseHelper->transaction(
 				function () use ($device, $macAddress): DevicesModuleEntities\Devices\Attributes\IAttribute {
@@ -221,7 +233,7 @@ final class InfoMessageConsumer implements IConsumer
 					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 					'type'      => 'discovery-message-consumer',
 					'device'    => [
-						'id' => $device->toString(),
+						'id' => $deviceId->toString(),
 					],
 					'attribute' => [
 						'id' => $attribute->getPlainId(),
@@ -256,7 +268,7 @@ final class InfoMessageConsumer implements IConsumer
 						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'      => 'discovery-message-consumer',
 						'device'    => [
-							'id' => $device->toString(),
+							'id' => $deviceId->toString(),
 						],
 						'attribute' => [
 							'id' => $attribute->getPlainId(),
@@ -271,7 +283,7 @@ final class InfoMessageConsumer implements IConsumer
 						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'      => 'discovery-message-consumer',
 						'device'    => [
-							'id' => $device->toString(),
+							'id' => $deviceId->toString(),
 						],
 						'attribute' => [
 							'id' => $macAddressAttribute->getId()->toString(),
@@ -283,17 +295,17 @@ final class InfoMessageConsumer implements IConsumer
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $device
+	 * @param Uuid\UuidInterface $deviceId
 	 * @param string $firmwareVersion
 	 *
 	 * @return void
 	 *
 	 * @throws DBAL\Exception
 	 */
-	private function setDeviceFirmwareVersion(Uuid\UuidInterface $device, string $firmwareVersion): void
+	private function setDeviceFirmwareVersion(Uuid\UuidInterface $deviceId, string $firmwareVersion): void
 	{
 		$firmwareVersionAttribute = $this->attributesDataStorageRepository->findByIdentifier(
-			$device,
+			$deviceId,
 			Types\DeviceAttributeIdentifierType::IDENTIFIER_FIRMWARE_VERSION
 		);
 
@@ -302,6 +314,18 @@ final class InfoMessageConsumer implements IConsumer
 		}
 
 		if ($firmwareVersionAttribute === null) {
+			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
+			$device = $this->databaseHelper->query(function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
+				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
+				$findDeviceQuery->byId($deviceId);
+
+				return $this->devicesRepository->findOneBy($findDeviceQuery);
+			});
+
+			if ($device === null) {
+				return;
+			}
+
 			/** @var DevicesModuleEntities\Devices\Attributes\IAttribute $attribute */
 			$attribute = $this->databaseHelper->transaction(
 				function () use ($device, $firmwareVersion): DevicesModuleEntities\Devices\Attributes\IAttribute {
@@ -319,7 +343,7 @@ final class InfoMessageConsumer implements IConsumer
 					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 					'type'      => 'discovery-message-consumer',
 					'device'    => [
-						'id' => $device->toString(),
+						'id' => $deviceId->toString(),
 					],
 					'attribute' => [
 						'id' => $attribute->getPlainId(),
@@ -354,7 +378,7 @@ final class InfoMessageConsumer implements IConsumer
 						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'      => 'discovery-message-consumer',
 						'device'    => [
-							'id' => $device->toString(),
+							'id' => $deviceId->toString(),
 						],
 						'attribute' => [
 							'id' => $attribute->getPlainId(),
@@ -369,7 +393,7 @@ final class InfoMessageConsumer implements IConsumer
 						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'      => 'discovery-message-consumer',
 						'device'    => [
-							'id' => $device->toString(),
+							'id' => $deviceId->toString(),
 						],
 						'attribute' => [
 							'id' => $firmwareVersionAttribute->getId()->toString(),
@@ -381,17 +405,17 @@ final class InfoMessageConsumer implements IConsumer
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $device
+	 * @param Uuid\UuidInterface $deviceId
 	 * @param bool $authEnabled
 	 *
 	 * @return void
 	 *
 	 * @throws DBAL\Exception
 	 */
-	private function setDeviceAuthEnabled(Uuid\UuidInterface $device, bool $authEnabled): void
+	private function setDeviceAuthEnabled(Uuid\UuidInterface $deviceId, bool $authEnabled): void
 	{
 		$authEnabledProperty = $this->propertiesDataStorageRepository->findByIdentifier(
-			$device,
+			$deviceId,
 			Types\DevicePropertyIdentifierType::IDENTIFIER_AUTH_ENABLED
 		);
 
@@ -427,7 +451,7 @@ final class InfoMessageConsumer implements IConsumer
 						'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'     => 'discovery-message-consumer',
 						'device'   => [
-							'id' => $device->toString(),
+							'id' => $deviceId->toString(),
 						],
 						'property' => [
 							'id' => $property->getPlainId(),
@@ -440,6 +464,18 @@ final class InfoMessageConsumer implements IConsumer
 		}
 
 		if ($authEnabledProperty === null) {
+			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
+			$device = $this->databaseHelper->query(function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
+				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
+				$findDeviceQuery->byId($deviceId);
+
+				return $this->devicesRepository->findOneBy($findDeviceQuery);
+			});
+
+			if ($device === null) {
+				return;
+			}
+
 			/** @var DevicesModuleEntities\Devices\Properties\IProperty $property */
 			$property = $this->databaseHelper->transaction(
 				function () use ($device, $authEnabled): DevicesModuleEntities\Devices\Properties\IProperty {
@@ -461,7 +497,7 @@ final class InfoMessageConsumer implements IConsumer
 					'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 					'type'     => 'discovery-message-consumer',
 					'device'   => [
-						'id' => $device->toString(),
+						'id' => $deviceId->toString(),
 					],
 					'property' => [
 						'id' => $property->getPlainId(),
@@ -496,7 +532,7 @@ final class InfoMessageConsumer implements IConsumer
 						'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'     => 'discovery-message-consumer',
 						'device'   => [
-							'id' => $device->toString(),
+							'id' => $deviceId->toString(),
 						],
 						'property' => [
 							'id' => $property->getPlainId(),
@@ -511,7 +547,7 @@ final class InfoMessageConsumer implements IConsumer
 						'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'     => 'discovery-message-consumer',
 						'device'   => [
-							'id' => $device->toString(),
+							'id' => $deviceId->toString(),
 						],
 						'property' => [
 							'id' => $authEnabledProperty->getId()->toString(),

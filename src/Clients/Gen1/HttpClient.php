@@ -81,7 +81,7 @@ final class HttpClient
 	private array $processedProperties = [];
 
 	/** @var EventLoop\TimerInterface|null */
-	protected ?EventLoop\TimerInterface $handlerTimer;
+	private ?EventLoop\TimerInterface $handlerTimer;
 
 	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
 	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
