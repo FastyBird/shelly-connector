@@ -166,8 +166,8 @@ final class MdnsClient
 						$this->consumer->append(new Entities\Messages\DeviceFoundEntity(
 							Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_MDNS),
 							$this->connector->getId(),
-							$results[1],
-							Utils\Strings::lower($matches['id'])
+							Utils\Strings::lower($matches['id']),
+							$results[1]
 						));
 					}
 				}

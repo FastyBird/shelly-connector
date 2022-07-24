@@ -482,8 +482,8 @@ final class InfoMessageConsumer implements IConsumer
 					return $this->propertiesManager->create(Utils\ArrayHash::from([
 						'entity'     => DevicesModuleEntities\Devices\Properties\StaticProperty::class,
 						'device'     => $device,
-						'identifier' => Types\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS,
-						'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+						'identifier' => Types\DevicePropertyIdentifierType::IDENTIFIER_AUTH_ENABLED,
+						'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_BOOLEAN),
 						'settable'   => false,
 						'queryable'  => false,
 						'value'      => $authEnabled,

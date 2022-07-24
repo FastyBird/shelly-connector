@@ -301,7 +301,6 @@ final class HttpClient
 		if (
 			$this->deviceConnectionStateManager->getState($device)->equalsValue(MetadataTypes\ConnectionStateType::STATE_READY)
 		) {
-			var_dump('property');
 			return $this->writeChannelsProperty($device);
 		}
 
@@ -659,8 +658,8 @@ final class HttpClient
 
 		if (
 			preg_match(self::CHANNEL_BLOCK, $channel->getIdentifier(), $channelMatches) !== 1
-			|| array_key_exists('identifier', $channelMatches)
-			|| array_key_exists('description', $channelMatches)
+			|| !array_key_exists('identifier', $channelMatches)
+			|| !array_key_exists('description', $channelMatches)
 		) {
 			$this->logger->error('Channel identifier is not in expected format', [
 				'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
@@ -681,8 +680,8 @@ final class HttpClient
 
 		if (
 			preg_match(self::BLOCK_PARTS, $channelMatches['description'], $blockMatches) !== 1
-			|| array_key_exists('channelName', $blockMatches)
-			|| array_key_exists('channelIndex', $blockMatches)
+			|| !array_key_exists('channelName', $blockMatches)
+			|| !array_key_exists('channelIndex', $blockMatches)
 		) {
 			$this->logger->error('Channel - block description is not in expected format', [
 				'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
@@ -892,9 +891,9 @@ final class HttpClient
 		}
 
 		if (
-			array_key_exists('identifier', $propertyMatches)
-			|| array_key_exists('type', $propertyMatches)
-			|| array_key_exists('description', $propertyMatches)
+			!array_key_exists('identifier', $propertyMatches)
+			|| !array_key_exists('type', $propertyMatches)
+			|| !array_key_exists('description', $propertyMatches)
 		) {
 			throw new Exceptions\InvalidStateException('Property identifier is not valid');
 		}
