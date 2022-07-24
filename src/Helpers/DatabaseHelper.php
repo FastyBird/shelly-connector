@@ -59,16 +59,7 @@ final class DatabaseHelper
 	public function query(callable $callback)
 	{
 		try {
-			// Check if ping to DB is possible...
-			if (!$this->ping()) {
-				// ...if not, try to reconnect
-				$this->reconnect();
-
-				// ...and ping again
-				if (!$this->ping()) {
-					throw new Exceptions\RuntimeException('Connection to database could not be established');
-				}
-			}
+			$this->pingAndReconnect();
 
 			return $callback();
 
@@ -89,6 +80,8 @@ final class DatabaseHelper
 	public function transaction(callable $callback)
 	{
 		try {
+			$this->pingAndReconnect();
+
 			// Start transaction connection to the database
 			$this->getConnection()->beginTransaction();
 
@@ -114,18 +107,10 @@ final class DatabaseHelper
 	 */
 	public function getConnection(): DBAL\Connection
 	{
-		$em = $this->managerRegistry->getManager();
+		$em = $this->getEntityManager();
 
 		if ($em instanceof ORM\EntityManagerInterface) {
-			if (!$em->isOpen()) {
-				$this->managerRegistry->resetManager();
-
-				$em = $this->managerRegistry->getManager();
-			}
-
-			if ($em instanceof ORM\EntityManagerInterface) {
-				return $em->getConnection();
-			}
+			return $em->getConnection();
 		}
 
 		throw new Exceptions\RuntimeException('Entity manager could not be loaded');
@@ -160,6 +145,61 @@ final class DatabaseHelper
 
 		$connection->close();
 		$connection->connect();
+	}
+
+	/**
+	 * @return void
+	 *
+	 * @throws DBAL\Exception
+	 */
+	private function pingAndReconnect(): void
+	{
+		// Check if ping to DB is possible...
+		if (!$this->ping()) {
+			// ...if not, try to reconnect
+			$this->reconnect();
+
+			// ...and ping again
+			if (!$this->ping()) {
+				throw new Exceptions\RuntimeException('Connection to database could not be established');
+			}
+
+			$em = $this->getEntityManager();
+
+			if ($em === null) {
+				throw new Exceptions\RuntimeException('Entity manager could not be loaded');
+			}
+
+			$em->flush();
+			$em->clear();
+
+			// Just in case PHP would choose not to run garbage collection,
+			// we run it manually at the end of each batch so that memory is
+			// regularly released
+			gc_collect_cycles();
+		}
+	}
+
+	/**
+	 * @return ORM\EntityManagerInterface|null
+	 */
+	private function getEntityManager(): ?ORM\EntityManagerInterface
+	{
+		$em = $this->managerRegistry->getManager();
+
+		if ($em instanceof ORM\EntityManagerInterface) {
+			if (!$em->isOpen()) {
+				$this->managerRegistry->resetManager();
+
+				$em = $this->managerRegistry->getManager();
+			}
+
+			if ($em instanceof ORM\EntityManagerInterface) {
+				return $em;
+			}
+		}
+
+		return null;
 	}
 
 }
