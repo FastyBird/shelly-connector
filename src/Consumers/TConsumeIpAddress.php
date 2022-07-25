@@ -56,27 +56,27 @@ trait TConsumeIpAddress
 	 */
 	private function setDeviceIpAddress(Uuid\UuidInterface $deviceId, string $ipAddress): void
 	{
-		$ipAddressProperty = $this->propertiesDataStorageRepository->findByIdentifier(
+		$ipAddressPropertyItem = $this->propertiesDataStorageRepository->findByIdentifier(
 			$deviceId,
 			Types\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS
 		);
 
 		if (
-			$ipAddressProperty instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
-			&& $ipAddressProperty->getValue() === $ipAddress
+			$ipAddressPropertyItem instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
+			&& $ipAddressPropertyItem->getValue() === $ipAddress
 		) {
 			return;
 		}
 
 		if (
-			$ipAddressProperty !== null
-			&& !$ipAddressProperty instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
+			$ipAddressPropertyItem !== null
+			&& !$ipAddressPropertyItem instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
 		) {
 			/** @var DevicesModuleEntities\Devices\Properties\IProperty|null $property */
 			$property = $this->databaseHelper->query(
-				function () use ($ipAddressProperty): ?DevicesModuleEntities\Devices\Properties\IProperty {
+				function () use ($ipAddressPropertyItem): ?DevicesModuleEntities\Devices\Properties\IProperty {
 					$findPropertyQuery = new DevicesModuleQueries\FindDevicePropertiesQuery();
-					$findPropertyQuery->byId($ipAddressProperty->getId());
+					$findPropertyQuery->byId($ipAddressPropertyItem->getId());
 
 					return $this->propertiesRepository->findOneBy($findPropertyQuery);
 				}
@@ -102,10 +102,10 @@ trait TConsumeIpAddress
 				);
 			}
 
-			$ipAddressProperty = null;
+			$ipAddressPropertyItem = null;
 		}
 
-		if ($ipAddressProperty === null) {
+		if ($ipAddressPropertyItem === null) {
 			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
 			$device = $this->databaseHelper->query(function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
 				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
@@ -119,17 +119,19 @@ trait TConsumeIpAddress
 			}
 
 			/** @var DevicesModuleEntities\Devices\Properties\IProperty $property */
-			$property = $this->databaseHelper->transaction(function () use ($device, $ipAddress): DevicesModuleEntities\Devices\Properties\IProperty {
-				return $this->propertiesManager->create(Utils\ArrayHash::from([
-					'entity'     => DevicesModuleEntities\Devices\Properties\StaticProperty::class,
-					'device'     => $device,
-					'identifier' => Types\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS,
-					'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
-					'settable'   => false,
-					'queryable'  => false,
-					'value'      => $ipAddress,
-				]));
-			});
+			$property = $this->databaseHelper->transaction(
+				function () use ($device, $ipAddress): DevicesModuleEntities\Devices\Properties\IProperty {
+					return $this->propertiesManager->create(Utils\ArrayHash::from([
+						'entity'     => DevicesModuleEntities\Devices\Properties\StaticProperty::class,
+						'device'     => $device,
+						'identifier' => Types\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS,
+						'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+						'settable'   => false,
+						'queryable'  => false,
+						'value'      => $ipAddress,
+					]));
+				}
+			);
 
 			$this->logger->debug(
 				'Device ip address property was created',
@@ -147,7 +149,7 @@ trait TConsumeIpAddress
 
 		} else {
 			$findPropertyQuery = new DevicesModuleQueries\FindDevicePropertiesQuery();
-			$findPropertyQuery->byId($ipAddressProperty->getId());
+			$findPropertyQuery->byId($ipAddressPropertyItem->getId());
 
 			$property = $this->propertiesRepository->findOneBy($findPropertyQuery);
 
@@ -185,7 +187,7 @@ trait TConsumeIpAddress
 							'id' => $deviceId->toString(),
 						],
 						'property' => [
-							'id' => $ipAddressProperty->getId()->toString(),
+							'id' => $ipAddressPropertyItem->getId()->toString(),
 						],
 					]
 				);

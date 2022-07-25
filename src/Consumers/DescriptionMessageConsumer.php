@@ -142,69 +142,69 @@ final class DescriptionMessageConsumer implements IConsumer
 			return false;
 		}
 
-		$device = $this->devicesDataStorageRepository->findByIdentifier(
+		$deviceItem = $this->devicesDataStorageRepository->findByIdentifier(
 			$entity->getConnector(),
 			$entity->getIdentifier()
 		);
 
-		if ($device === null) {
+		if ($deviceItem === null) {
 			return true;
 		}
 
-		if ($device->getName() === null && $device->getName() !== $entity->getType()) {
+		if ($deviceItem->getName() === null && $deviceItem->getName() !== $entity->getType()) {
 			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
-			$device = $this->databaseHelper->query(function () use ($device): ?DevicesModuleEntities\Devices\IDevice {
-				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
-				$findDeviceQuery->byId($device->getId());
+			$device = $this->databaseHelper->query(
+				function () use ($deviceItem): ?DevicesModuleEntities\Devices\IDevice {
+					$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
+					$findDeviceQuery->byId($deviceItem->getId());
 
-				return $this->devicesRepository->findOneBy($findDeviceQuery);
-			});
+					return $this->devicesRepository->findOneBy($findDeviceQuery);
+				}
+			);
 
 			if ($device === null) {
 				return true;
 			}
 
-			/** @var DevicesModuleEntities\Devices\IDevice $device */
-			$device = $this->databaseHelper->transaction(
-				function () use ($entity, $device): DevicesModuleEntities\Devices\IDevice {
-					return $this->devicesManager->update($device, Utils\ArrayHash::from([
+			$this->databaseHelper->transaction(
+				function () use ($entity, $device): void {
+					$this->devicesManager->update($device, Utils\ArrayHash::from([
 						'name' => $entity->getType(),
 					]));
 				}
 			);
 		}
 
-		$this->setDeviceIpAddress($device->getId(), $entity->getIpAddress());
+		$this->setDeviceIpAddress($deviceItem->getId(), $entity->getIpAddress());
 
 		foreach ($entity->getBlocks() as $block) {
-			$channel = $this->channelsDataStorageRepository->findByIdentifier(
-				$device->getId(),
+			$channelItem = $this->channelsDataStorageRepository->findByIdentifier(
+				$deviceItem->getId(),
 				$block->getIdentifier() . '_' . $block->getDescription()
 			);
 
-			if ($channel === null) {
+			if ($channelItem === null) {
 				/** @var DevicesModuleEntities\Devices\IDevice|null $device */
-				$device = $this->databaseHelper->query(function () use ($device): ?DevicesModuleEntities\Devices\IDevice {
-					$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
-					$findDeviceQuery->byId($device->getId());
+				$device = $this->databaseHelper->query(
+					function () use ($deviceItem): ?DevicesModuleEntities\Devices\IDevice {
+						$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
+						$findDeviceQuery->byId($deviceItem->getId());
 
-					return $this->devicesRepository->findOneBy($findDeviceQuery);
-				});
+						return $this->devicesRepository->findOneBy($findDeviceQuery);
+					}
+				);
 
 				if ($device === null) {
 					return true;
 				}
 
-				/** @var DevicesModuleEntities\Channels\IChannel $channel */
-				$channel = $this->databaseHelper->transaction(
-					function () use ($block, $device): DevicesModuleEntities\Channels\IChannel {
-						return $this->channelsManager->create(Utils\ArrayHash::from([
-							'device'     => $device,
-							'identifier' => sprintf('%d_%s', $block->getIdentifier(), $block->getDescription()),
-							'name'       => $block->getDescription(),
-						]));
-					}
-				);
+				$this->databaseHelper->transaction(function () use ($block, $device): void {
+					$this->channelsManager->create(Utils\ArrayHash::from([
+						'device'     => $device,
+						'identifier' => sprintf('%d_%s', $block->getIdentifier(), $block->getDescription()),
+						'name'       => $block->getDescription(),
+					]));
+				});
 			}
 
 			foreach ($block->getSensors() as $sensor) {
@@ -215,25 +215,26 @@ final class DescriptionMessageConsumer implements IConsumer
 				);
 
 				if ($channelProperty === null) {
-					/** @var DevicesModuleEntities\Channels\IChannel|null $channelEntity */
-					$channelEntity = $this->databaseHelper->query(
-						function () use ($channel): ?DevicesModuleEntities\Channels\IChannel {
+					/** @var DevicesModuleEntities\Channels\IChannel|null $channel */
+					$channel = $this->databaseHelper->query(
+						function () use ($deviceItem, $block): ?DevicesModuleEntities\Channels\IChannel {
 							$findChannelQuery = new DevicesModuleQueries\FindChannelsQuery();
-							$findChannelQuery->byId($channel->getId());
+							$findChannelQuery->byDeviceId($deviceItem->getId());
+							$findChannelQuery->byIdentifier($block->getIdentifier() . '_' . $block->getDescription());
 
 							return $this->channelsRepository->findOneBy($findChannelQuery);
 						}
 					);
 
-					if ($channelEntity === null) {
+					if ($channel === null) {
 						continue;
 					}
 
 					/** @var DevicesModuleEntities\Channels\Properties\IProperty $property */
 					$property = $this->databaseHelper->transaction(
-						function () use ($sensor, $channelEntity): DevicesModuleEntities\Channels\Properties\IProperty {
+						function () use ($sensor, $channel): DevicesModuleEntities\Channels\Properties\IProperty {
 							return $this->channelsPropertiesManager->create(Utils\ArrayHash::from([
-								'channel'    => $channelEntity,
+								'channel'    => $channel,
 								'identifier' => sprintf(
 									'%d_%s_%s',
 									$sensor->getIdentifier(),
@@ -257,10 +258,10 @@ final class DescriptionMessageConsumer implements IConsumer
 							'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 							'type'     => 'discovery-message-consumer',
 							'device'   => [
-								'id' => $device->getId()->toString(),
+								'id' => $deviceItem->getId()->toString(),
 							],
 							'channel'  => [
-								'id' => $channel->getId()->toString(),
+								'id' => $property->getChannel()->getPlainId(),
 							],
 							'property' => [
 								'id' => $property->getPlainId(),
@@ -307,10 +308,10 @@ final class DescriptionMessageConsumer implements IConsumer
 								'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 								'type'     => 'discovery-message-consumer',
 								'device'   => [
-									'id' => $device->getId()->toString(),
+									'id' => $deviceItem->getId()->toString(),
 								],
 								'channel'  => [
-									'id' => $channel->getId()->toString(),
+									'id' => $property->getChannel()->getPlainId(),
 								],
 								'property' => [
 									'id' => $property->getPlainId(),
@@ -325,7 +326,7 @@ final class DescriptionMessageConsumer implements IConsumer
 								'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 								'type'   => 'description-message-consumer',
 								'device' => [
-									'id' => $device->getId()->toString(),
+									'id' => $deviceItem->getId()->toString(),
 								],
 								'block'  => [
 									'identifier'  => $block->getIdentifier(),
@@ -348,7 +349,7 @@ final class DescriptionMessageConsumer implements IConsumer
 				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'description-message-consumer',
 				'device' => [
-					'id' => $device->getId()->toString(),
+					'id' => $deviceItem->getId()->toString(),
 				],
 				'data'   => $entity->toArray(),
 			]

@@ -130,21 +130,21 @@ final class InfoMessageConsumer implements IConsumer
 			return false;
 		}
 
-		$device = $this->devicesDataStorageRepository->findByIdentifier(
+		$deviceItem = $this->devicesDataStorageRepository->findByIdentifier(
 			$entity->getConnector(),
 			$entity->getIdentifier()
 		);
 
-		if ($device === null) {
+		if ($deviceItem === null) {
 			return true;
 		}
 
-		if ($device->getName() === null && $device->getName() !== $entity->getType()) {
+		if ($deviceItem->getName() === null && $deviceItem->getName() !== $entity->getType()) {
 			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
 			$device = $this->databaseHelper->query(
-				function () use ($device): ?DevicesModuleEntities\Devices\IDevice {
+				function () use ($deviceItem): ?DevicesModuleEntities\Devices\IDevice {
 					$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
-					$findDeviceQuery->byId($device->getId());
+					$findDeviceQuery->byId($deviceItem->getId());
 
 					return $this->devicesRepository->findOneBy($findDeviceQuery);
 				}
@@ -154,20 +154,17 @@ final class InfoMessageConsumer implements IConsumer
 				return true;
 			}
 
-			/** @var DevicesModuleEntities\Devices\IDevice $device */
-			$device = $this->databaseHelper->transaction(
-				function () use ($entity, $device): DevicesModuleEntities\Devices\IDevice {
-					return $this->devicesManager->update($device, Utils\ArrayHash::from([
-						'name' => $entity->getType(),
-					]));
-				}
-			);
+			$this->databaseHelper->transaction(function () use ($entity, $device): void {
+				$this->devicesManager->update($device, Utils\ArrayHash::from([
+					'name' => $entity->getType(),
+				]));
+			});
 		}
 
-		$this->setDeviceIpAddress($device->getId(), $entity->getIpAddress());
-		$this->setDeviceMacAddress($device->getId(), $entity->getMacAddress());
-		$this->setDeviceFirmwareVersion($device->getId(), $entity->getFirmwareVersion());
-		$this->setDeviceAuthEnabled($device->getId(), $entity->isAuthEnabled());
+		$this->setDeviceIpAddress($deviceItem->getId(), $entity->getIpAddress());
+		$this->setDeviceMacAddress($deviceItem->getId(), $entity->getMacAddress());
+		$this->setDeviceFirmwareVersion($deviceItem->getId(), $entity->getFirmwareVersion());
+		$this->setDeviceAuthEnabled($deviceItem->getId(), $entity->isAuthEnabled());
 
 		$this->logger->debug(
 			'Consumed device info message',
@@ -175,7 +172,7 @@ final class InfoMessageConsumer implements IConsumer
 				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'info-message-consumer',
 				'device' => [
-					'id' => $device->getId()->toString(),
+					'id' => $deviceItem->getId()->toString(),
 				],
 				'data'   => $entity->toArray(),
 			]
@@ -194,16 +191,16 @@ final class InfoMessageConsumer implements IConsumer
 	 */
 	private function setDeviceMacAddress(Uuid\UuidInterface $deviceId, string $macAddress): void
 	{
-		$macAddressAttribute = $this->attributesDataStorageRepository->findByIdentifier(
+		$macAddressAttributeItem = $this->attributesDataStorageRepository->findByIdentifier(
 			$deviceId,
 			Types\DeviceAttributeIdentifierType::IDENTIFIER_MAC_ADDRESS
 		);
 
-		if ($macAddressAttribute !== null && $macAddressAttribute->getContent() === $macAddress) {
+		if ($macAddressAttributeItem !== null && $macAddressAttributeItem->getContent() === $macAddress) {
 			return;
 		}
 
-		if ($macAddressAttribute === null) {
+		if ($macAddressAttributeItem === null) {
 			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
 			$device = $this->databaseHelper->query(function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
 				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
@@ -244,9 +241,9 @@ final class InfoMessageConsumer implements IConsumer
 		} else {
 			/** @var DevicesModuleEntities\Devices\Attributes\IAttribute|null $attribute */
 			$attribute = $this->databaseHelper->query(
-				function () use ($macAddressAttribute): ?DevicesModuleEntities\Devices\Attributes\IAttribute {
+				function () use ($macAddressAttributeItem): ?DevicesModuleEntities\Devices\Attributes\IAttribute {
 					$findAttributeQuery = new DevicesModuleQueries\FindDeviceAttributesQuery();
-					$findAttributeQuery->byId($macAddressAttribute->getId());
+					$findAttributeQuery->byId($macAddressAttributeItem->getId());
 
 					return $this->attributesRepository->findOneBy($findAttributeQuery);
 				}
@@ -286,7 +283,7 @@ final class InfoMessageConsumer implements IConsumer
 							'id' => $deviceId->toString(),
 						],
 						'attribute' => [
-							'id' => $macAddressAttribute->getId()->toString(),
+							'id' => $macAddressAttributeItem->getId()->toString(),
 						],
 					]
 				);
@@ -304,16 +301,16 @@ final class InfoMessageConsumer implements IConsumer
 	 */
 	private function setDeviceFirmwareVersion(Uuid\UuidInterface $deviceId, string $firmwareVersion): void
 	{
-		$firmwareVersionAttribute = $this->attributesDataStorageRepository->findByIdentifier(
+		$firmwareVersionAttributeItem = $this->attributesDataStorageRepository->findByIdentifier(
 			$deviceId,
 			Types\DeviceAttributeIdentifierType::IDENTIFIER_FIRMWARE_VERSION
 		);
 
-		if ($firmwareVersionAttribute !== null && $firmwareVersionAttribute->getContent() === $firmwareVersion) {
+		if ($firmwareVersionAttributeItem !== null && $firmwareVersionAttributeItem->getContent() === $firmwareVersion) {
 			return;
 		}
 
-		if ($firmwareVersionAttribute === null) {
+		if ($firmwareVersionAttributeItem === null) {
 			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
 			$device = $this->databaseHelper->query(function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
 				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
@@ -354,9 +351,9 @@ final class InfoMessageConsumer implements IConsumer
 		} else {
 			/** @var DevicesModuleEntities\Devices\Attributes\IAttribute|null $attribute */
 			$attribute = $this->databaseHelper->query(
-				function () use ($firmwareVersionAttribute): ?DevicesModuleEntities\Devices\Attributes\IAttribute {
+				function () use ($firmwareVersionAttributeItem): ?DevicesModuleEntities\Devices\Attributes\IAttribute {
 					$findAttributeQuery = new DevicesModuleQueries\FindDeviceAttributesQuery();
-					$findAttributeQuery->byId($firmwareVersionAttribute->getId());
+					$findAttributeQuery->byId($firmwareVersionAttributeItem->getId());
 
 					return $this->attributesRepository->findOneBy($findAttributeQuery);
 				}
@@ -396,7 +393,7 @@ final class InfoMessageConsumer implements IConsumer
 							'id' => $deviceId->toString(),
 						],
 						'attribute' => [
-							'id' => $firmwareVersionAttribute->getId()->toString(),
+							'id' => $firmwareVersionAttributeItem->getId()->toString(),
 						],
 					]
 				);
@@ -414,27 +411,27 @@ final class InfoMessageConsumer implements IConsumer
 	 */
 	private function setDeviceAuthEnabled(Uuid\UuidInterface $deviceId, bool $authEnabled): void
 	{
-		$authEnabledProperty = $this->propertiesDataStorageRepository->findByIdentifier(
+		$authEnabledPropertyItem = $this->propertiesDataStorageRepository->findByIdentifier(
 			$deviceId,
 			Types\DevicePropertyIdentifierType::IDENTIFIER_AUTH_ENABLED
 		);
 
 		if (
-			$authEnabledProperty instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
-			&& $authEnabledProperty->getValue() === $authEnabled
+			$authEnabledPropertyItem instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
+			&& $authEnabledPropertyItem->getValue() === $authEnabled
 		) {
 			return;
 		}
 
 		if (
-			$authEnabledProperty !== null
-			&& !$authEnabledProperty instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
+			$authEnabledPropertyItem !== null
+			&& !$authEnabledPropertyItem instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
 		) {
 			/** @var DevicesModuleEntities\Devices\Properties\IProperty|null $property */
 			$property = $this->databaseHelper->query(
-				function () use ($authEnabledProperty): ?DevicesModuleEntities\Devices\Properties\IProperty {
+				function () use ($authEnabledPropertyItem): ?DevicesModuleEntities\Devices\Properties\IProperty {
 					$findPropertyQuery = new DevicesModuleQueries\FindDevicePropertiesQuery();
-					$findPropertyQuery->byId($authEnabledProperty->getId());
+					$findPropertyQuery->byId($authEnabledPropertyItem->getId());
 
 					return $this->propertiesRepository->findOneBy($findPropertyQuery);
 				}
@@ -460,10 +457,10 @@ final class InfoMessageConsumer implements IConsumer
 				);
 			}
 
-			$authEnabledProperty = null;
+			$authEnabledPropertyItem = null;
 		}
 
-		if ($authEnabledProperty === null) {
+		if ($authEnabledPropertyItem === null) {
 			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
 			$device = $this->databaseHelper->query(function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
 				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
@@ -508,9 +505,9 @@ final class InfoMessageConsumer implements IConsumer
 		} else {
 			/** @var DevicesModuleEntities\Devices\Properties\IProperty|null $property */
 			$property = $this->databaseHelper->query(
-				function () use ($authEnabledProperty): ?DevicesModuleEntities\Devices\Properties\IProperty {
+				function () use ($authEnabledPropertyItem): ?DevicesModuleEntities\Devices\Properties\IProperty {
 					$findPropertyQuery = new DevicesModuleQueries\FindDevicePropertiesQuery();
-					$findPropertyQuery->byId($authEnabledProperty->getId());
+					$findPropertyQuery->byId($authEnabledPropertyItem->getId());
 
 					return $this->propertiesRepository->findOneBy($findPropertyQuery);
 				}
@@ -550,7 +547,7 @@ final class InfoMessageConsumer implements IConsumer
 							'id' => $deviceId->toString(),
 						],
 						'property' => [
-							'id' => $authEnabledProperty->getId()->toString(),
+							'id' => $authEnabledPropertyItem->getId()->toString(),
 						],
 					]
 				);

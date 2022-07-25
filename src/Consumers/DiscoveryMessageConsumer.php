@@ -114,9 +114,12 @@ final class DiscoveryMessageConsumer implements IConsumer
 			return false;
 		}
 
-		$device = $this->devicesDataStorageRepository->findByIdentifier($entity->getConnector(), $entity->getIdentifier());
+		$deviceItem = $this->devicesDataStorageRepository->findByIdentifier(
+			$entity->getConnector(),
+			$entity->getIdentifier()
+		);
 
-		if ($device === null) {
+		if ($deviceItem === null) {
 			$connector = $this->databaseHelper->query(
 				function () use ($entity): ?DevicesModuleEntities\Connectors\IConnector {
 					$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
@@ -155,7 +158,28 @@ final class DiscoveryMessageConsumer implements IConsumer
 			);
 		}
 
-		$this->setDeviceIpAddress($device->getId(), $entity->getIpAddress());
+		$deviceItem = $this->devicesDataStorageRepository->findByIdentifier(
+			$entity->getConnector(),
+			$entity->getIdentifier()
+		);
+
+		if ($deviceItem === null) {
+			$this->logger->error(
+				'Newly created device could not be loaded',
+				[
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'   => 'discovery-message-consumer',
+					'device' => [
+						'identifier' => $entity->getIdentifier(),
+						'address'    => $entity->getIpAddress(),
+					],
+				]
+			);
+
+			return true;
+		}
+
+		$this->setDeviceIpAddress($deviceItem->getId(), $entity->getIpAddress());
 
 		$this->logger->debug(
 			'Consumed device found message',
@@ -163,7 +187,7 @@ final class DiscoveryMessageConsumer implements IConsumer
 				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'discovery-message-consumer',
 				'device' => [
-					'id' => $device->getId()->toString(),
+					'id' => $deviceItem->getId()->toString(),
 				],
 				'data'   => $entity->toArray(),
 			]

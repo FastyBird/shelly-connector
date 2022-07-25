@@ -92,22 +92,22 @@ final class StatusMessageConsumer implements IConsumer
 			return false;
 		}
 
-		$device = $this->devicesDataStorageRepository->findByIdentifier(
+		$deviceItem = $this->devicesDataStorageRepository->findByIdentifier(
 			$entity->getConnector(),
 			$entity->getIdentifier()
 		);
 
-		if ($device === null) {
+		if ($deviceItem === null) {
 			return true;
 		}
 
 		// Check device state...
 		if (
-			!$this->deviceConnectionStateManager->getState($device)->equalsValue(Metadata\Types\ConnectionStateType::STATE_READY)
+			!$this->deviceConnectionStateManager->getState($deviceItem)->equalsValue(Metadata\Types\ConnectionStateType::STATE_READY)
 		) {
 			// ... and if it is not ready, set it to ready
 			$this->deviceConnectionStateManager->setState(
-				$device,
+				$deviceItem,
 				Metadata\Types\ConnectionStateType::get(Metadata\Types\ConnectionStateType::STATE_READY)
 			);
 		}
@@ -131,7 +131,7 @@ final class StatusMessageConsumer implements IConsumer
 								'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 								'type'   => 'status-message-consumer',
 								'device' => [
-									'id' => $device->getId()->toString(),
+									'id' => $deviceItem->getId()->toString(),
 								],
 							]
 						);
@@ -171,7 +171,7 @@ final class StatusMessageConsumer implements IConsumer
 									'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 									'type'     => 'status-message-consumer',
 									'device'   => [
-										'id' => $device->getId()->toString(),
+										'id' => $deviceItem->getId()->toString(),
 									],
 									'channel'  => [
 										'id' => $property->getChannel()->toString(),
@@ -199,7 +199,7 @@ final class StatusMessageConsumer implements IConsumer
 									'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 									'type'     => 'status-message-consumer',
 									'device'   => [
-										'id' => $device->getId()->toString(),
+										'id' => $deviceItem->getId()->toString(),
 									],
 									'channel'  => [
 										'id' => $property->getChannel()->toString(),
@@ -218,7 +218,7 @@ final class StatusMessageConsumer implements IConsumer
 								'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 								'type'   => 'status-message-consumer',
 								'device' => [
-									'id' => $device->getId()->toString(),
+									'id' => $deviceItem->getId()->toString(),
 								],
 							]
 						);
@@ -233,7 +233,7 @@ final class StatusMessageConsumer implements IConsumer
 				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'status-message-consumer',
 				'device' => [
-					'id' => $device->getId()->toString(),
+					'id' => $deviceItem->getId()->toString(),
 				],
 				'data'   => $entity->toArray(),
 			]
