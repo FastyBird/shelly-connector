@@ -155,7 +155,7 @@ class ExecuteCommand extends Console\Command\Command
 
 				if (!$input->getOption('no-confirm')) {
 					$question = new Console\Question\ConfirmationQuestion(
-						sprintf('Would you like to discover devices with "%s" connector', $connector->getName() ?? $connector->getIdentifier()),
+						sprintf('Would you like to execute "%s" connector', $connector->getName() ?? $connector->getIdentifier()),
 						false
 					);
 
@@ -178,7 +178,7 @@ class ExecuteCommand extends Console\Command\Command
 
 					$this->logger->alert('Connector identifier was not able to get from answer', [
 						'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
-						'type'   => 'discovery-cmd',
+						'type'   => 'execute-cmd',
 					]);
 
 					return Console\Command\Command::FAILURE;
@@ -192,7 +192,7 @@ class ExecuteCommand extends Console\Command\Command
 
 				$this->logger->alert('Connector was not found', [
 					'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
-					'type'   => 'discovery-cmd',
+					'type'   => 'execute-cmd',
 				]);
 
 				return Console\Command\Command::FAILURE;
@@ -209,6 +209,7 @@ class ExecuteCommand extends Console\Command\Command
 
 		$result = $serviceCmd->run(new Input\ArrayInput([
 			'--connector' => $connector->getId()->toString(),
+			'--no-confirm' => true,
 			'--quiet' => true,
 		]), $output);
 
