@@ -48,14 +48,21 @@ interface IClient
 	public function isConnected(): bool;
 
 	/**
-	 * Connects to a broker
+	 * Discover new devices
+	 *
+	 * @return void
+	 */
+	public function discover(): void;
+
+	/**
+	 * Create servers/clients
 	 *
 	 * @return void
 	 */
 	public function connect(): void;
 
 	/**
-	 * Disconnects from a broker
+	 * Destroy servers/clients
 	 *
 	 * @return void
 	 */

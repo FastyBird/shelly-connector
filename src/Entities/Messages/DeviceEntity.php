@@ -41,6 +41,9 @@ abstract class DeviceEntity implements IEntity
 	/** @var string */
 	private string $identifier;
 
+	/** @var string|null */
+	private ?string $type;
+
 	/** @var string */
 	private string $ipAddress;
 
@@ -48,17 +51,20 @@ abstract class DeviceEntity implements IEntity
 	 * @param Types\MessageSourceType $source
 	 * @param Uuid\UuidInterface $connector
 	 * @param string $identifier
+	 * @param string|null $type
 	 * @param string $ipAddress
 	 */
 	public function __construct(
 		Types\MessageSourceType $source,
 		Uuid\UuidInterface $connector,
 		string $identifier,
+		?string $type,
 		string $ipAddress
 	) {
 		$this->source = $source;
 		$this->connector = $connector;
 		$this->identifier = $identifier;
+		$this->type = $type;
 		$this->ipAddress = $ipAddress;
 	}
 
@@ -87,6 +93,14 @@ abstract class DeviceEntity implements IEntity
 	}
 
 	/**
+	 * @return string|null
+	 */
+	public function getType(): ?string
+	{
+		return $this->type;
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getIpAddress(): string
@@ -102,6 +116,7 @@ abstract class DeviceEntity implements IEntity
 		return [
 			'source'     => $this->getSource()->getValue(),
 			'identifier' => $this->getIdentifier(),
+			'type'       => $this->getType(),
 			'ip_address' => $this->getIpAddress(),
 		];
 	}

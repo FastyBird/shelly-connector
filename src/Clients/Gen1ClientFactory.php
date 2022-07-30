@@ -29,7 +29,7 @@ use FastyBird\ShellyConnector\Types;
 interface Gen1ClientFactory extends ClientFactory
 {
 
-	public const VERSION = Types\ClientVersionType::GEN_1;
+	public const VERSION = Types\ClientVersionType::TYPE_GEN_1;
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector

@@ -29,9 +29,6 @@ use Ramsey\Uuid;
 final class DeviceDescriptionEntity extends DeviceEntity
 {
 
-	/** @var string|null */
-	private ?string $type;
-
 	/** @var BlockDescriptionEntity[] */
 	private array $blocks;
 
@@ -51,18 +48,9 @@ final class DeviceDescriptionEntity extends DeviceEntity
 		string $ipAddress,
 		array $blocks
 	) {
-		parent::__construct($source, $connector, $identifier, $ipAddress);
+		parent::__construct($source, $connector, $identifier, $type, $ipAddress);
 
-		$this->type = $type;
 		$this->blocks = array_unique($blocks, SORT_REGULAR);
-	}
-
-	/**
-	 * @return string|null
-	 */
-	public function getType(): ?string
-	{
-		return $this->type;
 	}
 
 	/**
@@ -91,7 +79,6 @@ final class DeviceDescriptionEntity extends DeviceEntity
 	public function toArray(): array
 	{
 		return array_merge(parent::toArray(), [
-			'type'   => $this->getType(),
 			'blocks' => array_map(function (BlockDescriptionEntity $block): array {
 				return $block->toArray();
 			}, $this->getBlocks()),

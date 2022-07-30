@@ -29,9 +29,6 @@ use Ramsey\Uuid;
 final class DeviceStatusEntity extends DeviceEntity
 {
 
-	/** @var string */
-	private string $type;
-
 	/** @var ChannelStatusEntity[] */
 	private array $channels;
 
@@ -51,18 +48,9 @@ final class DeviceStatusEntity extends DeviceEntity
 		string $ipAddress,
 		array $channels
 	) {
-		parent::__construct($source, $connector, $identifier, $ipAddress);
+		parent::__construct($source, $connector, $identifier, $type, $ipAddress);
 
-		$this->type = $type;
 		$this->channels = $channels;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getType(): string
-	{
-		return $this->type;
 	}
 
 	/**
@@ -79,7 +67,6 @@ final class DeviceStatusEntity extends DeviceEntity
 	public function toArray(): array
 	{
 		return array_merge(parent::toArray(), [
-			'type'   => $this->getType(),
 			'channels' => array_map(function (ChannelStatusEntity $channel): array {
 				return $channel->toArray();
 			}, $this->getChannels()),

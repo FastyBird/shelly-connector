@@ -73,6 +73,44 @@ final class Gen1Client extends Client
 	}
 
 	/**
+	 * @return void
+	 *
+	 * @throws DevicesModuleExceptions\TerminateException
+	 */
+	public function discover(): void
+	{
+		try {
+			$this->coapClient->connect(true);
+		} catch (Throwable $ex) {
+			$this->logger->error('CoAP client could not be started', [
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'   => 'gen1-client',
+			]);
+
+			throw new DevicesModuleExceptions\TerminateException(
+				'CoAP client could not be started',
+				$ex->getCode(),
+				$ex
+			);
+		}
+
+		try {
+			$this->mdnsClient->connect();
+		} catch (Throwable $ex) {
+			$this->logger->error('mDNS client could not be started', [
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'   => 'gen1-client',
+			]);
+
+			throw new DevicesModuleExceptions\TerminateException(
+				'mDNS client could not be started',
+				$ex->getCode(),
+				$ex
+			);
+		}
+	}
+
+	/**
 	 * {@inheritDoc}
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException

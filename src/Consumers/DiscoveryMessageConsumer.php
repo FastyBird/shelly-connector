@@ -39,6 +39,7 @@ final class DiscoveryMessageConsumer implements IConsumer
 
 	use Nette\SmartObject;
 	use TConsumeIpAddress;
+	use TConsumeDeviceType;
 
 	/** @var DevicesModuleModels\Connectors\IConnectorsRepository */
 	private DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository;
@@ -55,11 +56,20 @@ final class DiscoveryMessageConsumer implements IConsumer
 	/** @var DevicesModuleModels\Devices\Properties\IPropertiesManager */
 	private DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager;
 
+	/** @var DevicesModuleModels\Devices\Attributes\IAttributesRepository */
+	private DevicesModuleModels\Devices\Attributes\IAttributesRepository $attributesRepository;
+
+	/** @var DevicesModuleModels\Devices\Attributes\IAttributesManager */
+	private DevicesModuleModels\Devices\Attributes\IAttributesManager $attributesManager;
+
 	/** @var DevicesModuleModels\DataStorage\IDevicesRepository */
 	private DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository;
 
 	/** @var DevicesModuleModels\DataStorage\IDevicePropertiesRepository */
 	private DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository;
+
+	/** @var DevicesModuleModels\DataStorage\IDeviceAttributesRepository */
+	private DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository;
 
 	/** @var Helpers\DatabaseHelper */
 	private Helpers\DatabaseHelper $databaseHelper;
@@ -73,8 +83,11 @@ final class DiscoveryMessageConsumer implements IConsumer
 	 * @param DevicesModuleModels\Devices\IDevicesManager $devicesManager
 	 * @param DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository
 	 * @param DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager
+	 * @param DevicesModuleModels\Devices\Attributes\IAttributesRepository $attributesRepository
+	 * @param DevicesModuleModels\Devices\Attributes\IAttributesManager $attributesManager
 	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository
 	 * @param DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository
+	 * @param DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository
 	 * @param Helpers\DatabaseHelper $databaseHelper
 	 * @param Log\LoggerInterface|null $logger
 	 */
@@ -84,8 +97,11 @@ final class DiscoveryMessageConsumer implements IConsumer
 		DevicesModuleModels\Devices\IDevicesManager $devicesManager,
 		DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository,
 		DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager,
+		DevicesModuleModels\Devices\Attributes\IAttributesRepository $attributesRepository,
+		DevicesModuleModels\Devices\Attributes\IAttributesManager $attributesManager,
 		DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository,
 		DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository,
+		DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository,
 		Helpers\DatabaseHelper $databaseHelper,
 		?Log\LoggerInterface $logger = null
 	) {
@@ -94,9 +110,12 @@ final class DiscoveryMessageConsumer implements IConsumer
 		$this->devicesManager = $devicesManager;
 		$this->propertiesRepository = $propertiesRepository;
 		$this->propertiesManager = $propertiesManager;
+		$this->attributesRepository = $attributesRepository;
+		$this->attributesManager = $attributesManager;
 
 		$this->devicesDataStorageRepository = $devicesDataStorageRepository;
 		$this->propertiesDataStorageRepository = $propertiesDataStorageRepository;
+		$this->attributesDataStorageRepository = $attributesDataStorageRepository;
 
 		$this->databaseHelper = $databaseHelper;
 
@@ -180,6 +199,7 @@ final class DiscoveryMessageConsumer implements IConsumer
 		}
 
 		$this->setDeviceIpAddress($deviceItem->getId(), $entity->getIpAddress());
+		$this->setDeviceHardwareModel($deviceItem->getId(), $entity->getType());
 
 		$this->logger->debug(
 			'Consumed device found message',

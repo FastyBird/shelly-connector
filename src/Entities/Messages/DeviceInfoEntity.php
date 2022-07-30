@@ -30,9 +30,6 @@ final class DeviceInfoEntity extends DeviceEntity
 {
 
 	/** @var string */
-	private string $type;
-
-	/** @var string */
 	private string $macAddress;
 
 	/** @var bool */
@@ -61,20 +58,11 @@ final class DeviceInfoEntity extends DeviceEntity
 		bool $authEnabled,
 		string $firmwareVersion
 	) {
-		parent::__construct($source, $connector, $identifier, $ipAddress);
+		parent::__construct($source, $connector, $identifier, $type, $ipAddress);
 
-		$this->type = $type;
 		$this->macAddress = $macAddress;
 		$this->authEnabled = $authEnabled;
 		$this->firmwareVersion = $firmwareVersion;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getType(): string
-	{
-		return $this->type;
 	}
 
 	/**
@@ -107,7 +95,6 @@ final class DeviceInfoEntity extends DeviceEntity
 	public function toArray(): array
 	{
 		return array_merge(parent::toArray(), [
-			'type'             => $this->getType(),
 			'mac_address'      => $this->getMacAddress(),
 			'auth_enabled'     => $this->isAuthEnabled(),
 			'firmware_version' => $this->getFirmwareVersion(),

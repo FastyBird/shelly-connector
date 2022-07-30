@@ -167,6 +167,7 @@ final class MdnsClient
 							Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_MDNS),
 							$this->connector->getId(),
 							Utils\Strings::lower($matches['id']),
+							Utils\Strings::lower($matches['devtype']),
 							$results[1]
 						));
 					}

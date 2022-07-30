@@ -40,6 +40,7 @@ final class DescriptionMessageConsumer implements IConsumer
 
 	use Nette\SmartObject;
 	use TConsumeIpAddress;
+	use TConsumeDeviceType;
 
 	/** @var DevicesModuleModels\Devices\IDevicesRepository */
 	private DevicesModuleModels\Devices\IDevicesRepository $devicesRepository;
@@ -52,6 +53,12 @@ final class DescriptionMessageConsumer implements IConsumer
 
 	/** @var DevicesModuleModels\Devices\Properties\IPropertiesManager */
 	private DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager;
+
+	/** @var DevicesModuleModels\Devices\Attributes\IAttributesRepository */
+	private DevicesModuleModels\Devices\Attributes\IAttributesRepository $attributesRepository;
+
+	/** @var DevicesModuleModels\Devices\Attributes\IAttributesManager */
+	private DevicesModuleModels\Devices\Attributes\IAttributesManager $attributesManager;
 
 	/** @var DevicesModuleModels\Channels\IChannelsRepository */
 	private DevicesModuleModels\Channels\IChannelsRepository $channelsRepository;
@@ -71,6 +78,9 @@ final class DescriptionMessageConsumer implements IConsumer
 	/** @var DevicesModuleModels\DataStorage\IDevicePropertiesRepository */
 	private DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository;
 
+	/** @var DevicesModuleModels\DataStorage\IDeviceAttributesRepository */
+	private DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository;
+
 	/** @var DevicesModuleModels\DataStorage\IChannelsRepository */
 	private DevicesModuleModels\DataStorage\IChannelsRepository $channelsDataStorageRepository;
 
@@ -88,11 +98,14 @@ final class DescriptionMessageConsumer implements IConsumer
 	 * @param DevicesModuleModels\Devices\IDevicesManager $devicesManager
 	 * @param DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository
 	 * @param DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager
+	 * @param DevicesModuleModels\Devices\Attributes\IAttributesRepository $attributesRepository
+	 * @param DevicesModuleModels\Devices\Attributes\IAttributesManager $attributesManager
 	 * @param DevicesModuleModels\Channels\IChannelsRepository $channelsRepository
 	 * @param DevicesModuleModels\Channels\IChannelsManager $channelsManager
 	 * @param DevicesModuleModels\Channels\Properties\IPropertiesRepository $channelsPropertiesRepository
 	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository
 	 * @param DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository
+	 * @param DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository
 	 * @param DevicesModuleModels\DataStorage\IChannelsRepository $channelsDataStorageRepository
 	 * @param Mappers\SensorMapper $sensorMapper
 	 * @param Helpers\DatabaseHelper $databaseHelper
@@ -103,11 +116,14 @@ final class DescriptionMessageConsumer implements IConsumer
 		DevicesModuleModels\Devices\IDevicesManager $devicesManager,
 		DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository,
 		DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager,
+		DevicesModuleModels\Devices\Attributes\IAttributesRepository $attributesRepository,
+		DevicesModuleModels\Devices\Attributes\IAttributesManager $attributesManager,
 		DevicesModuleModels\Channels\IChannelsRepository $channelsRepository,
 		DevicesModuleModels\Channels\IChannelsManager $channelsManager,
 		DevicesModuleModels\Channels\Properties\IPropertiesRepository $channelsPropertiesRepository,
 		DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository,
 		DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository,
+		DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository,
 		DevicesModuleModels\DataStorage\IChannelsRepository $channelsDataStorageRepository,
 		Mappers\SensorMapper $sensorMapper,
 		Helpers\DatabaseHelper $databaseHelper,
@@ -117,12 +133,15 @@ final class DescriptionMessageConsumer implements IConsumer
 		$this->devicesManager = $devicesManager;
 		$this->propertiesRepository = $propertiesRepository;
 		$this->propertiesManager = $propertiesManager;
+		$this->attributesRepository = $attributesRepository;
+		$this->attributesManager = $attributesManager;
 		$this->channelsRepository = $channelsRepository;
 		$this->channelsManager = $channelsManager;
 		$this->channelsPropertiesRepository = $channelsPropertiesRepository;
 
 		$this->devicesDataStorageRepository = $devicesDataStorageRepository;
 		$this->propertiesDataStorageRepository = $propertiesDataStorageRepository;
+		$this->attributesDataStorageRepository = $attributesDataStorageRepository;
 		$this->channelsDataStorageRepository = $channelsDataStorageRepository;
 
 		$this->sensorMapper = $sensorMapper;
@@ -176,6 +195,7 @@ final class DescriptionMessageConsumer implements IConsumer
 		}
 
 		$this->setDeviceIpAddress($deviceItem->getId(), $entity->getIpAddress());
+		$this->setDeviceHardwareModel($deviceItem->getId(), $entity->getType());
 
 		foreach ($entity->getBlocks() as $block) {
 			$channelItem = $this->channelsDataStorageRepository->findByIdentifier(

@@ -43,6 +43,7 @@ final class InfoMessageConsumer implements IConsumer
 
 	use Nette\SmartObject;
 	use TConsumeIpAddress;
+	use TConsumeDeviceType;
 
 	/** @var DevicesModuleModels\Devices\IDevicesRepository */
 	private DevicesModuleModels\Devices\IDevicesRepository $devicesRepository;
@@ -162,6 +163,7 @@ final class InfoMessageConsumer implements IConsumer
 		}
 
 		$this->setDeviceIpAddress($deviceItem->getId(), $entity->getIpAddress());
+		$this->setDeviceHardwareModel($deviceItem->getId(), $entity->getType());
 		$this->setDeviceMacAddress($deviceItem->getId(), $entity->getMacAddress());
 		$this->setDeviceFirmwareVersion($deviceItem->getId(), $entity->getFirmwareVersion());
 		$this->setDeviceAuthEnabled($deviceItem->getId(), $entity->isAuthEnabled());

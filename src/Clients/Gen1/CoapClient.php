@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\Clients\Gen1;
 
 use Clue\React\Multicast;
+use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\ShellyConnector\API;
@@ -46,6 +47,8 @@ final class CoapClient
 	private const DESCRIPTION_MESSAGE_CODE = 69;
 
 	private const AUTOMATIC_DISCOVERY_DELAY = 5;
+
+	private bool $onlyDiscovery = false;
 
 	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
 	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
@@ -105,6 +108,8 @@ final class CoapClient
 
 	/**
 	 * @return void
+	 *
+	 * @throws DevicesModuleExceptions\TerminateException
 	 */
 	public function discover(): void
 	{
@@ -116,6 +121,10 @@ final class CoapClient
 					'type'   => 'coap-client',
 				]
 			);
+
+			if ($this->onlyDiscovery) {
+				throw new DevicesModuleExceptions\TerminateException('Server is not created, discovery could not be performed');
+			}
 
 			return;
 		}
@@ -140,10 +149,14 @@ final class CoapClient
 	}
 
 	/**
+	 * @param bool $onlyDiscovery
+	 *
 	 * @return void
 	 */
-	public function connect(): void
+	public function connect(bool $onlyDiscovery = false): void
 	{
+		$this->onlyDiscovery = $onlyDiscovery;
+
 		$factory = new Multicast\Factory($this->eventLoop);
 
 		$this->server = $factory->createReceiver(self::COAP_ADDRESS . ':' . self::COAP_PORT);
@@ -152,9 +165,16 @@ final class CoapClient
 			$this->handlePacket($message, $remote);
 		});
 
-		$this->eventLoop->addTimer(self::AUTOMATIC_DISCOVERY_DELAY, function (): void {
-			$this->discover();
-		});
+		if ($onlyDiscovery) {
+			$this->eventLoop->futureTick(function (): void {
+				$this->discover();
+			});
+
+		} else {
+			$this->eventLoop->addTimer(self::AUTOMATIC_DISCOVERY_DELAY, function (): void {
+				$this->discover();
+			});
+		}
 	}
 
 	/**
@@ -270,6 +290,7 @@ final class CoapClient
 				&& $this->validator->isValidCoapStatusMessage($message)
 				&& $deviceType !== null
 				&& $deviceIdentifier !== null
+				&& !$this->onlyDiscovery
 			) {
 				try {
 					$this->consumer->append(

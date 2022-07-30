@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * ClientVersionType.php
+ * ConnectorControlNameType.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -10,30 +10,30 @@
  * @subpackage     Types
  * @since          0.37.0
  *
- * @date           19.07.22
+ * @date           30.07.22
  */
 
 namespace FastyBird\ShellyConnector\Types;
 
 use Consistence;
+use FastyBird\Metadata\Types as MetadataTypes;
 
 /**
- * Connector client versions types
+ * Connector control name types
  *
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Types
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class ClientVersionType extends Consistence\Enum\Enum
+class ConnectorControlNameType extends Consistence\Enum\Enum
 {
 
 	/**
-	 * Define versions
+	 * Define device states
 	 */
-	public const TYPE_GEN_1 = 'gen1';
-	public const TYPE_GEN_2 = 'gen2';
-	public const TYPE_CLOUD = 'cloud';
+	public const NAME_DISCOVER = 'version';
+	public const NAME_REBOOT = MetadataTypes\ControlNameType::NAME_REBOOT;
 
 	/**
 	 * @return string

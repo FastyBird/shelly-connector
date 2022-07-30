@@ -19,6 +19,7 @@ use Doctrine\Persistence;
 use FastyBird\ShellyConnector;
 use FastyBird\ShellyConnector\API;
 use FastyBird\ShellyConnector\Clients;
+use FastyBird\ShellyConnector\Commands;
 use FastyBird\ShellyConnector\Connector;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Helpers;
@@ -169,6 +170,13 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 		// Mappers
 		$builder->addDefinition($this->prefix('mappers.sensor'), new DI\Definitions\ServiceDefinition())
 			->setType(Mappers\SensorMapper::class);
+
+		// Console commands
+		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
+			->setType(Commands\InitializeCommand::class);
+
+		$builder->addDefinition($this->prefix('commands.discovery'), new DI\Definitions\ServiceDefinition())
+			->setType(Commands\DiscoveryCommand::class);
 	}
 
 	/**
