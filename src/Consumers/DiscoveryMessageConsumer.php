@@ -20,8 +20,10 @@ use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Metadata;
+use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\ShellyConnector\Entities;
 use FastyBird\ShellyConnector\Helpers;
+use FastyBird\ShellyConnector\Types;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
@@ -155,11 +157,30 @@ final class DiscoveryMessageConsumer implements IConsumer
 			/** @var DevicesModuleEntities\Devices\IDevice $device */
 			$device = $this->databaseHelper->transaction(
 				function () use ($entity, $connector): DevicesModuleEntities\Devices\IDevice {
-					return $this->devicesManager->create(Utils\ArrayHash::from([
+					$device = $this->devicesManager->create(Utils\ArrayHash::from([
 						'entity'     => Entities\ShellyDeviceEntity::class,
 						'connector'  => $connector,
 						'identifier' => $entity->getIdentifier(),
 					]));
+
+					$this->propertiesManager->create(Utils\ArrayHash::from([
+						'device'     => $device,
+						'entity'     => DevicesModuleEntities\Devices\Properties\DynamicProperty::class,
+						'identifier' => Types\DevicePropertyIdentifierType::IDENTIFIER_STATE,
+						'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_ENUM),
+						'unit'       => null,
+						'format'     => [
+							MetadataTypes\ConnectionStateType::STATE_READY,
+							MetadataTypes\ConnectionStateType::STATE_STOPPED,
+							MetadataTypes\ConnectionStateType::STATE_DISCONNECTED,
+							MetadataTypes\ConnectionStateType::STATE_LOST,
+							MetadataTypes\ConnectionStateType::STATE_UNKNOWN,
+						],
+						'settable'   => false,
+						'queryable'  => false,
+					]));
+
+					return $device;
 				}
 			);
 

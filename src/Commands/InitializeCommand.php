@@ -327,9 +327,9 @@ class InitializeCommand extends Console\Command\Command
 
 		$question->setErrorMessage('Selected connector: "%s" is not valid.');
 
-		$connectorIdentifierKey = array_search($io->askQuestion($question), $connectors);
+		$connectorIdentifier = array_search($io->askQuestion($question), $connectors);
 
-		if ($connectorIdentifierKey === false) {
+		if ($connectorIdentifier === false) {
 			$io->error('Something went wrong, connector could not be loaded');
 
 			$this->logger->alert('Connector identifier was not able to get from answer', [
@@ -341,7 +341,7 @@ class InitializeCommand extends Console\Command\Command
 		}
 
 		$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
-		$findConnectorQuery->byIdentifier($connectorIdentifierKey);
+		$findConnectorQuery->byIdentifier($connectorIdentifier);
 
 		$connector = $this->connectorsRepository->findOneBy($findConnectorQuery);
 

@@ -226,9 +226,9 @@ class DiscoveryCommand extends Console\Command\Command
 
 				$question->setErrorMessage('Selected connector: %s is not valid.');
 
-				$connectorIdentifierKey = array_search($io->askQuestion($question), $connectors);
+				$connectorIdentifier = array_search($io->askQuestion($question), $connectors);
 
-				if ($connectorIdentifierKey === false) {
+				if ($connectorIdentifier === false) {
 					$io->error('Something went wrong, connector could not be loaded');
 
 					$this->logger->alert('Connector identifier was not able to get from answer', [
@@ -239,7 +239,7 @@ class DiscoveryCommand extends Console\Command\Command
 					return Console\Command\Command::FAILURE;
 				}
 
-				$connector = $this->connectorsRepository->findByIdentifier($connectorIdentifierKey);
+				$connector = $this->connectorsRepository->findByIdentifier($connectorIdentifier);
 			}
 
 			if ($connector === null) {
