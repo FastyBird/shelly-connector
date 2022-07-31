@@ -58,6 +58,7 @@ from fastybird_shelly_connector.registry.records import (
     SensorRecord,
 )
 from fastybird_shelly_connector.types import ClientMessageType, ClientType
+from fastybird_shelly_connector.utilities.helpers import Timer
 
 
 class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attributes
@@ -83,7 +84,7 @@ class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attribut
 
     __logger: Union[Logger, logging.Logger]
 
-    # __timer: Optional[Timer] = None
+    __timer: Optional[Timer] = None
 
     __BIND_IP: str = "0.0.0.0"
     __COAP_IP: str = "224.0.1.187"
@@ -125,7 +126,7 @@ class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attribut
         """Start communication"""
         self.__create_client()
 
-        # self.__timer = Timer(interval=self.__DISCOVERY_INTERVAL)
+        self.__timer = Timer(interval=self.__DISCOVERY_INTERVAL)
 
         self.__stopped = False
 
@@ -136,7 +137,7 @@ class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attribut
 
     def stop(self) -> None:
         """Stop communication"""
-        # self.__timer = None
+        self.__timer = None
 
         self.__stopped = True
 
@@ -169,6 +170,7 @@ class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attribut
             )
 
             msg = bytes(b"\x50\x01\x00\x0A\xb3cit\x01d\xFF")
+            # hex: 50 01 00 0a b3 63 69 74 01 64 ff
 
             self.__socket.sendto(msg, (self.__COAP_IP, self.__COAP_PORT))
 
@@ -196,8 +198,8 @@ class CoapClient(IClient, Thread):  # pylint: disable=too-many-instance-attribut
             return
 
         while not self.__stopped:
-            # if self.__timer is not None and self.__timer.check():
-            #     self.discover()
+            if self.__timer is not None and self.__timer.check():
+                self.discover()
 
             try:
                 self.__handle_request()

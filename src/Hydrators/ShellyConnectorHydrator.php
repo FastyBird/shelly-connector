@@ -26,7 +26,7 @@ use FastyBird\ShellyConnector\Entities;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  *
- * @phpstan-extends DevicesModuleHydrators\Connectors\ConnectorHydrator<Entities\IShellyConnector>
+ * @phpstan-extends DevicesModuleHydrators\Connectors\ConnectorHydrator<Entities\IShellyConnectorEntity>
  */
 final class ShellyConnectorHydrator extends DevicesModuleHydrators\Connectors\ConnectorHydrator
 {
@@ -36,7 +36,7 @@ final class ShellyConnectorHydrator extends DevicesModuleHydrators\Connectors\Co
 	 */
 	public function getEntityName(): string
 	{
-		return Entities\ShellyConnector::class;
+		return Entities\ShellyConnectorEntity::class;
 	}
 
 }
