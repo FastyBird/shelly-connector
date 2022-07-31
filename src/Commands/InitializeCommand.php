@@ -64,9 +64,6 @@ class InitializeCommand extends Console\Command\Command
 	/** @var DevicesModuleModels\Connectors\Properties\IPropertiesManager */
 	private DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesManager;
 
-	/** @var DevicesModuleModels\Connectors\Controls\IControlsRepository */
-	private DevicesModuleModels\Connectors\Controls\IControlsRepository $controlsRepository;
-
 	/** @var DevicesModuleModels\Connectors\Controls\IControlsManager */
 	private DevicesModuleModels\Connectors\Controls\IControlsManager $controlsManager;
 
@@ -84,7 +81,6 @@ class InitializeCommand extends Console\Command\Command
 	 * @param DevicesModuleModels\Connectors\IConnectorsManager $connectorsManager
 	 * @param DevicesModuleModels\Connectors\Properties\IPropertiesRepository $propertiesRepository
 	 * @param DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesManager
-	 * @param DevicesModuleModels\Connectors\Controls\IControlsRepository $controlsRepository
 	 * @param DevicesModuleModels\Connectors\Controls\IControlsManager $controlsManager
 	 * @param DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsDataStorageRepository
 	 * @param Persistence\ManagerRegistry $managerRegistry
@@ -96,7 +92,6 @@ class InitializeCommand extends Console\Command\Command
 		DevicesModuleModels\Connectors\IConnectorsManager $connectorsManager,
 		DevicesModuleModels\Connectors\Properties\IPropertiesRepository $propertiesRepository,
 		DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesManager,
-		DevicesModuleModels\Connectors\Controls\IControlsRepository $controlsRepository,
 		DevicesModuleModels\Connectors\Controls\IControlsManager $controlsManager,
 		DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsDataStorageRepository,
 		Persistence\ManagerRegistry $managerRegistry,
@@ -107,7 +102,6 @@ class InitializeCommand extends Console\Command\Command
 		$this->connectorsManager = $connectorsManager;
 		$this->propertiesRepository = $propertiesRepository;
 		$this->propertiesManager = $propertiesManager;
-		$this->controlsRepository = $controlsRepository;
 		$this->controlsManager = $controlsManager;
 
 		$this->connectorsDataStorageRepository = $connectorsDataStorageRepository;
