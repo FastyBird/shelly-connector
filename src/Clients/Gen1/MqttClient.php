@@ -15,6 +15,7 @@
 
 namespace FastyBird\ShellyConnector\Clients\Gen1;
 
+use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 
@@ -41,6 +42,58 @@ final class MqttClient
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	) {
 		$this->connector = $connector;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isConnected(): bool
+	{
+		return false;
+	}
+
+	/**
+	 * @return void
+	 *
+	 * @throws DevicesModuleExceptions\TerminateException
+	 */
+	public function connect(): void
+	{
+		throw new DevicesModuleExceptions\TerminateException(
+			sprintf('MQTT client is not implemented for connector %s', $this->connector->getIdentifier())
+		);
+	}
+
+	/**
+	 * @return void
+	 *
+	 * @throws DevicesModuleExceptions\TerminateException
+	 */
+	public function disconnect(): void
+	{
+		throw new DevicesModuleExceptions\TerminateException(
+			sprintf('MQTT client is not implemented for connector %s', $this->connector->getIdentifier())
+		);
+	}
+
+	/**
+	 * @param MetadataEntities\Actions\IActionDeviceControlEntity $action
+	 *
+	 * @return void
+	 */
+	public function writeDeviceControl(MetadataEntities\Actions\IActionDeviceControlEntity $action): void
+	{
+		// TODO: Implement writeDeviceControl() method.
+	}
+
+	/**
+	 * @param MetadataEntities\Actions\IActionChannelControlEntity $action
+	 *
+	 * @return void
+	 */
+	public function writeChannelControl(MetadataEntities\Actions\IActionChannelControlEntity $action): void
+	{
+		// TODO: Implement writeChannelControl() method.
 	}
 
 }

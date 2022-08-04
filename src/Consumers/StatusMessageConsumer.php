@@ -70,7 +70,7 @@ final class StatusMessageConsumer implements IConsumer
 		DevicesModuleModels\States\ChannelPropertiesManager $propertiesStatesManager,
 		DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager,
 		Mappers\ISensorMapper $sensorMapper,
-		?Log\LoggerInterface $logger,
+		?Log\LoggerInterface $logger
 	) {
 		$this->devicesDataStorageRepository = $devicesDataStorageRepository;
 

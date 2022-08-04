@@ -158,7 +158,7 @@ final class Gen1Parser
 		$channels = [];
 
 		foreach ($parsedMessage['G'] as $sensorState) {
-			if (count($sensorState) === 3) {
+			if (is_array($sensorState) && count($sensorState) === 3) {
 				[$channel, $sensorIdentifier, $sensorValue] = $sensorState;
 
 				if (!array_key_exists($channel, $channels)) {
@@ -168,17 +168,21 @@ final class Gen1Parser
 					);
 				}
 
-				$property = $this->sensorMapper->findProperty($connector, $identifier, $sensorIdentifier);
+				$property = $this->sensorMapper->findProperty(
+					$connector,
+					strval($identifier),
+					intval($sensorIdentifier)
+				);
 
 				if ($property !== null) {
 					$channels[$channel]->addSensor(
 						new Entities\Messages\SensorStatusEntity(
 							Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
-							$sensorIdentifier,
+							intval($sensorIdentifier),
 							$this->transformer->transformValueFromDevice(
 								$property->getDataType(),
 								$property->getFormat(),
-								$sensorValue
+								strval($sensorValue)
 							)
 						)
 					);
@@ -226,7 +230,8 @@ final class Gen1Parser
 		$parsedMessage = $this->schemaValidator->validate($message, $schema);
 
 		if (
-			!$parsedMessage->offsetExists('type')
+			!$parsedMessage instanceof Utils\ArrayHash
+			|| !$parsedMessage->offsetExists('type')
 			|| !$parsedMessage->offsetExists('mac')
 			|| !$parsedMessage->offsetExists('auth')
 			|| !$parsedMessage->offsetExists('fw')
@@ -239,10 +244,10 @@ final class Gen1Parser
 			$connector,
 			$identifier,
 			$address,
-			Utils\Strings::lower($parsedMessage['type']),
-			$parsedMessage['mac'],
-			$parsedMessage['auth'],
-			$parsedMessage['fw']
+			Utils\Strings::lower(strval($parsedMessage->offsetGet('type'))),
+			strval($parsedMessage->offsetGet('mac')),
+			boolval($parsedMessage->offsetGet('auth')),
+			strval($parsedMessage->offsetGet('fw'))
 		);
 	}
 
@@ -315,7 +320,8 @@ final class Gen1Parser
 
 		foreach ($blocks as $block) {
 			if (
-				!$block->offsetExists('I')
+				!$block instanceof Utils\ArrayHash
+				|| !$block->offsetExists('I')
 				|| !$block->offsetExists('D')
 			) {
 				continue;
@@ -323,13 +329,14 @@ final class Gen1Parser
 
 			$blockDescription = new Entities\Messages\BlockDescriptionEntity(
 				$source,
-				intval($block['I']),
-				$block['D'],
+				intval($block->offsetGet('I')),
+				strval($block->offsetGet('D')),
 			);
 
 			foreach ($sensors as $sensor) {
 				if (
-					!$sensor->offsetExists('I')
+					!$sensor instanceof Utils\ArrayHash
+					|| !$sensor->offsetExists('I')
 					|| !$sensor->offsetExists('T')
 					|| !$sensor->offsetExists('D')
 					|| !$sensor->offsetExists('L')
@@ -338,27 +345,27 @@ final class Gen1Parser
 				}
 
 				if (
-					($sensor['L'] instanceof Utils\ArrayHash && in_array($block['D'], (array) $sensor['L'], true))
-					|| $block['D'] === (int) $sensor['L']
+					($sensor->offsetGet('L') instanceof Utils\ArrayHash && in_array($block->offsetGet('D'), (array) $sensor->offsetGet('L'), true))
+					|| intval($block->offsetGet('D')) === intval($sensor->offsetGet('L'))
 				) {
 					$sensorRange = $this->parseSensorRange(
 						$source,
-						$block['D'],
-						$sensor['D'],
-						$sensor->offsetExists('R') ? $sensor['R'] : null
+						strval($block->offsetGet('D')),
+						strval($sensor->offsetGet('D')),
+						$sensor->offsetExists('R') ? (is_array($sensor->offsetGet('R')) || $sensor->offsetGet('R') instanceof Utils\ArrayHash ? (array) $sensor->offsetGet('R') : strval($sensor->offsetGet('R'))) : null
 					);
 
 					$sensorDescription = new Entities\Messages\SensorDescriptionEntity(
 						$source,
-						intval($sensor['I']),
-						Types\SensorTypeType::get($sensor['T']),
-						strval($sensor['D']),
+						intval($sensor->offsetGet('I')),
+						Types\SensorTypeType::get($sensor->offsetGet('T')),
+						strval($sensor->offsetGet('D')),
 						$sensorRange->getDataType(),
-						$sensor->offsetExists('U') && $sensor['U'] !== null ? Types\SensorUnitType::get($sensor['U']) : null,
+						$sensor->offsetExists('U') && $sensor->offsetGet('U') !== null ? Types\SensorUnitType::get($sensor->offsetGet('U')) : null,
 						$sensorRange->getFormat(),
 						$sensorRange->getInvalid(),
 						false,
-						Types\WritableSensorTypeType::isValidValue($sensor['D'])
+						Types\WritableSensorTypeType::isValidValue($sensor->offsetGet('D'))
 					);
 
 					$blockDescription->addSensor($sensorDescription);

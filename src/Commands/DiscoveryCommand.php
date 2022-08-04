@@ -420,6 +420,14 @@ class DiscoveryCommand extends Console\Command\Command
 
 					$io->error('Something went wrong, discovery could not be finished. Error was logged.');
 
+					if ($client->isConnected()) {
+						$client->disconnect();
+					}
+
+					$this->eventLoop->stop();
+
+					return Console\Command\Command::FAILURE;
+
 				} catch (Throwable $ex) {
 					$this->logger->error('An unhandled error occurred', [
 						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
@@ -430,10 +438,7 @@ class DiscoveryCommand extends Console\Command\Command
 						],
 					]);
 
-					$io->error('Something went wrong, discovery could not be finished. Error was logged.');
-
-				} finally {
-					if ($client->isConnected()) {
+					$io->error('Something went wrong, discovery could not be finished. Error was logged.');if ($client->isConnected()) {
 						$client->disconnect();
 					}
 

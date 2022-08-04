@@ -103,6 +103,7 @@ final class DescriptionMessageConsumer implements IConsumer
 	 * @param DevicesModuleModels\Channels\IChannelsRepository $channelsRepository
 	 * @param DevicesModuleModels\Channels\IChannelsManager $channelsManager
 	 * @param DevicesModuleModels\Channels\Properties\IPropertiesRepository $channelsPropertiesRepository
+	 * @param DevicesModuleModels\Channels\Properties\IPropertiesManager $channelsPropertiesManager
 	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository
 	 * @param DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository
 	 * @param DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository
@@ -121,6 +122,7 @@ final class DescriptionMessageConsumer implements IConsumer
 		DevicesModuleModels\Channels\IChannelsRepository $channelsRepository,
 		DevicesModuleModels\Channels\IChannelsManager $channelsManager,
 		DevicesModuleModels\Channels\Properties\IPropertiesRepository $channelsPropertiesRepository,
+		DevicesModuleModels\Channels\Properties\IPropertiesManager $channelsPropertiesManager,
 		DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository,
 		DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository,
 		DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository,
@@ -138,6 +140,7 @@ final class DescriptionMessageConsumer implements IConsumer
 		$this->channelsRepository = $channelsRepository;
 		$this->channelsManager = $channelsManager;
 		$this->channelsPropertiesRepository = $channelsPropertiesRepository;
+		$this->channelsPropertiesManager = $channelsPropertiesManager;
 
 		$this->devicesDataStorageRepository = $devicesDataStorageRepository;
 		$this->propertiesDataStorageRepository = $propertiesDataStorageRepository;
@@ -258,7 +261,7 @@ final class DescriptionMessageConsumer implements IConsumer
 								'identifier' => sprintf(
 									'%d_%s_%s',
 									$sensor->getIdentifier(),
-									$sensor->getType()->getValue(),
+									strval($sensor->getType()->getValue()),
 									$sensor->getDescription()
 								),
 								'name'       => $sensor->getDescription(),
@@ -308,7 +311,7 @@ final class DescriptionMessageConsumer implements IConsumer
 									'identifier' => sprintf(
 										'%d_%s_%s',
 										$sensor->getIdentifier(),
-										$sensor->getType()->getValue(),
+										strval($sensor->getType()->getValue()),
 										$sensor->getDescription()
 									),
 									'name'       => $sensor->getDescription(),

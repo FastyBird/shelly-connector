@@ -50,6 +50,10 @@ final class Gen1Transformer
 			return null;
 		}
 
+		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_BOOLEAN)) {
+			return is_bool($value) ? $value : boolval($value);
+		}
+
 		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_FLOAT)) {
 			$floatValue = floatval($value);
 
@@ -93,28 +97,6 @@ final class Gen1Transformer
 			return $intValue;
 		}
 
-		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_BOOLEAN)) {
-			return is_bool($value) ? $value : boolval($value);
-		}
-
-		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)) {
-			if (is_array($format)) {
-				$filteredFormat = array_values(array_filter($format, function ($item) use ($value): bool {
-					return ((is_array($item) || is_string($item))) && $this->filterEnumFormat($item, $value);
-				}));
-
-				if (count($filteredFormat) === 1) {
-					if (is_array($filteredFormat[0])) {
-						if (count($filteredFormat[0]) === 3) {
-							return strval($filteredFormat[0][0]) ? Utils\Strings::lower(strval($filteredFormat[0][1])) === Utils\Strings::lower(strval($value)) : null;
-						}
-					} else {
-						return strval($filteredFormat[0]);
-					}
-				}
-			}
-		}
-
 		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)) {
 			if (is_array($format)) {
 				$filteredFormat = array_values(array_filter($format, function ($item) use ($value): bool {
@@ -126,10 +108,42 @@ final class Gen1Transformer
 					&& is_array($filteredFormat[0])
 					&& count($filteredFormat[0]) === 3
 					&& Utils\Strings::lower(strval($filteredFormat[0][1])) === Utils\Strings::lower(strval($value))
-					&& MetadataTypes\SwitchPayloadType::isValidValue($filteredFormat[0][0])
 				) {
-					return MetadataTypes\SwitchPayloadType::get($filteredFormat[0][0]);
+					return MetadataTypes\SwitchPayloadType::isValidValue(strval($filteredFormat[0][0])) ? MetadataTypes\SwitchPayloadType::get(strval($filteredFormat[0][0])) : null;
+
+				} elseif (
+					count($filteredFormat) === 1
+					&& !is_array($filteredFormat[0])
+				) {
+					return MetadataTypes\SwitchPayloadType::isValidValue(strval($filteredFormat[0])) ? MetadataTypes\SwitchPayloadType::get(strval($filteredFormat[0])) : null;
 				}
+
+				return null;
+			}
+		}
+
+		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)) {
+			if (is_array($format)) {
+				$filteredFormat = array_values(array_filter($format, function ($item) use ($value): bool {
+					return ((is_array($item) || is_string($item))) && $this->filterEnumFormat($item, $value);
+				}));
+
+				if (
+					count($filteredFormat) === 1
+					&& is_array($filteredFormat[0])
+					&& count($filteredFormat[0]) === 3
+					&& Utils\Strings::lower(strval($filteredFormat[0][1])) === Utils\Strings::lower(strval($value))
+				) {
+					return strval($filteredFormat[0][0]);
+
+				} elseif (
+					count($filteredFormat) === 1
+					&& !is_array($filteredFormat[0])
+				) {
+					return strval($filteredFormat[0]);
+				}
+
+				return null;
 			}
 		}
 
@@ -160,32 +174,6 @@ final class Gen1Transformer
             return null;
 		}
 
-		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)) {
-			if (is_array($format)) {
-				$filteredFormat = array_values(array_filter($format, function ($item) use ($value): bool {
-					return ((is_array($item) || is_string($item))) && $this->filterEnumFormat($item, $value);
-				}));
-
-				if (
-					count($filteredFormat) === 1
-					&& is_array($filteredFormat[0])
-					&& count($filteredFormat[0]) === 3
-					&& Utils\Strings::lower(strval($filteredFormat[0][0])) === Utils\Strings::lower(strval($value))
-				) {
-					return strval($filteredFormat[0][2]);
-				}
-
-				if (
-					count($filteredFormat) === 1
-					&& !is_array($filteredFormat[0])
-				) {
-					return strval($filteredFormat[0]);
-				}
-
-                return null;
-			}
-		}
-
 		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)) {
 			if (is_array($format)) {
 				$filteredFormat = array_values(array_filter($format, function ($item) use ($value): bool {
@@ -199,7 +187,40 @@ final class Gen1Transformer
 					&& Utils\Strings::lower(strval($filteredFormat[0][0])) === Utils\Strings::lower(strval($value))
 				) {
 					return strval($filteredFormat[0][2]);
+
+				} elseif (
+					count($filteredFormat) === 1
+					&& !is_array($filteredFormat[0])
+				) {
+					return strval($filteredFormat[0]);
 				}
+
+				return null;
+			}
+		}
+
+		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)) {
+			if (is_array($format)) {
+				$filteredFormat = array_values(array_filter($format, function ($item) use ($value): bool {
+					return ((is_array($item) || is_string($item))) && $this->filterEnumFormat($item, $value);
+				}));
+
+				if (
+					count($filteredFormat) === 1
+					&& is_array($filteredFormat[0])
+					&& count($filteredFormat[0]) === 3
+					&& Utils\Strings::lower(strval($filteredFormat[0][0])) === Utils\Strings::lower(strval($value))
+				) {
+					return strval($filteredFormat[0][2]);
+
+				} elseif (
+					count($filteredFormat) === 1
+					&& !is_array($filteredFormat[0])
+				) {
+					return strval($filteredFormat[0]);
+				}
+
+                return null;
 			}
 		}
 

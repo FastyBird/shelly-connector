@@ -16,9 +16,11 @@
 namespace FastyBird\ShellyConnector\Clients;
 
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
+use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\ShellyConnector\Clients;
+use FastyBird\ShellyConnector\Types;
 use Psr\Log;
 use Throwable;
 
@@ -33,17 +35,35 @@ use Throwable;
 final class Gen1Client extends Client
 {
 
-	/** @var Clients\Gen1\CoapClient */
-	private Clients\Gen1\CoapClient $coapClient;
+	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
+	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
 
-	/** @var Clients\Gen1\MdnsClient */
-	private Clients\Gen1\MdnsClient $mdnsClient;
+	/** @var Clients\Gen1\CoapClient|null */
+	private ?Clients\Gen1\CoapClient $coapClient = null;
 
-	/** @var Clients\Gen1\HttpClient */
-	private Clients\Gen1\HttpClient $httpClient;
+	/** @var Clients\Gen1\MdnsClient|null */
+	private ?Clients\Gen1\MdnsClient $mdnsClient = null;
 
-	/** @var Gen1\MqttClient */
-	private Clients\Gen1\MqttClient $mqttClient;
+	/** @var Clients\Gen1\HttpClient|null */
+	private ?Clients\Gen1\HttpClient $httpClient = null;
+
+	/** @var Gen1\MqttClient|null */
+	private ?Clients\Gen1\MqttClient $mqttClient = null;
+
+	/** @var Gen1\CoapClientFactory */
+	private Clients\Gen1\CoapClientFactory $coapClientFactory;
+
+	/** @var Gen1\MdnsClientFactory */
+	private Clients\Gen1\MdnsClientFactory $mdnsClientFactory;
+
+	/** @var Gen1\HttpClientFactory */
+	private Clients\Gen1\HttpClientFactory $httpClientFactory;
+
+	/** @var Gen1\MqttClientFactory */
+	private Clients\Gen1\MqttClientFactory $mqttClientFactory;
+
+	/** @var DevicesModuleModels\DataStorage\IConnectorPropertiesRepository */
+	private DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $connectorPropertiesRepository;
 
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
@@ -53,7 +73,8 @@ final class Gen1Client extends Client
 	 * @param Gen1\CoapClientFactory $coapClientFactory
 	 * @param Gen1\MdnsClientFactory $mdnsClientFactory
 	 * @param Gen1\HttpClientFactory $httpClientFactory
-	 * @param Clients\Gen1\MqttClientFactory $mqttClientFactory
+	 * @param Gen1\MqttClientFactory $mqttClientFactory
+	 * @param DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $connectorPropertiesRepository
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
@@ -62,12 +83,17 @@ final class Gen1Client extends Client
 		Clients\Gen1\MdnsClientFactory $mdnsClientFactory,
 		Clients\Gen1\HttpClientFactory $httpClientFactory,
 		Clients\Gen1\MqttClientFactory $mqttClientFactory,
+		DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $connectorPropertiesRepository,
 		?Log\LoggerInterface $logger = null
 	) {
-		$this->coapClient = $coapClientFactory->create($connector);
-		$this->mdnsClient = $mdnsClientFactory->create($connector);
-		$this->httpClient = $httpClientFactory->create($connector);
-		$this->mqttClient = $mqttClientFactory->create($connector);
+		$this->connector = $connector;
+
+		$this->coapClientFactory = $coapClientFactory;
+		$this->mdnsClientFactory = $mdnsClientFactory;
+		$this->httpClientFactory = $httpClientFactory;
+		$this->mqttClientFactory = $mqttClientFactory;
+
+		$this->connectorPropertiesRepository = $connectorPropertiesRepository;
 
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
@@ -79,6 +105,9 @@ final class Gen1Client extends Client
 	 */
 	public function discover(): void
 	{
+		$this->coapClient = $this->coapClientFactory->create($this->connector);
+		$this->mdnsClient = $this->mdnsClientFactory->create($this->connector);
+
 		try {
 			$this->coapClient->connect(true);
 		} catch (Throwable $ex) {
@@ -117,49 +146,87 @@ final class Gen1Client extends Client
 	 */
 	public function connect(): void
 	{
-		try {
-			$this->coapClient->connect();
-		} catch (Throwable $ex) {
-			$this->logger->error('CoAP client could not be started', [
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'gen1-client',
-			]);
+		$modeProperty = $this->connectorPropertiesRepository->findByIdentifier(
+			$this->connector->getId(),
+			Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLIENT_MODE
+		);
 
-			throw new DevicesModuleExceptions\TerminateException(
-				'CoAP client could not be started',
-				$ex->getCode(),
-				$ex
-			);
+		if (
+			!$modeProperty instanceof MetadataEntities\Modules\DevicesModule\IConnectorStaticPropertyEntity
+			|| (!Types\ClientModeType::isValidValue($modeProperty->getValue()) && $modeProperty->getValue() === null)
+		) {
+			throw new DevicesModuleExceptions\TerminateException('Connector client version is not configured');
 		}
 
-		try {
-			$this->mdnsClient->connect();
-		} catch (Throwable $ex) {
-			$this->logger->error('mDNS client could not be started', [
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'gen1-client',
-			]);
+		if (
+			$modeProperty->getValue() === null
+			|| $modeProperty->getValue() === Types\ClientModeType::TYPE_GEN_1_CLASSIC
+		) {
+			$this->coapClient = $this->coapClientFactory->create($this->connector);
+			$this->mdnsClient = $this->mdnsClientFactory->create($this->connector);
+			$this->httpClient = $this->httpClientFactory->create($this->connector);
 
-			throw new DevicesModuleExceptions\TerminateException(
-				'mDNS client could not be started',
-				$ex->getCode(),
-				$ex
-			);
-		}
+			try {
+				$this->coapClient->connect();
+			} catch (Throwable $ex) {
+				$this->logger->error('CoAP client could not be started', [
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'   => 'gen1-client',
+				]);
 
-		try {
-			$this->httpClient->connect();
-		} catch (Throwable $ex) {
-			$this->logger->error('Http api client could not be started', [
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'gen1-client',
-			]);
+				throw new DevicesModuleExceptions\TerminateException(
+					'CoAP client could not be started',
+					$ex->getCode(),
+					$ex
+				);
+			}
 
-			throw new DevicesModuleExceptions\TerminateException(
-				'Http api client could not be started',
-				$ex->getCode(),
-				$ex
-			);
+			try {
+				$this->mdnsClient->connect();
+			} catch (Throwable $ex) {
+				$this->logger->error('mDNS client could not be started', [
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'   => 'gen1-client',
+				]);
+
+				throw new DevicesModuleExceptions\TerminateException(
+					'mDNS client could not be started',
+					$ex->getCode(),
+					$ex
+				);
+			}
+
+			try {
+				$this->httpClient->connect();
+			} catch (Throwable $ex) {
+				$this->logger->error('Http api client could not be started', [
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'   => 'gen1-client',
+				]);
+
+				throw new DevicesModuleExceptions\TerminateException(
+					'Http api client could not be started',
+					$ex->getCode(),
+					$ex
+				);
+			}
+		} else {
+			$this->mqttClient = $this->mqttClientFactory->create($this->connector);
+
+			try {
+				$this->mqttClient->connect();
+			} catch (Throwable $ex) {
+				$this->logger->error('MQTT client could not be started', [
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'   => 'gen1-client',
+				]);
+
+				throw new DevicesModuleExceptions\TerminateException(
+					'MQTT client could not be started',
+					$ex->getCode(),
+					$ex
+				);
+			}
 		}
 	}
 
@@ -169,7 +236,7 @@ final class Gen1Client extends Client
 	public function disconnect(): void
 	{
 		try {
-			$this->coapClient->disconnect();
+			$this->coapClient?->disconnect();
 		} catch (Throwable) {
 			$this->logger->error('CoAP client could not be disconnected', [
 				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
@@ -178,7 +245,7 @@ final class Gen1Client extends Client
 		}
 
 		try {
-			$this->mdnsClient->disconnect();
+			$this->mdnsClient?->disconnect();
 		} catch (Throwable) {
 			$this->logger->error('mDNS client could not be disconnected', [
 				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
@@ -187,7 +254,16 @@ final class Gen1Client extends Client
 		}
 
 		try {
-			$this->httpClient->disconnect();
+			$this->httpClient?->disconnect();
+		} catch (Throwable) {
+			$this->logger->error('Http api client could not be disconnected', [
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'   => 'gen1-client',
+			]);
+		}
+
+		try {
+			$this->mqttClient?->disconnect();
 		} catch (Throwable) {
 			$this->logger->error('Http api client could not be disconnected', [
 				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
@@ -201,7 +277,7 @@ final class Gen1Client extends Client
 	 */
 	public function isConnected(): bool
 	{
-		return $this->coapClient->isConnected() || $this->mdnsClient->isConnected() || $this->httpClient->isConnected();
+		return $this->coapClient?->isConnected() || $this->mdnsClient?->isConnected() || $this->httpClient?->isConnected() || $this->mqttClient?->isConnected();
 	}
 
 	/**
@@ -209,7 +285,11 @@ final class Gen1Client extends Client
 	 */
 	public function writeDeviceControl(MetadataEntities\Actions\IActionDeviceControlEntity $action): void
 	{
-		$this->httpClient->writeDeviceControl($action);
+		if ($this->httpClient !== null) {
+			$this->httpClient->writeDeviceControl($action);
+		} elseif ($this->mqttClient !== null) {
+			$this->mqttClient->writeDeviceControl($action);
+		}
 	}
 
 	/**
@@ -217,7 +297,11 @@ final class Gen1Client extends Client
 	 */
 	public function writeChannelControl(MetadataEntities\Actions\IActionChannelControlEntity $action): void
 	{
-		$this->httpClient->writeChannelControl($action);
+		if ($this->httpClient !== null) {
+			$this->httpClient->writeChannelControl($action);
+		} elseif ($this->mqttClient !== null) {
+			$this->mqttClient->writeChannelControl($action);
+		}
 	}
 
 }

@@ -50,8 +50,8 @@ final class HttpClient
 	use Nette\SmartObject;
 
 	private const SHELLY_ENDPOINT = 'http://ADDRESS/shelly';
-	private const STATUS_ENDPOINT = 'http://ADDRESS/status';
-	private const SETTINGS_ENDPOINT = 'http://ADDRESS/settings';
+	// private const STATUS_ENDPOINT = 'http://ADDRESS/status';
+	// private const SETTINGS_ENDPOINT = 'http://ADDRESS/settings';
 	private const DESCRIPTION_ENDPOINT = 'http://ADDRESS/cit/d';
 
 	private const SET_CHANNEL_SENSOR_ENDPOINT = 'http://ADDRESS/CHANNEL/INDEX?ACTION=VALUE';
@@ -62,9 +62,9 @@ final class HttpClient
 	private const BLOCK_PARTS = '/^(?P<channelName>[a-zA-Z]+)_(?P<channelIndex>[0-9_]+)$/';
 
 	private const CMD_SHELLY = 'shelly';
-	private const CMD_SETTINGS = 'settings';
+	// private const CMD_SETTINGS = 'settings';
 	private const CMD_DESCRIPTION = 'description';
-	private const CMD_STATUS = 'status';
+	// private const CMD_STATUS = 'status';
 
 	private const SENDING_CMD_DELAY = 120;
 
@@ -404,12 +404,9 @@ final class HttpClient
 		$now = $this->dateTimeFactory->getNow();
 
 		foreach ($this->channelsRepository->findAllByDevice($device->getId()) as $channel) {
-			foreach ($this->channelPropertiesRepository->findAllByChannel($channel->getId()) as $property) {
+			foreach ($this->channelPropertiesRepository->findAllByChannel($channel->getId(), MetadataEntities\Modules\DevicesModule\ChannelDynamicPropertyEntity::class) as $property) {
 				if (
-					(
-						$property instanceof MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity
-						|| $property instanceof MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity
-					)
+					$property->isSettable()
 					&& $property->getExpectedValue() !== null
 					&& $property->isPending()
 				) {
@@ -682,7 +679,7 @@ final class HttpClient
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
 	 * @param MetadataEntities\Modules\DevicesModule\IChannelEntity $channel
-	 * @param MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property
+	 * @param MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity $property
 	 * @param float|bool|int|string $valueToWrite
 	 *
 	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
@@ -693,7 +690,7 @@ final class HttpClient
 	private function writeSensor(
 		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
 		MetadataEntities\Modules\DevicesModule\IChannelEntity $channel,
-		MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property,
+		MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity $property,
 		float|bool|int|string $valueToWrite
 	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface {
 		$address = $this->buildDeviceAddress($device);
@@ -925,12 +922,12 @@ final class HttpClient
 	}
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property
+	 * @param MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity $property
 	 *
 	 * @return string
 	 */
 	private function buildSensorAction(
-		MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity $property
+		MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity $property
 	): string {
 		if (preg_match(self::PROPERTY_SENSOR, $property->getIdentifier(), $propertyMatches) !== 1) {
 			throw new Exceptions\InvalidStateException('Property identifier is not valid');
