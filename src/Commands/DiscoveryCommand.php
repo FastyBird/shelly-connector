@@ -21,7 +21,6 @@ use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Metadata;
-use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\ShellyConnector\Clients;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Entities;
@@ -62,6 +61,9 @@ class DiscoveryCommand extends Console\Command\Command
 	/** @var Clients\ClientFactory[] */
 	private array $clientsFactories;
 
+	/** @var Helpers\ConnectorHelper */
+	private Helpers\ConnectorHelper $connectorHelper;
+
 	/** @var Helpers\DeviceHelper */
 	private Helpers\DeviceHelper $deviceHelper;
 
@@ -70,9 +72,6 @@ class DiscoveryCommand extends Console\Command\Command
 
 	/** @var DevicesModuleModels\DataStorage\IConnectorsRepository */
 	private DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository;
-
-	/** @var DevicesModuleModels\DataStorage\IConnectorPropertiesRepository */
-	private DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $connectorPropertiesRepository;
 
 	/** @var DevicesModuleModels\Devices\IDevicesRepository */
 	private DevicesModuleModels\Devices\IDevicesRepository $devicesRepository;
@@ -88,10 +87,10 @@ class DiscoveryCommand extends Console\Command\Command
 
 	/**
 	 * @param Clients\ClientFactory[] $clientsFactories
+	 * @param Helpers\ConnectorHelper $connectorHelper
 	 * @param Helpers\DeviceHelper $deviceHelper
 	 * @param Consumers\Consumer $consumer
 	 * @param DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository
-	 * @param DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $connectorPropertiesRepository
 	 * @param DevicesModuleModels\Devices\IDevicesRepository $devicesRepository
 	 * @param DateTimeFactory\DateTimeFactory $dateTimeFactory
 	 * @param EventLoop\LoopInterface $eventLoop
@@ -100,10 +99,10 @@ class DiscoveryCommand extends Console\Command\Command
 	 */
 	public function __construct(
 		array $clientsFactories,
+		Helpers\ConnectorHelper $connectorHelper,
 		Helpers\DeviceHelper $deviceHelper,
 		Consumers\Consumer $consumer,
 		DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository,
-		DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $connectorPropertiesRepository,
 		DevicesModuleModels\Devices\IDevicesRepository $devicesRepository,
 		DateTimeFactory\DateTimeFactory $dateTimeFactory,
 		EventLoop\LoopInterface $eventLoop,
@@ -112,11 +111,11 @@ class DiscoveryCommand extends Console\Command\Command
 	) {
 		$this->clientsFactories = $clientsFactories;
 
+		$this->connectorHelper = $connectorHelper;
 		$this->deviceHelper = $deviceHelper;
 		$this->consumer = $consumer;
 
 		$this->connectorsRepository = $connectorsRepository;
-		$this->connectorPropertiesRepository = $connectorPropertiesRepository;
 		$this->devicesRepository = $devicesRepository;
 
 		$this->dateTimeFactory = $dateTimeFactory;
@@ -266,15 +265,12 @@ class DiscoveryCommand extends Console\Command\Command
 			return Console\Command\Command::SUCCESS;
 		}
 
-		$versionProperty = $this->connectorPropertiesRepository->findByIdentifier(
+		$version = $this->connectorHelper->getConfiguration(
 			$connector->getId(),
-			Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLIENT_VERSION
+			Types\ConnectorPropertyIdentifierType::get(Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLIENT_VERSION)
 		);
 
-		if (
-			!$versionProperty instanceof MetadataEntities\Modules\DevicesModule\IConnectorStaticPropertyEntity
-			|| !Types\ClientVersionType::isValidValue($versionProperty->getValue())
-		) {
+		if ($version === null) {
 			$io->error('Connector client version is not configured');
 
 			return Console\Command\Command::FAILURE;
@@ -287,7 +283,7 @@ class DiscoveryCommand extends Console\Command\Command
 
 			if (
 				array_key_exists(Clients\ClientFactory::VERSION_CONSTANT_NAME, $constants)
-				&& $constants[Clients\ClientFactory::VERSION_CONSTANT_NAME] === $versionProperty->getValue()
+				&& $constants[Clients\ClientFactory::VERSION_CONSTANT_NAME] === $version
 				&& method_exists($clientFactory, 'create')
 			) {
 				/** @var Clients\IClient $client */

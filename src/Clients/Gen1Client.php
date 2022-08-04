@@ -16,10 +16,10 @@
 namespace FastyBird\ShellyConnector\Clients;
 
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
-use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\ShellyConnector\Clients;
+use FastyBird\ShellyConnector\Helpers;
 use FastyBird\ShellyConnector\Types;
 use Psr\Log;
 use Throwable;
@@ -62,8 +62,8 @@ final class Gen1Client extends Client
 	/** @var Gen1\MqttClientFactory */
 	private Clients\Gen1\MqttClientFactory $mqttClientFactory;
 
-	/** @var DevicesModuleModels\DataStorage\IConnectorPropertiesRepository */
-	private DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $connectorPropertiesRepository;
+	/** @var Helpers\ConnectorHelper */
+	private Helpers\ConnectorHelper $connectorHelper;
 
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
@@ -74,7 +74,7 @@ final class Gen1Client extends Client
 	 * @param Gen1\MdnsClientFactory $mdnsClientFactory
 	 * @param Gen1\HttpClientFactory $httpClientFactory
 	 * @param Gen1\MqttClientFactory $mqttClientFactory
-	 * @param DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $connectorPropertiesRepository
+	 * @param Helpers\ConnectorHelper $connectorHelper
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
@@ -83,17 +83,17 @@ final class Gen1Client extends Client
 		Clients\Gen1\MdnsClientFactory $mdnsClientFactory,
 		Clients\Gen1\HttpClientFactory $httpClientFactory,
 		Clients\Gen1\MqttClientFactory $mqttClientFactory,
-		DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $connectorPropertiesRepository,
+		Helpers\ConnectorHelper $connectorHelper,
 		?Log\LoggerInterface $logger = null
 	) {
 		$this->connector = $connector;
+
+		$this->connectorHelper = $connectorHelper;
 
 		$this->coapClientFactory = $coapClientFactory;
 		$this->mdnsClientFactory = $mdnsClientFactory;
 		$this->httpClientFactory = $httpClientFactory;
 		$this->mqttClientFactory = $mqttClientFactory;
-
-		$this->connectorPropertiesRepository = $connectorPropertiesRepository;
 
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
@@ -146,22 +146,16 @@ final class Gen1Client extends Client
 	 */
 	public function connect(): void
 	{
-		$modeProperty = $this->connectorPropertiesRepository->findByIdentifier(
+		$mode = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
-			Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLIENT_MODE
+			Types\ConnectorPropertyIdentifierType::get(Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLIENT_MODE)
 		);
 
-		if (
-			!$modeProperty instanceof MetadataEntities\Modules\DevicesModule\IConnectorStaticPropertyEntity
-			|| (!Types\ClientModeType::isValidValue($modeProperty->getValue()) && $modeProperty->getValue() === null)
-		) {
+		if ($mode === null) {
 			throw new DevicesModuleExceptions\TerminateException('Connector client version is not configured');
 		}
 
-		if (
-			$modeProperty->getValue() === null
-			|| $modeProperty->getValue() === Types\ClientModeType::TYPE_GEN_1_CLASSIC
-		) {
+		if ($mode === Types\ClientModeType::TYPE_GEN_1_CLASSIC) {
 			$this->coapClient = $this->coapClientFactory->create($this->connector);
 			$this->mdnsClient = $this->mdnsClientFactory->create($this->connector);
 			$this->httpClient = $this->httpClientFactory->create($this->connector);
@@ -210,7 +204,7 @@ final class Gen1Client extends Client
 					$ex
 				);
 			}
-		} else {
+		} elseif ($mode === Types\ClientModeType::TYPE_GEN_1_MQTT) {
 			$this->mqttClient = $this->mqttClientFactory->create($this->connector);
 
 			try {
@@ -227,6 +221,8 @@ final class Gen1Client extends Client
 					$ex
 				);
 			}
+		} else {
+			throw new DevicesModuleExceptions\TerminateException('Client mode is not configured');
 		}
 	}
 
