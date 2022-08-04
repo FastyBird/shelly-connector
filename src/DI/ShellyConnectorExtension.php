@@ -167,6 +167,12 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('helpers.database'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\DatabaseHelper::class);
 
+		$builder->addDefinition($this->prefix('helpers.device'), new DI\Definitions\ServiceDefinition())
+			->setType(Helpers\DeviceHelper::class);
+
+		$builder->addDefinition($this->prefix('helpers.property'), new DI\Definitions\ServiceDefinition())
+			->setType(Helpers\PropertyHelper::class);
+
 		// Mappers
 		$builder->addDefinition($this->prefix('mappers.sensor'), new DI\Definitions\ServiceDefinition())
 			->setType(Mappers\SensorMapper::class);

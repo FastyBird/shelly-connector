@@ -25,6 +25,7 @@ use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\ShellyConnector\API;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Exceptions;
+use FastyBird\ShellyConnector\Helpers;
 use FastyBird\ShellyConnector\Types;
 use Nette;
 use Nette\Utils;
@@ -95,6 +96,12 @@ final class HttpClient
 	/** @var API\Gen1Transformer */
 	private API\Gen1Transformer $transformer;
 
+	/** @var Helpers\DeviceHelper */
+	private Helpers\DeviceHelper $deviceHelper;
+
+	/** @var Helpers\PropertyHelper */
+	private Helpers\PropertyHelper $propertyStateHelper;
+
 	/** @var Consumers\Consumer */
 	private Consumers\Consumer $consumer;
 
@@ -110,15 +117,6 @@ final class HttpClient
 	/** @var DevicesModuleModels\DataStorage\IChannelPropertiesRepository */
 	private DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository;
 
-	/** @var DevicesModuleModels\DataStorage\IDevicePropertiesRepository */
-	private DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository;
-
-	/** @var DevicesModuleModels\States\ChannelPropertiesRepository */
-	private DevicesModuleModels\States\ChannelPropertiesRepository $channelPropertiesStatesRepository;
-
-	/** @var DevicesModuleModels\States\ChannelPropertiesManager */
-	private DevicesModuleModels\States\ChannelPropertiesManager $channelPropertiesStatesManager;
-
 	/** @var DevicesModuleModels\States\DeviceConnectionStateManager */
 	private DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager;
 
@@ -128,21 +126,17 @@ final class HttpClient
 	/** @var EventLoop\LoopInterface */
 	private EventLoop\LoopInterface $eventLoop;
 
-	/** @var Log\LoggerInterface */
-	private Log\LoggerInterface $logger;
-
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param API\Gen1Validator $validator
 	 * @param API\Gen1Parser $parser
 	 * @param API\Gen1Transformer $transformer
+	 * @param Helpers\DeviceHelper $deviceHelper
+	 * @param Helpers\PropertyHelper $propertyStateHelper
 	 * @param Consumers\Consumer $consumer
 	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository
-	 * @param DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository
 	 * @param DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository
 	 * @param DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository
-	 * @param DevicesModuleModels\States\ChannelPropertiesRepository $channelPropertiesStatesRepository
-	 * @param DevicesModuleModels\States\ChannelPropertiesManager $channelPropertiesStatesManager
 	 * @param DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager
 	 * @param DateTimeFactory\DateTimeFactory $dateTimeFactory
 	 * @param EventLoop\LoopInterface $eventLoop
@@ -153,13 +147,12 @@ final class HttpClient
 		API\Gen1Validator $validator,
 		API\Gen1Parser $parser,
 		API\Gen1Transformer $transformer,
+		Helpers\DeviceHelper $deviceHelper,
+		Helpers\PropertyHelper $propertyStateHelper,
 		Consumers\Consumer $consumer,
 		DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository,
-		DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository,
 		DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository,
 		DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository,
-		DevicesModuleModels\States\ChannelPropertiesRepository $channelPropertiesStatesRepository,
-		DevicesModuleModels\States\ChannelPropertiesManager $channelPropertiesStatesManager,
 		DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager,
 		DateTimeFactory\DateTimeFactory $dateTimeFactory,
 		EventLoop\LoopInterface $eventLoop,
@@ -171,16 +164,14 @@ final class HttpClient
 		$this->parser = $parser;
 		$this->transformer = $transformer;
 
+		$this->deviceHelper = $deviceHelper;
+		$this->propertyStateHelper = $propertyStateHelper;
 		$this->consumer = $consumer;
 
 		$this->devicesRepository = $devicesRepository;
-		$this->devicePropertiesRepository = $devicePropertiesRepository;
 
 		$this->channelsRepository = $channelsRepository;
 		$this->channelPropertiesRepository = $channelPropertiesRepository;
-
-		$this->channelPropertiesStatesRepository = $channelPropertiesStatesRepository;
-		$this->channelPropertiesStatesManager = $channelPropertiesStatesManager;
 
 		$this->deviceConnectionStateManager = $deviceConnectionStateManager;
 
@@ -190,6 +181,9 @@ final class HttpClient
 
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
+
+	/** @var Log\LoggerInterface */
+	private Log\LoggerInterface $logger;
 
 	/**
 	 * @return bool
@@ -264,9 +258,14 @@ final class HttpClient
 		}
 
 		foreach ($this->devicesRepository->findAllByConnector($this->connector->getId()) as $device) {
+			$ipAddress = $this->deviceHelper->getConfiguration(
+				$device->getId(),
+				Types\DevicePropertyIdentifierType::get(Types\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS)
+			);
+
 			if (
 				!in_array($device->getId()->toString(), $this->processedDevices, true)
-				&& $this->getDeviceAddress($device) !== null
+				&& is_string($ipAddress)
 				&& !$this->deviceConnectionStateManager->getState($device)
 					->equalsValue(MetadataTypes\ConnectionStateType::STATE_STOPPED)
 			) {
@@ -448,34 +447,23 @@ final class HttpClient
 							$valueToWrite
 						)
 							->then(function () use ($property): void {
-								$state = $this->channelPropertiesStatesRepository->findOne($property);
-
-								if ($state !== null) {
-									$this->channelPropertiesStatesManager->update(
-										$property,
-										$state,
-										Utils\ArrayHash::from([
-											'pending' => $this->dateTimeFactory->getNow()
-												->format(DateTimeInterface::ATOM),
-										])
-									);
-								}
+								$this->propertyStateHelper->setValue(
+									$property,
+									Utils\ArrayHash::from([
+										'pending' => $this->dateTimeFactory->getNow()->format(DateTimeInterface::ATOM),
+									])
+								);
 							})
 							->otherwise(function (Throwable $ex) use ($device, $channel, $property): void {
 								if ($ex instanceof Http\Message\ResponseException) {
 									if ($ex->getCode() >= 400 && $ex->getCode() < 499) {
-										$state = $this->channelPropertiesStatesRepository->findOne($property);
-
-										if ($state !== null) {
-											$this->channelPropertiesStatesManager->update(
-												$property,
-												$state,
-												Utils\ArrayHash::from([
-													'expectedValue' => null,
-													'pending'       => false,
-												])
-											);
-										}
+										$this->propertyStateHelper->setValue(
+											$property,
+											Utils\ArrayHash::from([
+												'expectedValue' => null,
+												'pending'       => false,
+											])
+										);
 
 										$this->logger->warning(
 											'Expected value could not be set',
@@ -848,33 +836,14 @@ final class HttpClient
 	 *
 	 * @return string|null
 	 */
-	private function getDeviceAddress(MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): ?string
-	{
-		$ipAddressProperty = $this->devicePropertiesRepository->findByIdentifier(
-			$device->getId(),
-			Types\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS
-		);
-
-		if (
-			$ipAddressProperty instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
-			&& is_string($ipAddressProperty->getValue())
-		) {
-			return $ipAddressProperty->getValue();
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 *
-	 * @return string|null
-	 */
 	private function buildDeviceAddress(MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): ?string
 	{
-		$ipAddress = $this->getDeviceAddress($device);
+		$ipAddress = $this->deviceHelper->getConfiguration(
+			$device->getId(),
+			Types\DevicePropertyIdentifierType::get(Types\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS)
+		);
 
-		if ($ipAddress === null) {
+		if (!is_string($ipAddress)) {
 			$this->logger->error('Device IP address could not be determined', [
 				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 				'type'   => 'http-client',
@@ -886,35 +855,17 @@ final class HttpClient
 			return null;
 		}
 
-		$usernameProperty = $this->devicePropertiesRepository->findByIdentifier(
+		$username = $this->deviceHelper->getConfiguration(
 			$device->getId(),
-			Types\DevicePropertyIdentifierType::IDENTIFIER_USERNAME,
+			Types\DevicePropertyIdentifierType::get(Types\DevicePropertyIdentifierType::IDENTIFIER_USERNAME)
 		);
 
-		$username = null;
-
-		if (
-			$usernameProperty instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
-			&& is_string($usernameProperty->getValue())
-		) {
-			$username = $usernameProperty->getValue();
-		}
-
-		$passwordProperty = $this->devicePropertiesRepository->findByIdentifier(
+		$password = $this->deviceHelper->getConfiguration(
 			$device->getId(),
-			Types\DevicePropertyIdentifierType::IDENTIFIER_PASSWORD,
+			Types\DevicePropertyIdentifierType::get(Types\DevicePropertyIdentifierType::IDENTIFIER_PASSWORD)
 		);
 
-		$password = null;
-
-		if (
-			$passwordProperty instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
-			&& is_string($passwordProperty->getValue())
-		) {
-			$password = $passwordProperty->getValue();
-		}
-
-		if ($username !== null && $password !== null) {
+		if (is_string($username) && is_string($password)) {
 			return $username . ':' . $password . '@' . $ipAddress;
 		}
 

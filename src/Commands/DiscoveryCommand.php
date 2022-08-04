@@ -17,7 +17,6 @@ namespace FastyBird\ShellyConnector\Commands;
 
 use DateTimeInterface;
 use FastyBird\DateTimeFactory;
-use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
@@ -26,6 +25,7 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\ShellyConnector\Clients;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Entities;
+use FastyBird\ShellyConnector\Helpers;
 use FastyBird\ShellyConnector\Types;
 use Psr\Log;
 use Ramsey\Uuid;
@@ -62,6 +62,9 @@ class DiscoveryCommand extends Console\Command\Command
 	/** @var Clients\ClientFactory[] */
 	private array $clientsFactories;
 
+	/** @var Helpers\DeviceHelper */
+	private Helpers\DeviceHelper $deviceHelper;
+
 	/** @var Consumers\Consumer */
 	private Consumers\Consumer $consumer;
 
@@ -85,6 +88,7 @@ class DiscoveryCommand extends Console\Command\Command
 
 	/**
 	 * @param Clients\ClientFactory[] $clientsFactories
+	 * @param Helpers\DeviceHelper $deviceHelper
 	 * @param Consumers\Consumer $consumer
 	 * @param DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository
 	 * @param DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $connectorPropertiesRepository
@@ -96,6 +100,7 @@ class DiscoveryCommand extends Console\Command\Command
 	 */
 	public function __construct(
 		array $clientsFactories,
+		Helpers\DeviceHelper $deviceHelper,
 		Consumers\Consumer $consumer,
 		DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository,
 		DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $connectorPropertiesRepository,
@@ -107,6 +112,7 @@ class DiscoveryCommand extends Console\Command\Command
 	) {
 		$this->clientsFactories = $clientsFactories;
 
+		$this->deviceHelper = $deviceHelper;
 		$this->consumer = $consumer;
 
 		$this->connectorsRepository = $connectorsRepository;
@@ -378,7 +384,11 @@ class DiscoveryCommand extends Console\Command\Command
 						) {
 							$foundDevices++;
 
-							$ipAddressProperty = $device->findProperty(Types\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS);
+							$ipAddress = $this->deviceHelper->getConfiguration(
+								$device->getId(),
+								Types\DevicePropertyIdentifierType::get(Types\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS)
+							);
+
 							$hardwareModelAttribute = $device->findAttribute(Types\DeviceAttributeIdentifierType::IDENTIFIER_MODEL);
 
 							$table->addRow([
@@ -386,7 +396,7 @@ class DiscoveryCommand extends Console\Command\Command
 								$device->getPlainId(),
 								$device->getName() ?? $device->getIdentifier(),
 								$hardwareModelAttribute !== null ? $hardwareModelAttribute->getContent(true) : 'N/A',
-								$ipAddressProperty instanceof DevicesModuleEntities\Devices\Properties\IStaticProperty ? $ipAddressProperty->getValue() : 'N/A',
+								is_string($ipAddress) ? $ipAddress : 'N/A',
 							]);
 						}
 					}
