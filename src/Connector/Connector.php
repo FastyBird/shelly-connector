@@ -58,6 +58,9 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	/** @var DevicesModuleModels\DataStorage\IDevicesRepository */
 	private DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository;
 
+	/** @var DevicesModuleModels\DataStorage\IDevicePropertiesRepository */
+	private DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository;
+
 	/** @var DevicesModuleModels\DataStorage\IChannelsRepository */
 	private DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository;
 
@@ -76,6 +79,7 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 * @param Helpers\PropertyHelper $propertyStateHelper
 	 * @param Consumers\Consumer $consumer
 	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository
+	 * @param DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository
 	 * @param DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository
 	 * @param DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository
 	 * @param DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager
@@ -87,6 +91,7 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		Helpers\PropertyHelper $propertyStateHelper,
 		Consumers\Consumer $consumer,
 		DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository,
+		DevicesModuleModels\DataStorage\IDevicePropertiesRepository $devicePropertiesRepository,
 		DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository,
 		DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository,
 		DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager,
@@ -100,6 +105,7 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		$this->consumer = $consumer;
 
 		$this->devicesRepository = $devicesRepository;
+		$this->devicePropertiesRepository = $devicePropertiesRepository;
 		$this->channelsRepository = $channelsRepository;
 		$this->channelPropertiesRepository = $channelPropertiesRepository;
 		$this->deviceConnectionStateManager = $deviceConnectionStateManager;
@@ -117,6 +123,14 @@ final class Connector implements DevicesModuleConnectors\IConnector
 				$device,
 				MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_UNKNOWN)
 			);
+
+			/** @var MetadataEntities\Modules\DevicesModule\IDeviceDynamicPropertyEntity[] $properties */
+			$properties = $this->devicePropertiesRepository->findAllByDevice(
+				$device->getId(),
+				MetadataEntities\Modules\DevicesModule\DeviceDynamicPropertyEntity::class
+			);
+
+			$this->propertyStateHelper->setValidState($properties, false);
 
 			foreach ($this->channelsRepository->findAllByDevice($device->getId()) as $channel) {
 				/** @var MetadataEntities\Modules\DevicesModule\ChannelDynamicPropertyEntity[] $properties */
@@ -148,6 +162,14 @@ final class Connector implements DevicesModuleConnectors\IConnector
 				$device,
 				MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_DISCONNECTED)
 			);
+
+			/** @var MetadataEntities\Modules\DevicesModule\IDeviceDynamicPropertyEntity[] $properties */
+			$properties = $this->devicePropertiesRepository->findAllByDevice(
+				$device->getId(),
+				MetadataEntities\Modules\DevicesModule\DeviceDynamicPropertyEntity::class
+			);
+
+			$this->propertyStateHelper->setValidState($properties, false);
 
 			foreach ($this->channelsRepository->findAllByDevice($device->getId()) as $channel) {
 				/** @var MetadataEntities\Modules\DevicesModule\ChannelDynamicPropertyEntity[] $properties */
