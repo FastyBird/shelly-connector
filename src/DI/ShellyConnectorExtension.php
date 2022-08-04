@@ -26,6 +26,7 @@ use FastyBird\ShellyConnector\Helpers;
 use FastyBird\ShellyConnector\Hydrators;
 use FastyBird\ShellyConnector\Mappers;
 use FastyBird\ShellyConnector\Schemas;
+use FastyBird\ShellyConnector\Subscribers;
 use Nette;
 use Nette\DI;
 use Nette\Schema;
@@ -148,6 +149,10 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 
 		$builder->addDefinition($this->prefix('consumer.device.discovery.message'), new DI\Definitions\ServiceDefinition())
 			->setType(Consumers\DiscoveryMessageConsumer::class);
+
+		// Events subscribers
+		$builder->addDefinition($this->prefix('subscribers.entities'), new DI\Definitions\ServiceDefinition())
+			->setType(Subscribers\EntitiesSubscriber::class);
 
 		// API schemas
 		$builder->addDefinition($this->prefix('schemas.connector.shelly'), new DI\Definitions\ServiceDefinition())

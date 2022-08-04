@@ -300,7 +300,7 @@ final class HttpClient
 
 		if (
 			$this->deviceConnectionStateManager->getState($device)
-				->equalsValue(MetadataTypes\ConnectionStateType::STATE_READY)
+				->equalsValue(MetadataTypes\ConnectionStateType::STATE_CONNECTED)
 		) {
 			return $this->writeChannelsProperty($device);
 		}

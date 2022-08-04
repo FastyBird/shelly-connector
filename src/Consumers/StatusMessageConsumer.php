@@ -97,12 +97,12 @@ final class StatusMessageConsumer implements IConsumer
 
 		// Check device state...
 		if (
-			!$this->deviceConnectionStateManager->getState($deviceItem)->equalsValue(Metadata\Types\ConnectionStateType::STATE_READY)
+			!$this->deviceConnectionStateManager->getState($deviceItem)->equalsValue(Metadata\Types\ConnectionStateType::STATE_CONNECTED)
 		) {
 			// ... and if it is not ready, set it to ready
 			$this->deviceConnectionStateManager->setState(
 				$deviceItem,
-				Metadata\Types\ConnectionStateType::get(Metadata\Types\ConnectionStateType::STATE_READY)
+				Metadata\Types\ConnectionStateType::get(Metadata\Types\ConnectionStateType::STATE_CONNECTED)
 			);
 		}
 
@@ -124,41 +124,10 @@ final class StatusMessageConsumer implements IConsumer
 						)
 					);
 
-					$propertyState = $this->propertyStateHelper->setValue($property, Utils\ArrayHash::from([
+					$this->propertyStateHelper->setValue($property, Utils\ArrayHash::from([
 						'actualValue' => $actualValue,
 						'valid'       => true,
 					]));
-
-					if ($propertyState !== null) {
-						$this->logger->debug(
-							'Channel property state was updated',
-							[
-								'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-								'type'     => 'status-message-consumer',
-								'device'   => [
-									'id' => $deviceItem->getId()->toString(),
-								],
-								'channel'  => [
-									'id' => $property->getChannel()->toString(),
-								],
-								'property' => [
-									'id'    => $property->getId()->toString(),
-									'state' => $propertyState->toArray(),
-								],
-							]
-						);
-					} else {
-						$this->logger->warning(
-							'Channel property state could not be updated',
-							[
-								'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-								'type'   => 'status-message-consumer',
-								'device' => [
-									'id' => $deviceItem->getId()->toString(),
-								],
-							]
-						);
-					}
 				}
 			}
 		}
