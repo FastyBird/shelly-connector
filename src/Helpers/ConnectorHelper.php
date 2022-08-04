@@ -60,11 +60,11 @@ final class ConnectorHelper
 
 		if ($configuration instanceof MetadataEntities\Modules\DevicesModule\IConnectorStaticPropertyEntity) {
 			if ($type->getValue() === Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLIENT_VERSION) {
-				return Types\ClientVersionType::isValidValue($type->getValue()) ? $configuration->getValue() : null;
+				return Types\ClientVersionType::isValidValue($configuration->getValue()) ? $configuration->getValue() : null;
 			}
 
 			if ($type->getValue() === Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLIENT_MODE) {
-				return Types\ClientModeType::isValidValue($type->getValue()) ? $configuration->getValue() : null;
+				return Types\ClientModeType::isValidValue($configuration->getValue()) ? $configuration->getValue() : null;
 			}
 
 			return $configuration->getValue();
