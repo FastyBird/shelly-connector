@@ -52,6 +52,9 @@ class InitializeCommand extends Console\Command\Command
 	private const CHOICE_QUESTION_GEN_2_CONNECTOR = 'New generation 2 devices (based on ESP32)';
 	private const CHOICE_QUESTION_CLOUD_CONNECTOR = 'Cloud connected devices';
 
+	private const CHOICE_QUESTION_GEN_1_MODE_CLASSIC = 'Classic client HTTP/CoAP mode';
+	private const CHOICE_QUESTION_GEN_1_MODE_MQTT = 'MQTT client mode';
+
 	/** @var DevicesModuleModels\Connectors\IConnectorsRepository */
 	private DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository;
 
@@ -221,6 +224,31 @@ class InitializeCommand extends Console\Command\Command
 
 		$name = $io->askQuestion($question);
 
+		$clientMode = null;
+
+		if ($generation->getValue() === Types\ClientVersionType::TYPE_GEN_1) {
+			$question = new Console\Question\ChoiceQuestion(
+				'In what communication mode should this connector communicate?',
+				[
+					self::CHOICE_QUESTION_GEN_1_MODE_CLASSIC,
+					self::CHOICE_QUESTION_GEN_1_MODE_MQTT,
+				],
+				0
+			);
+
+			$question->setErrorMessage('Selected answer: "%s" is not valid.');
+
+			$clientModeAnswer = $io->askQuestion($question);
+
+			if ($clientModeAnswer === self::CHOICE_QUESTION_GEN_1_MODE_CLASSIC) {
+				$clientMode = Types\ClientModeType::get(Types\ClientModeType::TYPE_GEN_1_CLASSIC);
+			}
+
+			if ($clientModeAnswer === self::CHOICE_QUESTION_GEN_1_MODE_MQTT) {
+				$clientMode = Types\ClientModeType::get(Types\ClientModeType::TYPE_GEN_1_MQTT);
+			}
+		}
+
 		try {
 			// Start transaction connection to the database
 			$this->getOrmConnection()->beginTransaction();
@@ -238,6 +266,16 @@ class InitializeCommand extends Console\Command\Command
 				'value'      => $generation->getValue(),
 				'connector'  => $connector,
 			]));
+
+			if ($generation->getValue() === Types\ClientVersionType::TYPE_GEN_1) {
+				$this->propertiesManager->create(Utils\ArrayHash::from([
+					'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+					'identifier' => Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLIENT_MODE,
+					'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+					'value'      => $clientMode?->getValue(),
+					'connector'  => $connector,
+				]));
+			}
 
 			$this->controlsManager->create(Utils\ArrayHash::from([
 				'name'      => Types\ConnectorControlNameType::NAME_REBOOT,
@@ -378,6 +416,52 @@ class InitializeCommand extends Console\Command\Command
 
 		$name = $io->askQuestion($question);
 
+		$clientMode = null;
+		$clientModeProperty = null;
+
+		if (
+			$versionProperty?->getValue() === Types\ClientVersionType::TYPE_GEN_1
+			|| $generation?->getValue() === Types\ClientVersionType::TYPE_GEN_1
+		) {
+			$findPropertyQuery = new DevicesModuleQueries\FindConnectorPropertiesQuery();
+			$findPropertyQuery->forConnector($connector);
+			$findPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLIENT_MODE);
+
+			$clientModeProperty = $this->propertiesRepository->findOneBy($findPropertyQuery);
+
+			if ($clientModeProperty !== null) {
+				$question = new Console\Question\ConfirmationQuestion(
+					'Do you want to change connector client mode?',
+					false
+				);
+
+				$changeClientMode = $io->askQuestion($question);
+			}
+
+			if ($clientModeProperty === null || $changeClientMode) {
+				$question = new Console\Question\ChoiceQuestion(
+					'In what communication mode should this connector communicate?',
+					[
+						self::CHOICE_QUESTION_GEN_1_MODE_CLASSIC,
+						self::CHOICE_QUESTION_GEN_1_MODE_MQTT,
+					],
+					0
+				);
+
+				$question->setErrorMessage('Selected answer: "%s" is not valid.');
+
+				$clientModeAnswer = $io->askQuestion($question);
+
+				if ($clientModeAnswer === self::CHOICE_QUESTION_GEN_1_MODE_CLASSIC) {
+					$clientMode = Types\ClientModeType::get(Types\ClientModeType::TYPE_GEN_1_CLASSIC);
+				}
+
+				if ($clientModeAnswer === self::CHOICE_QUESTION_GEN_1_MODE_MQTT) {
+					$clientMode = Types\ClientModeType::get(Types\ClientModeType::TYPE_GEN_1_MQTT);
+				}
+			}
+		}
+
 		$enabled = $connector->isEnabled();
 
 		if ($connector->isEnabled()) {
@@ -425,6 +509,27 @@ class InitializeCommand extends Console\Command\Command
 				$this->propertiesManager->update($versionProperty, Utils\ArrayHash::from([
 					'value' => $generation->getValue(),
 				]));
+			}
+
+			if (
+				$versionProperty?->getValue() === Types\ClientVersionType::TYPE_GEN_1
+				|| $generation?->getValue() === Types\ClientVersionType::TYPE_GEN_1
+			) {
+				if ($clientMode !== null) {
+					if ($clientModeProperty !== null) {
+						$this->propertiesManager->update($clientModeProperty, Utils\ArrayHash::from([
+							'value' => $clientMode->getValue(),
+						]));
+					} else {
+						$this->propertiesManager->create(Utils\ArrayHash::from([
+							'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+							'identifier' => Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLIENT_MODE,
+							'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+							'value'      => $clientMode->getValue(),
+							'connector'  => $connector,
+						]));
+					}
+				}
 			}
 
 			// Commit all changes into database

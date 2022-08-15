@@ -152,7 +152,7 @@ final class Gen1Client extends Client
 		);
 
 		if ($mode === null) {
-			throw new DevicesModuleExceptions\TerminateException('Connector client version is not configured');
+			throw new DevicesModuleExceptions\TerminateException('Connector client mode is not configured');
 		}
 
 		if ($mode === Types\ClientModeType::TYPE_GEN_1_CLASSIC) {
