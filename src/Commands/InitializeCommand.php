@@ -445,7 +445,7 @@ class InitializeCommand extends Console\Command\Command
 				],
 			]);
 
-			$io->error('Something went wrong, connector could not be created. Error was logged.');
+			$io->error('Something went wrong, connector could not be updated. Error was logged.');
 		} finally {
 			// Revert all changes when error occur
 			if ($this->getOrmConnection()->isTransactionActive()) {
