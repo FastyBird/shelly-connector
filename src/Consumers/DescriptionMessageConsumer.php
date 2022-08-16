@@ -258,6 +258,7 @@ final class DescriptionMessageConsumer implements IConsumer
 						function () use ($sensor, $channel): DevicesModuleEntities\Channels\Properties\IProperty {
 							return $this->channelsPropertiesManager->create(Utils\ArrayHash::from([
 								'channel'    => $channel,
+								'entity'     => DevicesModuleEntities\Channels\Properties\DynamicProperty::class,
 								'identifier' => sprintf(
 									'%d_%s_%s',
 									$sensor->getIdentifier(),
@@ -266,7 +267,7 @@ final class DescriptionMessageConsumer implements IConsumer
 								),
 								'name'       => $sensor->getDescription(),
 								'unit'       => $sensor->getUnit()?->getValue(),
-								'data_type'  => $sensor->getDataType()->getValue(),
+								'dataType'   => $sensor->getDataType(),
 								'format'     => $sensor->getFormat(),
 								'invalid'    => $sensor->getInvalid(),
 								'queryable'  => $sensor->isQueryable(),
@@ -316,7 +317,7 @@ final class DescriptionMessageConsumer implements IConsumer
 									),
 									'name'       => $sensor->getDescription(),
 									'unit'       => $sensor->getUnit()?->getValue(),
-									'data_type'  => $sensor->getDataType()->getValue(),
+									'dataType'   => $sensor->getDataType(),
 									'format'     => $sensor->getFormat(),
 									'invalid'    => $sensor->getInvalid(),
 									'queryable'  => $sensor->isQueryable(),

@@ -345,8 +345,11 @@ final class Gen1Parser
 				}
 
 				if (
-					($sensor->offsetGet('L') instanceof Utils\ArrayHash && in_array($block->offsetGet('D'), (array) $sensor->offsetGet('L'), true))
-					|| intval($block->offsetGet('D')) === intval($sensor->offsetGet('L'))
+					(
+						$sensor->offsetGet('L') instanceof Utils\ArrayHash
+						&& in_array($block->offsetGet('I'), (array) $sensor->offsetGet('L'), true)
+					)
+					|| intval($block->offsetGet('I')) === intval($sensor->offsetGet('L'))
 				) {
 					$sensorRange = $this->parseSensorRange(
 						$source,
