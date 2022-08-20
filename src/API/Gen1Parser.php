@@ -158,8 +158,8 @@ final class Gen1Parser
 		$channels = [];
 
 		foreach ($parsedMessage['G'] as $sensorState) {
-			if (is_array($sensorState) && count($sensorState) === 3) {
-				[$channel, $sensorIdentifier, $sensorValue] = $sensorState;
+			if ((is_array($sensorState) || $sensorState instanceof Utils\ArrayHash) && count($sensorState) === 3) {
+				[$channel, $sensorIdentifier, $sensorValue] = (array) $sensorState;
 
 				if (!array_key_exists($channel, $channels)) {
 					$channels[$channel] = new Entities\Messages\ChannelStatusEntity(

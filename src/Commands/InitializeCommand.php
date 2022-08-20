@@ -47,6 +47,7 @@ class InitializeCommand extends Console\Command\Command
 
 	private const CHOICE_QUESTION_CREATE_CONNECTOR = 'Create new connector configuration';
 	private const CHOICE_QUESTION_EDIT_CONNECTOR = 'Edit existing connector configuration';
+	private const CHOICE_QUESTION_DELETE_CONNECTOR = 'Delete existing connector configuration';
 
 	private const CHOICE_QUESTION_GEN_1_CONNECTOR = 'Original generation 1 devices (based on ESP8266)';
 	private const CHOICE_QUESTION_GEN_2_CONNECTOR = 'New generation 2 devices (based on ESP32)';
@@ -162,6 +163,7 @@ class InitializeCommand extends Console\Command\Command
 			[
 				0 => self::CHOICE_QUESTION_CREATE_CONNECTOR,
 				1 => self::CHOICE_QUESTION_EDIT_CONNECTOR,
+				2 => self::CHOICE_QUESTION_DELETE_CONNECTOR,
 			]
 		);
 
@@ -174,6 +176,9 @@ class InitializeCommand extends Console\Command\Command
 
 		} elseif ($whatToDo === self::CHOICE_QUESTION_EDIT_CONNECTOR) {
 			$this->editExistingConfiguration($io);
+
+		} elseif ($whatToDo === self::CHOICE_QUESTION_DELETE_CONNECTOR) {
+			$this->deleteExistingConfiguration($io);
 		}
 
 		return Console\Command\Command::SUCCESS;
@@ -530,6 +535,10 @@ class InitializeCommand extends Console\Command\Command
 						]));
 					}
 				}
+			} else {
+				if ($clientModeProperty !== null) {
+					$this->propertiesManager->delete($clientModeProperty);
+				}
 			}
 
 			// Commit all changes into database
@@ -551,6 +560,102 @@ class InitializeCommand extends Console\Command\Command
 			]);
 
 			$io->error('Something went wrong, connector could not be updated. Error was logged.');
+		} finally {
+			// Revert all changes when error occur
+			if ($this->getOrmConnection()->isTransactionActive()) {
+				$this->getOrmConnection()->rollBack();
+			}
+		}
+	}
+
+	/**
+	 * @param Style\SymfonyStyle $io
+	 *
+	 * @return void
+	 *
+	 * @throws DBAL\Exception
+	 */
+	private function deleteExistingConfiguration(Style\SymfonyStyle $io): void
+	{
+		$io->newLine();
+
+		$connectors = [];
+
+		foreach ($this->connectorsDataStorageRepository as $connector) {
+			if ($connector->getType() !== Entities\ShellyConnectorEntity::CONNECTOR_TYPE) {
+				continue;
+			}
+
+			$connectors[$connector->getIdentifier()] = $connector->getIdentifier() . ($connector->getName() ? ' [' . $connector->getName() . ']' : '');
+		}
+
+		if (count($connectors) === 0) {
+			$io->info('No Shelly connectors registered in system');
+
+			return;
+		}
+
+		$question = new Console\Question\ChoiceQuestion(
+			'Please select connector to remove',
+			array_values($connectors)
+		);
+
+		$question->setErrorMessage('Selected connector: "%s" is not valid.');
+
+		$connectorIdentifier = array_search($io->askQuestion($question), $connectors);
+
+		if ($connectorIdentifier === false) {
+			$io->error('Something went wrong, connector could not be loaded');
+
+			$this->logger->alert('Connector identifier was not able to get from answer', [
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'   => 'initialize-cmd',
+			]);
+
+			return;
+		}
+
+		$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
+		$findConnectorQuery->byIdentifier($connectorIdentifier);
+
+		$connector = $this->connectorsRepository->findOneBy($findConnectorQuery);
+
+		if ($connector === null) {
+			$io->error('Something went wrong, connector could not be loaded');
+
+			$this->logger->alert('Connector was not found', [
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'   => 'initialize-cmd',
+			]);
+
+			return;
+		}
+
+		try {
+			// Start transaction connection to the database
+			$this->getOrmConnection()->beginTransaction();
+
+			$this->connectorsManager->delete($connector);
+
+			// Commit all changes into database
+			$this->getOrmConnection()->commit();
+
+			$io->success(sprintf(
+				'Connector "%s" was successfully removed',
+				$connector->getName() ?? $connector->getIdentifier()
+			));
+		} catch (Throwable $ex) {
+			// Log caught exception
+			$this->logger->error('An unhandled error occurred', [
+				'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'      => 'initialize-cmd',
+				'exception' => [
+					'message' => $ex->getMessage(),
+					'code'    => $ex->getCode(),
+				],
+			]);
+
+			$io->error('Something went wrong, connector could not be removed. Error was logged.');
 		} finally {
 			// Revert all changes when error occur
 			if ($this->getOrmConnection()->isTransactionActive()) {
