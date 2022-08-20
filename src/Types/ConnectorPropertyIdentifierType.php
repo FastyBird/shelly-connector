@@ -33,6 +33,8 @@ class ConnectorPropertyIdentifierType extends Consistence\Enum\Enum
 	 */
 	public const IDENTIFIER_CLIENT_VERSION = 'version';
 	public const IDENTIFIER_CLIENT_MODE = 'mode';
+	public const IDENTIFIER_CLOUD_AUTH_KEY = 'cloud-auth-key';
+	public const IDENTIFIER_CLOUD_SERVER = 'cloud-server';
 
 	/**
 	 * @return string

@@ -34,6 +34,7 @@ class ClientVersionType extends Consistence\Enum\Enum
 	public const TYPE_GEN_1 = 'gen1';
 	public const TYPE_GEN_2 = 'gen2';
 	public const TYPE_CLOUD = 'cloud';
+	public const TYPE_INTEGRATOR = 'integrator';
 
 	/**
 	 * @return string

@@ -51,7 +51,8 @@ class InitializeCommand extends Console\Command\Command
 
 	private const CHOICE_QUESTION_GEN_1_CONNECTOR = 'Original generation 1 devices (based on ESP8266)';
 	private const CHOICE_QUESTION_GEN_2_CONNECTOR = 'New generation 2 devices (based on ESP32)';
-	private const CHOICE_QUESTION_CLOUD_CONNECTOR = 'Cloud connected devices';
+	private const CHOICE_QUESTION_CLOUD_CONTROL_API_CONNECTOR = 'Cloud control API';
+	private const CHOICE_QUESTION_INTEGRATOR_API_CONNECTOR = 'Integrator API';
 
 	private const CHOICE_QUESTION_GEN_1_MODE_CLASSIC = 'Classic client HTTP/CoAP mode';
 	private const CHOICE_QUESTION_GEN_1_MODE_MQTT = 'MQTT client mode';
@@ -231,6 +232,9 @@ class InitializeCommand extends Console\Command\Command
 
 		$clientMode = null;
 
+		$cloudAuthKey = null;
+		$cloudServer = null;
+
 		if ($generation->getValue() === Types\ClientVersionType::TYPE_GEN_1) {
 			$question = new Console\Question\ChoiceQuestion(
 				'In what communication mode should this connector communicate?',
@@ -252,6 +256,14 @@ class InitializeCommand extends Console\Command\Command
 			if ($clientModeAnswer === self::CHOICE_QUESTION_GEN_1_MODE_MQTT) {
 				$clientMode = Types\ClientModeType::get(Types\ClientModeType::TYPE_GEN_1_MQTT);
 			}
+		} elseif ($generation->getValue() === Types\ClientVersionType::TYPE_CLOUD) {
+			$question = new Console\Question\Question('Provide cloud authentication key');
+
+			$cloudAuthKey = $io->askQuestion($question);
+
+			$question = new Console\Question\Question('Provide cloud server address');
+
+			$cloudServer = $io->askQuestion($question);
 		}
 
 		try {
@@ -278,6 +290,22 @@ class InitializeCommand extends Console\Command\Command
 					'identifier' => Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLIENT_MODE,
 					'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
 					'value'      => $clientMode?->getValue(),
+					'connector'  => $connector,
+				]));
+			} elseif ($generation->getValue() === Types\ClientVersionType::TYPE_CLOUD) {
+				$this->propertiesManager->create(Utils\ArrayHash::from([
+					'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+					'identifier' => Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLOUD_AUTH_KEY,
+					'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+					'value'      => $cloudAuthKey,
+					'connector'  => $connector,
+				]));
+
+				$this->propertiesManager->create(Utils\ArrayHash::from([
+					'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+					'identifier' => Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLOUD_SERVER,
+					'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+					'value'      => $cloudServer,
 					'connector'  => $connector,
 				]));
 			}
@@ -424,6 +452,11 @@ class InitializeCommand extends Console\Command\Command
 		$clientMode = null;
 		$clientModeProperty = null;
 
+		$cloudAuthKey = null;
+		$cloudAuthKeyProperty = null;
+		$cloudServer = null;
+		$cloudServerProperty = null;
+
 		if (
 			$versionProperty?->getValue() === Types\ClientVersionType::TYPE_GEN_1
 			|| $generation?->getValue() === Types\ClientVersionType::TYPE_GEN_1
@@ -464,6 +497,55 @@ class InitializeCommand extends Console\Command\Command
 				if ($clientModeAnswer === self::CHOICE_QUESTION_GEN_1_MODE_MQTT) {
 					$clientMode = Types\ClientModeType::get(Types\ClientModeType::TYPE_GEN_1_MQTT);
 				}
+			}
+		} elseif (
+			$versionProperty?->getValue() === Types\ClientVersionType::TYPE_CLOUD
+			|| $generation->getValue() === Types\ClientVersionType::TYPE_CLOUD
+		) {
+			$findPropertyQuery = new DevicesModuleQueries\FindConnectorPropertiesQuery();
+			$findPropertyQuery->forConnector($connector);
+			$findPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLOUD_AUTH_KEY);
+
+			$cloudAuthKeyProperty = $this->propertiesRepository->findOneBy($findPropertyQuery);
+
+			$changeCloudAuthKey = false;
+
+			if ($cloudAuthKeyProperty !== null) {
+				$question = new Console\Question\ConfirmationQuestion(
+					'Do you want to change connector cloud authentication key?',
+					false
+				);
+
+				$changeCloudAuthKey = $io->askQuestion($question);
+			}
+
+			if ($cloudAuthKeyProperty === null || $changeCloudAuthKey) {
+				$question = new Console\Question\Question('Provide cloud authentication key');
+
+				$cloudAuthKey = $io->askQuestion($question);
+			}
+
+			$findPropertyQuery = new DevicesModuleQueries\FindConnectorPropertiesQuery();
+			$findPropertyQuery->forConnector($connector);
+			$findPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLOUD_SERVER);
+
+			$cloudServerProperty = $this->propertiesRepository->findOneBy($findPropertyQuery);
+
+			$changeCloudServer = false;
+
+			if ($cloudServerProperty !== null) {
+				$question = new Console\Question\ConfirmationQuestion(
+					'Do you want to change connector clout server address?',
+					false
+				);
+
+				$changeCloudServer = $io->askQuestion($question);
+			}
+
+			if ($cloudServerProperty === null || $changeCloudServer) {
+				$question = new Console\Question\Question('Provide cloud server address');
+
+				$cloudServer = $io->askQuestion($question);
 			}
 		}
 
@@ -534,6 +616,41 @@ class InitializeCommand extends Console\Command\Command
 							'connector'  => $connector,
 						]));
 					}
+				}
+			} elseif (
+				$versionProperty?->getValue() === Types\ClientVersionType::TYPE_CLOUD
+				|| $generation->getValue() === Types\ClientVersionType::TYPE_CLOUD
+			) {
+				if ($cloudAuthKeyProperty !== null) {
+					$this->propertiesManager->update($cloudAuthKeyProperty, Utils\ArrayHash::from([
+						'value' => $cloudAuthKey,
+					]));
+				} else {
+					$this->propertiesManager->create(Utils\ArrayHash::from([
+						'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+						'identifier' => Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLOUD_AUTH_KEY,
+						'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+						'value'      => $cloudAuthKey,
+						'connector'  => $connector,
+					]));
+				}
+
+				if ($cloudServerProperty !== null) {
+					$this->propertiesManager->update($cloudServerProperty, Utils\ArrayHash::from([
+						'value' => $cloudServer,
+					]));
+				} else {
+					$this->propertiesManager->create(Utils\ArrayHash::from([
+						'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+						'identifier' => Types\ConnectorPropertyIdentifierType::IDENTIFIER_CLOUD_SERVER,
+						'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+						'value'      => $cloudServer,
+						'connector'  => $connector,
+					]));
+				}
+
+				if ($clientModeProperty !== null) {
+					$this->propertiesManager->delete($clientModeProperty);
 				}
 			} else {
 				if ($clientModeProperty !== null) {
@@ -687,7 +804,8 @@ class InitializeCommand extends Console\Command\Command
 			[
 				self::CHOICE_QUESTION_GEN_1_CONNECTOR,
 				self::CHOICE_QUESTION_GEN_2_CONNECTOR,
-				self::CHOICE_QUESTION_CLOUD_CONNECTOR,
+				self::CHOICE_QUESTION_CLOUD_CONTROL_API_CONNECTOR,
+				self::CHOICE_QUESTION_INTEGRATOR_API_CONNECTOR,
 			],
 			0
 		);
@@ -704,8 +822,12 @@ class InitializeCommand extends Console\Command\Command
 			return Types\ClientVersionType::get(Types\ClientVersionType::TYPE_GEN_2);
 		}
 
-		if ($generation === self::CHOICE_QUESTION_CLOUD_CONNECTOR) {
+		if ($generation === self::CHOICE_QUESTION_CLOUD_CONTROL_API_CONNECTOR) {
 			return Types\ClientVersionType::get(Types\ClientVersionType::TYPE_CLOUD);
+		}
+
+		if ($generation === self::CHOICE_QUESTION_INTEGRATOR_API_CONNECTOR) {
+			return Types\ClientVersionType::get(Types\ClientVersionType::TYPE_INTEGRATOR);
 		}
 
 		throw new Exceptions\InvalidStateException('Unknown connector version selected');
