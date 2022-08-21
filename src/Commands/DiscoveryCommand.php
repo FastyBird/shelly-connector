@@ -58,6 +58,9 @@ class DiscoveryCommand extends Console\Command\Command
 	/** @var EventLoop\TimerInterface|null */
 	private ?EventLoop\TimerInterface $consumerTimer;
 
+	/** @var EventLoop\TimerInterface|null */
+	private ?EventLoop\TimerInterface $progressBarTimer;
+
 	/** @var Clients\ClientFactory[] */
 	private array $clientsFactories;
 
@@ -332,7 +335,7 @@ class DiscoveryCommand extends Console\Command\Command
 						}
 					);
 
-					$this->consumerTimer = $this->eventLoop->addPeriodicTimer(
+					$this->progressBarTimer = $this->eventLoop->addPeriodicTimer(
 						0.1,
 						function () use ($progressBar): void {
 							$progressBar->advance();
@@ -472,6 +475,10 @@ class DiscoveryCommand extends Console\Command\Command
 				$this->eventLoop->cancelTimer($this->consumerTimer);
 			}
 
+			if ($this->progressBarTimer !== null) {
+				$this->eventLoop->cancelTimer($this->progressBarTimer);
+			}
+
 			$this->eventLoop->stop();
 
 		} else {
@@ -487,6 +494,10 @@ class DiscoveryCommand extends Console\Command\Command
 
 				if ($this->consumerTimer !== null) {
 					$this->eventLoop->cancelTimer($this->consumerTimer);
+				}
+
+				if ($this->progressBarTimer !== null) {
+					$this->eventLoop->cancelTimer($this->progressBarTimer);
 				}
 
 				$this->eventLoop->stop();
