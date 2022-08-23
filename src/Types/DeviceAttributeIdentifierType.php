@@ -32,9 +32,9 @@ class DeviceAttributeIdentifierType extends Consistence\Enum\Enum
 	/**
 	 * Define device states
 	 */
-	public const IDENTIFIER_FIRMWARE_VERSION = MetadataTypes\DeviceAttributeNameType::ATTRIBUTE_FIRMWARE_VERSION;
-	public const IDENTIFIER_MAC_ADDRESS = MetadataTypes\DeviceAttributeNameType::ATTRIBUTE_HARDWARE_MAC_ADDRESS;
-	public const IDENTIFIER_MODEL = MetadataTypes\DeviceAttributeNameType::ATTRIBUTE_HARDWARE_MODEL;
+	public const IDENTIFIER_FIRMWARE_VERSION = MetadataTypes\DeviceAttributeIdentifierType::IDENTIFIER_FIRMWARE_VERSION;
+	public const IDENTIFIER_MAC_ADDRESS = MetadataTypes\DeviceAttributeIdentifierType::IDENTIFIER_HARDWARE_MAC_ADDRESS;
+	public const IDENTIFIER_MODEL = MetadataTypes\DeviceAttributeIdentifierType::IDENTIFIER_HARDWARE_MODEL;
 
 	/**
 	 * @return string

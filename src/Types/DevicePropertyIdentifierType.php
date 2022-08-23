@@ -32,11 +32,11 @@ class DevicePropertyIdentifierType extends Consistence\Enum\Enum
 	/**
 	 * Define device states
 	 */
-	public const IDENTIFIER_IP_ADDRESS = MetadataTypes\DevicePropertyNameType::NAME_IP_ADDRESS;
-	public const IDENTIFIER_STATE = MetadataTypes\DevicePropertyNameType::NAME_STATE;
+	public const IDENTIFIER_IP_ADDRESS = MetadataTypes\DevicePropertyIdentifierType::IDENTIFIER_IP_ADDRESS;
+	public const IDENTIFIER_STATE = MetadataTypes\DevicePropertyIdentifierType::IDENTIFIER_STATE;
 	public const IDENTIFIER_USERNAME = 'username';
 	public const IDENTIFIER_PASSWORD = 'password';
-	public const IDENTIFIER_AUTH_ENABLED = 'auth-enabled';
+	public const IDENTIFIER_AUTH_ENABLED = 'auth_enabled';
 
 	/**
 	 * @return string

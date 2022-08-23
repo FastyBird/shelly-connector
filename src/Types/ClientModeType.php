@@ -31,8 +31,8 @@ class ClientModeType extends Consistence\Enum\Enum
 	/**
 	 * Define versions
 	 */
-	public const TYPE_GEN_1_CLASSIC = 'gen1-classic';
-	public const TYPE_GEN_1_MQTT = 'gen1-mqtt';
+	public const TYPE_GEN_1_CLASSIC = 'gen1_classic';
+	public const TYPE_GEN_1_MQTT = 'gen1_mqtt';
 
 	/**
 	 * @return string
