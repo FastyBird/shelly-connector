@@ -15,7 +15,6 @@
 
 namespace FastyBird\ShellyConnector\Connector;
 
-use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\ShellyConnector\Clients;
 
 /**
@@ -30,13 +29,11 @@ interface ConnectorFactory
 {
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param Clients\IClient $client
 	 *
 	 * @return Connector
 	 */
 	public function create(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		Clients\IClient $client
 	): Connector;
 

@@ -1,5 +1,7 @@
 # FastyBird IoT Shelly connector
 
+***
+
 [![Build Status](https://badgen.net/github/checks/FastyBird/shelly-connector/master?cache=300&style=flat-square)](https://github.com/FastyBird/shelly-connector/actions)
 [![Licence](https://badgen.net/github/license/FastyBird/shelly-connector?cache=300&style=flat-square)](https://github.com/FastyBird/shelly-connector/blob/master/LICENSE.md)
 [![Code coverage](https://badgen.net/coveralls/c/github/FastyBird/shelly-connector?cache=300&style=flat-square)](https://coveralls.io/r/FastyBird/shelly-connector)
@@ -9,14 +11,15 @@
 [![PHP downloads total](https://badgen.net/packagist/dt/FastyBird/shelly-connector?cache=300&style=flat-square)](https://packagist.org/packages/FastyBird/shelly-connector)
 [![PHPStan](https://img.shields.io/badge/phpstan-enabled-brightgreen.svg?style=flat-square)](https://github.com/phpstan/phpstan)
 
-## What is FastyBird IoT Shelly connector?
+***
+
+## What is Shelly connector?
 
 Shelly connector is a [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things)
 extension which is integrating [Shelly](https://shelly.cloud) devices into [FastyBird](https://www.fastybird.com) IoT
 system
 
-[FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) Shelly connector is
-an [Apache2 licensed](http://www.apache.org/licenses/LICENSE-2.0) distributed extension, developed
+Shelly connector is an [Apache2 licensed](http://www.apache.org/licenses/LICENSE-2.0) distributed extension, developed
 in [PHP](https://www.php.net) with [Nette framework](https://nette.org).
 
 ### Features:
@@ -30,7 +33,7 @@ in [PHP](https://www.php.net) with [Nette framework](https://nette.org).
 
 ## Requirements
 
-[FastyBird](https://www.fastybird.com) Shelly connector is tested against PHP 8.1
+Shelly connector is tested against PHP 8.1
 and [ReactPHP Socket](https://github.com/reactphp/socket) 1.11 async, streaming plaintext TCP/IP and secure TLS socket server and client connections
 and [Nette framework](https://nette.org/en/) 3.0 PHP framework for real programmers
 
@@ -51,7 +54,7 @@ section
 
 ## Documentation
 
-Learn how to connect Shelly devices and manage them in [FastyBird IoT](https://www.fastybird.com) system
+Learn how to connect Shelly devices and manage them with [FastyBird IoT](https://www.fastybird.com) system
 in [documentation](https://github.com/FastyBird/shelly-connector/blob/master/.docs/en/index.md).
 
 ## Feedback

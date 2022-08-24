@@ -15,6 +15,8 @@
 
 namespace FastyBird\ShellyConnector\Clients;
 
+use FastyBird\Metadata\Entities as MetadataEntities;
+
 /**
  * Base client factory
  *
@@ -27,5 +29,12 @@ interface ClientFactory
 {
 
 	public const VERSION_CONSTANT_NAME = 'VERSION';
+
+	/**
+	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
+	 *
+	 * @return Client
+	 */
+	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Client;
 
 }

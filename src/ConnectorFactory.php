@@ -91,9 +91,8 @@ final class ConnectorFactory implements DevicesModuleConnectors\IConnectorFactor
 			if (
 				array_key_exists(Clients\ClientFactory::VERSION_CONSTANT_NAME, $constants)
 				&& $constants[Clients\ClientFactory::VERSION_CONSTANT_NAME] === $version
-				&& method_exists($clientFactory, 'create')
 			) {
-				return $this->connectorFactory->create($connector, $clientFactory->create($connector));
+				return $this->connectorFactory->create($clientFactory->create($connector));
 			}
 		}
 
