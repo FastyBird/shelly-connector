@@ -142,7 +142,7 @@ class InitializeCommand extends Console\Command\Command
 	{
 		$io = new Style\SymfonyStyle($input, $output);
 
-		$io->title('FB shelly connector - initialization');
+		$io->title('Shelly connector - initialization');
 
 		$io->note('This action will create|update connector configuration.');
 

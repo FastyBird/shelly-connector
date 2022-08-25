@@ -153,7 +153,7 @@ class DiscoveryCommand extends Console\Command\Command
 	{
 		$io = new Style\SymfonyStyle($input, $output);
 
-		$io->title('FB shelly connector - discovery');
+		$io->title('Shelly connector - discovery');
 
 		$io->note('This action will run connector devices discovery.');
 
