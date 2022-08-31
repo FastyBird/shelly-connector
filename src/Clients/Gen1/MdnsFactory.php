@@ -1,38 +1,38 @@
 <?php declare(strict_types = 1);
 
 /**
- * Consumer.php
+ * MdnsFactory.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:ShellyConnector!
- * @subpackage     Consumers
+ * @subpackage     Clients
  * @since          0.37.0
  *
  * @date           16.07.22
  */
 
-namespace FastyBird\ShellyConnector\Consumers;
+namespace FastyBird\ShellyConnector\Clients\Gen1;
 
-use FastyBird\ShellyConnector\Entities;
+use FastyBird\Metadata\Entities as MetadataEntities;
 
 /**
- * Clients messages consumer interface
+ * mDNS client factory
  *
  * @package        FastyBird:ShellyConnector!
- * @subpackage     Consumers
+ * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface Consumer
+interface MdnsFactory
 {
 
 	/**
-	 * @param Entities\Messages\Entity $entity
+	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 *
-	 * @return bool
+	 * @return Mdns
 	 */
-	public function consume(Entities\Messages\Entity $entity): bool;
+	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Mdns;
 
 }

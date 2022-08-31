@@ -1,0 +1,56 @@
+<?php declare(strict_types = 1);
+
+/**
+ * ShellyConnector.php
+ *
+ * @license        More in LICENSE.md
+ * @copyright      https://www.fastybird.com
+ * @author         Adam Kadlec <adam.kadlec@fastybird.com>
+ * @package        FastyBird:ShellyConnector!
+ * @subpackage     Schemas
+ * @since          0.1.0
+ *
+ * @date           22.01.22
+ */
+
+namespace FastyBird\ShellyConnector\Schemas;
+
+use FastyBird\DevicesModule\Schemas as DevicesModuleSchemas;
+use FastyBird\Metadata\Types as MetadataTypes;
+use FastyBird\ShellyConnector\Entities;
+
+/**
+ * Shelly connector entity schema
+ *
+ * @package        FastyBird:ShellyConnector!
+ * @subpackage     Schemas
+ *
+ * @author         Adam Kadlec <adam.kadlec@fastybird.com>
+ *
+ * @phpstan-extends DevicesModuleSchemas\Connectors\ConnectorSchema<Entities\ShellyConnector>
+ */
+final class ShellyConnector extends DevicesModuleSchemas\Connectors\ConnectorSchema
+{
+
+	/**
+	 * Define entity schema type string
+	 */
+	public const SCHEMA_TYPE = MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_SHELLY . '/connector/' . Entities\ShellyConnector::CONNECTOR_TYPE;
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getEntityClass(): string
+	{
+		return Entities\ShellyConnector::class;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getType(): string
+	{
+		return self::SCHEMA_TYPE;
+	}
+
+}

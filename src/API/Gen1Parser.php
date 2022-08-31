@@ -45,8 +45,8 @@ final class Gen1Parser
 	/** @var Gen1Transformer */
 	private Gen1Transformer $transformer;
 
-	/** @var Mappers\SensorMapper */
-	private Mappers\SensorMapper $sensorMapper;
+	/** @var Mappers\Sensor */
+	private Mappers\Sensor $sensorMapper;
 
 	/** @var MetadataSchemas\IValidator */
 	private MetadataSchemas\IValidator $schemaValidator;
@@ -54,13 +54,13 @@ final class Gen1Parser
 	/**
 	 * @param Gen1Validator $validator
 	 * @param Gen1Transformer $transformer
-	 * @param Mappers\SensorMapper $sensorMapper
+	 * @param Mappers\Sensor $sensorMapper
 	 * @param MetadataSchemas\IValidator $schemaValidator
 	 */
 	public function __construct(
 		Gen1Validator $validator,
 		Gen1Transformer $transformer,
-		Mappers\SensorMapper $sensorMapper,
+		Mappers\Sensor $sensorMapper,
 		MetadataSchemas\IValidator $schemaValidator
 	) {
 		$this->validator = $validator;
@@ -78,7 +78,7 @@ final class Gen1Parser
 	 * @param string $identifier
 	 * @param string $message
 	 *
-	 * @return Entities\Messages\DeviceDescriptionEntity
+	 * @return Entities\Messages\DeviceDescription
 	 */
 	public function parseCoapDescriptionMessage(
 		Uuid\UuidInterface $connector,
@@ -86,9 +86,9 @@ final class Gen1Parser
 		string $type,
 		string $identifier,
 		string $message
-	): Entities\Messages\DeviceDescriptionEntity {
+	): Entities\Messages\DeviceDescription {
 		if (!$this->validator->isValidCoapDescriptionMessage($message)) {
-			throw new Exceptions\ParseMessageException('Provided description message is not valid');
+			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
 
 		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
@@ -97,18 +97,18 @@ final class Gen1Parser
 			$schema = Utils\FileSystem::read($filePath);
 
 		} catch (Nette\IOException) {
-			throw new Exceptions\ParseMessageException('Validation schema for message could not be loaded');
+			throw new Exceptions\ParseMessage('Validation schema for message could not be loaded');
 		}
 
 		$parsedMessage = $this->schemaValidator->validate($message, $schema);
 
 		$blocks = $this->extractBlocksDescription(
-			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
+			Types\MessageSource::get(Types\MessageSource::SOURCE_GEN_1_COAP),
 			$parsedMessage
 		);
 
-		return new Entities\Messages\DeviceDescriptionEntity(
-			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
+		return new Entities\Messages\DeviceDescription(
+			Types\MessageSource::get(Types\MessageSource::SOURCE_GEN_1_COAP),
 			$connector,
 			$identifier,
 			$type,
@@ -124,7 +124,7 @@ final class Gen1Parser
 	 * @param string $identifier
 	 * @param string $message
 	 *
-	 * @return Entities\Messages\DeviceStatusEntity
+	 * @return Entities\Messages\DeviceStatus
 	 */
 	public function parseCoapStatusMessage(
 		Uuid\UuidInterface $connector,
@@ -132,9 +132,9 @@ final class Gen1Parser
 		string $type,
 		string $identifier,
 		string $message
-	): Entities\Messages\DeviceStatusEntity {
+	): Entities\Messages\DeviceStatus {
 		if (!$this->validator->isValidCoapStatusMessage($message)) {
-			throw new Exceptions\ParseMessageException('Provided description message is not valid');
+			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
 
 		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::COAP_STATUS_MESSAGE_SCHEMA_FILENAME;
@@ -143,7 +143,7 @@ final class Gen1Parser
 			$schema = Utils\FileSystem::read($filePath);
 
 		} catch (Nette\IOException) {
-			throw new Exceptions\ParseMessageException('Validation schema for message could not be loaded');
+			throw new Exceptions\ParseMessage('Validation schema for message could not be loaded');
 		}
 
 		$parsedMessage = $this->schemaValidator->validate($message, $schema);
@@ -152,7 +152,7 @@ final class Gen1Parser
 			!$parsedMessage->offsetExists('G')
 			|| !$parsedMessage['G'] instanceof Utils\ArrayHash
 		) {
-			throw new Exceptions\ParseMessageException('Provided message is not valid');
+			throw new Exceptions\ParseMessage('Provided message is not valid');
 		}
 
 		$channels = [];
@@ -162,8 +162,8 @@ final class Gen1Parser
 				[$channel, $sensorIdentifier, $sensorValue] = (array) $sensorState;
 
 				if (!array_key_exists($channel, $channels)) {
-					$channels[$channel] = new Entities\Messages\ChannelStatusEntity(
-						Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
+					$channels[$channel] = new Entities\Messages\ChannelStatus(
+						Types\MessageSource::get(Types\MessageSource::SOURCE_GEN_1_COAP),
 						$channel
 					);
 				}
@@ -176,8 +176,8 @@ final class Gen1Parser
 
 				if ($property !== null) {
 					$channels[$channel]->addSensor(
-						new Entities\Messages\SensorStatusEntity(
-							Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
+						new Entities\Messages\SensorStatus(
+							Types\MessageSource::get(Types\MessageSource::SOURCE_GEN_1_COAP),
 							intval($sensorIdentifier),
 							$this->transformer->transformValueFromDevice(
 								$property->getDataType(),
@@ -190,8 +190,8 @@ final class Gen1Parser
 			}
 		}
 
-		return new Entities\Messages\DeviceStatusEntity(
-			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_COAP),
+		return new Entities\Messages\DeviceStatus(
+			Types\MessageSource::get(Types\MessageSource::SOURCE_GEN_1_COAP),
 			$connector,
 			$identifier,
 			$type,
@@ -206,16 +206,16 @@ final class Gen1Parser
 	 * @param string $address
 	 * @param string $message
 	 *
-	 * @return Entities\Messages\DeviceInfoEntity
+	 * @return Entities\Messages\DeviceInfo
 	 */
 	public function parseHttpShellyMessage(
 		Uuid\UuidInterface $connector,
 		string $identifier,
 		string $address,
 		string $message
-	): Entities\Messages\DeviceInfoEntity {
+	): Entities\Messages\DeviceInfo {
 		if (!$this->validator->isValidHttpShellyMessage($message)) {
-			throw new Exceptions\ParseMessageException('Provided description message is not valid');
+			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
 
 		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::HTTP_SHELLY_INFO_MESSAGE_SCHEMA_FILENAME;
@@ -224,7 +224,7 @@ final class Gen1Parser
 			$schema = Utils\FileSystem::read($filePath);
 
 		} catch (Nette\IOException) {
-			throw new Exceptions\ParseMessageException('Validation schema for message could not be loaded');
+			throw new Exceptions\ParseMessage('Validation schema for message could not be loaded');
 		}
 
 		$parsedMessage = $this->schemaValidator->validate($message, $schema);
@@ -236,11 +236,11 @@ final class Gen1Parser
 			|| !$parsedMessage->offsetExists('auth')
 			|| !$parsedMessage->offsetExists('fw')
 		) {
-			throw new Exceptions\ParseMessageException('Provided message is not valid');
+			throw new Exceptions\ParseMessage('Provided message is not valid');
 		}
 
-		return new Entities\Messages\DeviceInfoEntity(
-			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_HTTP),
+		return new Entities\Messages\DeviceInfo(
+			Types\MessageSource::get(Types\MessageSource::SOURCE_GEN_1_HTTP),
 			$connector,
 			$identifier,
 			$address,
@@ -257,16 +257,16 @@ final class Gen1Parser
 	 * @param string $address
 	 * @param string $message
 	 *
-	 * @return Entities\Messages\DeviceDescriptionEntity
+	 * @return Entities\Messages\DeviceDescription
 	 */
 	public function parseHttpDescriptionMessage(
 		Uuid\UuidInterface $connector,
 		string $identifier,
 		string $address,
 		string $message
-	): Entities\Messages\DeviceDescriptionEntity {
+	): Entities\Messages\DeviceDescription {
 		if (!$this->validator->isValidHttpDescriptionMessage($message)) {
-			throw new Exceptions\ParseMessageException('Provided description message is not valid');
+			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
 
 		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
@@ -275,18 +275,18 @@ final class Gen1Parser
 			$schema = Utils\FileSystem::read($filePath);
 
 		} catch (Nette\IOException) {
-			throw new Exceptions\ParseMessageException('Validation schema for message could not be loaded');
+			throw new Exceptions\ParseMessage('Validation schema for message could not be loaded');
 		}
 
 		$parsedMessage = $this->schemaValidator->validate($message, $schema);
 
 		$blocks = $this->extractBlocksDescription(
-			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_HTTP),
+			Types\MessageSource::get(Types\MessageSource::SOURCE_GEN_1_HTTP),
 			$parsedMessage
 		);
 
-		return new Entities\Messages\DeviceDescriptionEntity(
-			Types\MessageSourceType::get(Types\MessageSourceType::SOURCE_GEN_1_HTTP),
+		return new Entities\Messages\DeviceDescription(
+			Types\MessageSource::get(Types\MessageSource::SOURCE_GEN_1_HTTP),
 			$connector,
 			$identifier,
 			null,
@@ -296,13 +296,13 @@ final class Gen1Parser
 	}
 
 	/**
-	 * @param Types\MessageSourceType $source
+	 * @param Types\MessageSource $source
 	 * @param Utils\ArrayHash $description
 	 *
-	 * @return Entities\Messages\BlockDescriptionEntity[]
+	 * @return Entities\Messages\BlockDescription[]
 	 */
 	private function extractBlocksDescription(
-		Types\MessageSourceType $source,
+		Types\MessageSource $source,
 		Utils\ArrayHash $description
 	): array {
 		if (!$description->offsetExists('blk') || !$description->offsetExists('sen')) {
@@ -327,7 +327,7 @@ final class Gen1Parser
 				continue;
 			}
 
-			$blockDescription = new Entities\Messages\BlockDescriptionEntity(
+			$blockDescription = new Entities\Messages\BlockDescription(
 				$source,
 				intval($block->offsetGet('I')),
 				strval($block->offsetGet('D')),
@@ -358,17 +358,17 @@ final class Gen1Parser
 						$sensor->offsetExists('R') ? (is_array($sensor->offsetGet('R')) || $sensor->offsetGet('R') instanceof Utils\ArrayHash ? (array) $sensor->offsetGet('R') : strval($sensor->offsetGet('R'))) : null
 					);
 
-					$sensorDescription = new Entities\Messages\SensorDescriptionEntity(
+					$sensorDescription = new Entities\Messages\SensorDescription(
 						$source,
 						intval($sensor->offsetGet('I')),
-						Types\SensorTypeType::get($sensor->offsetGet('T')),
+						Types\SensorType::get($sensor->offsetGet('T')),
 						strval($sensor->offsetGet('D')),
 						$sensorRange->getDataType(),
-						$sensor->offsetExists('U') && $sensor->offsetGet('U') !== null ? Types\SensorUnitType::get($sensor->offsetGet('U')) : null,
+						$sensor->offsetExists('U') && $sensor->offsetGet('U') !== null ? Types\SensorUnit::get($sensor->offsetGet('U')) : null,
 						$sensorRange->getFormat(),
 						$sensorRange->getInvalid(),
 						false,
-						Types\WritableSensorTypeType::isValidValue($sensor->offsetGet('D'))
+						Types\WritableSensorType::isValidValue($sensor->offsetGet('D'))
 					);
 
 					$blockDescription->addSensor($sensorDescription);
@@ -382,19 +382,19 @@ final class Gen1Parser
 	}
 
 	/**
-	 * @param Types\MessageSourceType $source
+	 * @param Types\MessageSource $source
 	 * @param string $block
 	 * @param string $description
 	 * @param string|string[]|null $rawRange
 	 *
-	 * @return Entities\Messages\SensorRangeEntity
+	 * @return Entities\Messages\SensorRange
 	 */
     private function parseSensorRange(
-		Types\MessageSourceType $source,
+		Types\MessageSource $source,
 		string $block,
 		string $description,
         string|array|null $rawRange
-    ): Entities\Messages\SensorRangeEntity {
+    ): Entities\Messages\SensorRange {
 		$invalidValue = null;
 
 		if (is_array($rawRange) && count($rawRange) === 2) {
@@ -405,7 +405,7 @@ final class Gen1Parser
 			$normalValue = $rawRange;
 
 		} else {
-			return new Entities\Messages\SensorRangeEntity(
+			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
 					$block,
@@ -418,7 +418,7 @@ final class Gen1Parser
 		}
 
 		if ($normalValue === '0/1') {
-			return new Entities\Messages\SensorRangeEntity(
+			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
 					$block,
@@ -431,7 +431,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'U8') {
-			return new Entities\Messages\SensorRangeEntity(
+			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
 					$block,
@@ -444,7 +444,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'U16') {
-			return new Entities\Messages\SensorRangeEntity(
+			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
 					$block,
@@ -457,7 +457,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'U32') {
-			return new Entities\Messages\SensorRangeEntity(
+			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
 					$block,
@@ -470,7 +470,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'I8') {
-			return new Entities\Messages\SensorRangeEntity(
+			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
 					$block,
@@ -483,7 +483,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'I16') {
-			return new Entities\Messages\SensorRangeEntity(
+			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
 					$block,
@@ -496,7 +496,7 @@ final class Gen1Parser
 		}
 
         if ($normalValue === 'I32') {
-			return new Entities\Messages\SensorRangeEntity(
+			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
 					$block,
@@ -516,7 +516,7 @@ final class Gen1Parser
 				&& $normalValueParts[0] === (string) (int) $normalValueParts[0]
 				&& $normalValueParts[1] === (string) (int) $normalValueParts[1]
 			) {
-				return new Entities\Messages\SensorRangeEntity(
+				return new Entities\Messages\SensorRange(
 					$source,
 					$this->adjustSensorDataType(
 						$block,
@@ -537,7 +537,7 @@ final class Gen1Parser
 				&& $normalValueParts[0] === (string) (float) $normalValueParts[0]
 				&& $normalValueParts[1] === (string) (float) $normalValueParts[1]
 			) {
-				return new Entities\Messages\SensorRangeEntity(
+				return new Entities\Messages\SensorRange(
 					$source,
 					$this->adjustSensorDataType(
 						$block,
@@ -553,7 +553,7 @@ final class Gen1Parser
 				);
 			}
 
-			return new Entities\Messages\SensorRangeEntity(
+			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
 					$block,
@@ -571,7 +571,7 @@ final class Gen1Parser
 			);
 		}
 
-		return new Entities\Messages\SensorRangeEntity(
+		return new Entities\Messages\SensorRange(
 			$source,
 			$this->adjustSensorDataType(
 				$block,
@@ -611,7 +611,7 @@ final class Gen1Parser
 	 * @param string $description
 	 * @param string[]|int[]|float[]|null $format
 	 *
-	 * @return string[]|int[]|float[]|Array<int, Array<int, string|null>>|Array<int, int|null>|Array<int, float|null>|Array<int, MetadataTypes\SwitchPayloadType|string|Types\RelayPayloadType|null>|null
+	 * @return string[]|int[]|float[]|Array<int, Array<int, string|null>>|Array<int, int|null>|Array<int, float|null>|Array<int, MetadataTypes\SwitchPayloadType|string|Types\RelayPayload|null>|null
 	 */
 	private function adjustSensorFormat(
 		string $block,
@@ -620,17 +620,17 @@ final class Gen1Parser
     ): ?array {
 		if (Utils\Strings::startsWith($block, 'relay') && Utils\Strings::lower($description) === 'output') {
 			return [
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_ON, '1', Types\RelayPayloadType::PAYLOAD_ON],
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_OFF, '0', Types\RelayPayloadType::PAYLOAD_OFF],
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_TOGGLE, null, Types\RelayPayloadType::PAYLOAD_TOGGLE],
+				[MetadataTypes\SwitchPayloadType::PAYLOAD_ON, '1', Types\RelayPayload::PAYLOAD_ON],
+				[MetadataTypes\SwitchPayloadType::PAYLOAD_OFF, '0', Types\RelayPayload::PAYLOAD_OFF],
+				[MetadataTypes\SwitchPayloadType::PAYLOAD_TOGGLE, null, Types\RelayPayload::PAYLOAD_TOGGLE],
 			];
 		}
 
 		if (Utils\Strings::startsWith($block, 'light') && Utils\Strings::lower($description) === 'output') {
 			return [
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_ON, '1', Types\LightSwitchPayloadType::PAYLOAD_ON],
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_OFF, '0', Types\LightSwitchPayloadType::PAYLOAD_OFF],
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_TOGGLE, null, Types\LightSwitchPayloadType::PAYLOAD_TOGGLE],
+				[MetadataTypes\SwitchPayloadType::PAYLOAD_ON, '1', Types\LightSwitchPayload::PAYLOAD_ON],
+				[MetadataTypes\SwitchPayloadType::PAYLOAD_OFF, '0', Types\LightSwitchPayload::PAYLOAD_OFF],
+				[MetadataTypes\SwitchPayloadType::PAYLOAD_TOGGLE, null, Types\LightSwitchPayload::PAYLOAD_TOGGLE],
 			];
 		}
 

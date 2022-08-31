@@ -100,29 +100,29 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 
 		// Clients
 		$builder->addFactoryDefinition($this->prefix('client.gen1'))
-			->setImplement(Clients\Gen1ClientFactory::class)
+			->setImplement(Clients\Gen1Factory::class)
 			->getResultDefinition()
-			->setType(Clients\Gen1Client::class);
+			->setType(Clients\Gen1::class);
 
 		$builder->addFactoryDefinition($this->prefix('client.gen1.coap'))
-			->setImplement(Clients\Gen1\CoapClientFactory::class)
+			->setImplement(Clients\Gen1\CoapFactory::class)
 			->getResultDefinition()
-			->setType(Clients\Gen1\CoapClient::class);
+			->setType(Clients\Gen1\Coap::class);
 
 		$builder->addFactoryDefinition($this->prefix('client.gen1.mdns'))
-			->setImplement(Clients\Gen1\MdnsClientFactory::class)
+			->setImplement(Clients\Gen1\MdnsFactory::class)
 			->getResultDefinition()
-			->setType(Clients\Gen1\MdnsClient::class);
+			->setType(Clients\Gen1\Mdns::class);
 
 		$builder->addFactoryDefinition($this->prefix('client.gen1.http'))
-			->setImplement(Clients\Gen1\HttpClientFactory::class)
+			->setImplement(Clients\Gen1\HttpFactory::class)
 			->getResultDefinition()
-			->setType(Clients\Gen1\HttpClient::class);
+			->setType(Clients\Gen1\Http::class);
 
 		$builder->addFactoryDefinition($this->prefix('client.gen1.mqtt'))
-			->setImplement(Clients\Gen1\MqttClientFactory::class)
+			->setImplement(Clients\Gen1\MqttFactory::class)
 			->getResultDefinition()
-			->setType(Clients\Gen1\MqttClient::class);
+			->setType(Clients\Gen1\Mqtt::class);
 
 		// Messages API
 		$builder->addDefinition($this->prefix('api.gen1parser'), new DI\Definitions\ServiceDefinition())
@@ -136,64 +136,64 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 
 		// Consumers
 		$builder->addDefinition($this->prefix('consumer.proxy'), new DI\Definitions\ServiceDefinition())
-			->setType(Consumers\Consumer::class);
+			->setType(Consumers\Messages::class);
 
 		$builder->addDefinition($this->prefix('consumer.device.description.message'), new DI\Definitions\ServiceDefinition())
-			->setType(Consumers\DescriptionMessageConsumer::class);
+			->setType(Consumers\Messages\Description::class);
 
 		$builder->addDefinition($this->prefix('consumer.device.status.message'), new DI\Definitions\ServiceDefinition())
-			->setType(Consumers\StatusMessageConsumer::class);
+			->setType(Consumers\Messages\Status::class);
 
 		$builder->addDefinition($this->prefix('consumer.device.info.message'), new DI\Definitions\ServiceDefinition())
-			->setType(Consumers\InfoMessageConsumer::class);
+			->setType(Consumers\Messages\Info::class);
 
 		$builder->addDefinition($this->prefix('consumer.device.discovery.message'), new DI\Definitions\ServiceDefinition())
-			->setType(Consumers\DiscoveryMessageConsumer::class);
+			->setType(Consumers\Messages\Discovery::class);
 
 		// Events subscribers
-		$builder->addDefinition($this->prefix('subscribers.entities'), new DI\Definitions\ServiceDefinition())
-			->setType(Subscribers\EntitiesSubscriber::class);
+		$builder->addDefinition($this->prefix('subscribers.properties'), new DI\Definitions\ServiceDefinition())
+			->setType(Subscribers\Properties::class);
 
 		// API schemas
 		$builder->addDefinition($this->prefix('schemas.connector.shelly'), new DI\Definitions\ServiceDefinition())
-			->setType(Schemas\ShellyConnectorSchema::class);
+			->setType(Schemas\ShellyConnector::class);
 
 		$builder->addDefinition($this->prefix('schemas.device.shelly'), new DI\Definitions\ServiceDefinition())
-			->setType(Schemas\ShellyDeviceSchema::class);
+			->setType(Schemas\ShellyDevice::class);
 
 		// API hydrators
 		$builder->addDefinition($this->prefix('hydrators.connector.shelly'), new DI\Definitions\ServiceDefinition())
-			->setType(Hydrators\ShellyConnectorHydrator::class);
+			->setType(Hydrators\ShellyConnector::class);
 
 		$builder->addDefinition($this->prefix('hydrators.device.shelly'), new DI\Definitions\ServiceDefinition())
-			->setType(Hydrators\ShellyDeviceHydrator::class);
+			->setType(Hydrators\ShellyDevice::class);
 
 		// Helpers
 		$builder->addDefinition($this->prefix('helpers.database'), new DI\Definitions\ServiceDefinition())
-			->setType(Helpers\DatabaseHelper::class);
+			->setType(Helpers\Database::class);
 
 		$builder->addDefinition($this->prefix('helpers.connector'), new DI\Definitions\ServiceDefinition())
-			->setType(Helpers\ConnectorHelper::class);
+			->setType(Helpers\Connector::class);
 
 		$builder->addDefinition($this->prefix('helpers.device'), new DI\Definitions\ServiceDefinition())
-			->setType(Helpers\DeviceHelper::class);
+			->setType(Helpers\Device::class);
 
 		$builder->addDefinition($this->prefix('helpers.property'), new DI\Definitions\ServiceDefinition())
-			->setType(Helpers\PropertyHelper::class);
+			->setType(Helpers\Property::class);
 
 		// Mappers
 		$builder->addDefinition($this->prefix('mappers.sensor'), new DI\Definitions\ServiceDefinition())
-			->setType(Mappers\SensorMapper::class);
+			->setType(Mappers\Sensor::class);
 
 		// Console commands
 		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
-			->setType(Commands\InitializeCommand::class);
+			->setType(Commands\Initialize::class);
 
 		$builder->addDefinition($this->prefix('commands.discovery'), new DI\Definitions\ServiceDefinition())
-			->setType(Commands\DiscoveryCommand::class);
+			->setType(Commands\Discovery::class);
 
 		$builder->addDefinition($this->prefix('commands.execute'), new DI\Definitions\ServiceDefinition())
-			->setType(Commands\ExecuteCommand::class);
+			->setType(Commands\Execute::class);
 	}
 
 	/**

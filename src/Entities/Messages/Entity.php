@@ -1,38 +1,41 @@
 <?php declare(strict_types = 1);
 
 /**
- * Consumer.php
+ * Entity.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:ShellyConnector!
- * @subpackage     Consumers
+ * @subpackage     Properties
  * @since          0.37.0
  *
  * @date           16.07.22
  */
 
-namespace FastyBird\ShellyConnector\Consumers;
+namespace FastyBird\ShellyConnector\Entities\Messages;
 
-use FastyBird\ShellyConnector\Entities;
+use FastyBird\ShellyConnector\Types;
 
 /**
- * Clients messages consumer interface
+ * Shelly base message data entity interface
  *
  * @package        FastyBird:ShellyConnector!
- * @subpackage     Consumers
+ * @subpackage     Properties
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface Consumer
+interface Entity
 {
 
 	/**
-	 * @param Entities\Messages\Entity $entity
-	 *
-	 * @return bool
+	 * @return Types\MessageSource
 	 */
-	public function consume(Entities\Messages\Entity $entity): bool;
+	public function getSource(): Types\MessageSource;
+
+	/**
+	 * @return Array<string, mixed>
+	 */
+	public function toArray(): array;
 
 }

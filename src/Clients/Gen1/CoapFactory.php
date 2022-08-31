@@ -1,40 +1,38 @@
 <?php declare(strict_types = 1);
 
 /**
- * ConnectorFactory.php
+ * CoapFactory.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:ShellyConnector!
- * @subpackage     Connector
+ * @subpackage     Clients
  * @since          0.37.0
  *
  * @date           05.07.22
  */
 
-namespace FastyBird\ShellyConnector\Connector;
+namespace FastyBird\ShellyConnector\Clients\Gen1;
 
-use FastyBird\ShellyConnector\Clients;
+use FastyBird\Metadata\Entities as MetadataEntities;
 
 /**
- * Connector service factory
+ * CoAP client factory
  *
  * @package        FastyBird:ShellyConnector!
- * @subpackage     Connector
+ * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface ConnectorFactory
+interface CoapFactory
 {
 
 	/**
-	 * @param Clients\Client $client
+	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 *
-	 * @return Connector
+	 * @return Coap
 	 */
-	public function create(
-		Clients\Client $client
-	): Connector;
+	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Coap;
 
 }

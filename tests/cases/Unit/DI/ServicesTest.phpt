@@ -21,11 +21,11 @@ final class ServicesTest extends BaseTestCase
 	{
 		$container = $this->createContainer();
 
-		Assert::notNull($container->getByType(Schemas\ShellyDeviceSchema::class));
-		Assert::notNull($container->getByType(Schemas\ShellyConnectorSchema::class));
+		Assert::notNull($container->getByType(Schemas\ShellyDevice::class));
+		Assert::notNull($container->getByType(Schemas\ShellyConnector::class));
 
-		Assert::notNull($container->getByType(Hydrators\ShellyDeviceHydrator::class));
-		Assert::notNull($container->getByType(Hydrators\ShellyConnectorHydrator::class));
+		Assert::notNull($container->getByType(Hydrators\ShellyDevice::class));
+		Assert::notNull($container->getByType(Hydrators\ShellyConnector::class));
 	}
 
 	/**

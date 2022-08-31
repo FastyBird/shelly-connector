@@ -10,24 +10,62 @@
  * @subpackage     Clients
  * @since          0.37.0
  *
- * @date           17.07.22
+ * @date           23.02.20
  */
 
 namespace FastyBird\ShellyConnector\Clients;
 
-use Nette;
+use FastyBird\Metadata\Entities as MetadataEntities;
 
 /**
- * Base client service
+ * Shelly device client interface
  *
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-abstract class Client implements IClient
+interface Client
 {
 
-	use Nette\SmartObject;
+	/**
+	 * @param MetadataEntities\Actions\IActionDeviceControlEntity $action
+	 *
+	 * @return void
+	 */
+	public function writeDeviceControl(MetadataEntities\Actions\IActionDeviceControlEntity $action): void;
+
+	/**
+	 * @param MetadataEntities\Actions\IActionChannelControlEntity $action
+	 *
+	 * @return void
+	 */
+	public function writeChannelControl(MetadataEntities\Actions\IActionChannelControlEntity $action): void;
+
+	/**
+	 * @return bool
+	 */
+	public function isConnected(): bool;
+
+	/**
+	 * Discover new devices
+	 *
+	 * @return void
+	 */
+	public function discover(): void;
+
+	/**
+	 * Create servers/clients
+	 *
+	 * @return void
+	 */
+	public function connect(): void;
+
+	/**
+	 * Destroy servers/clients
+	 *
+	 * @return void
+	 */
+	public function disconnect(): void;
 
 }

@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * MdnsResultStorage.php
+ * MqttFactory.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -10,40 +10,29 @@
  * @subpackage     Clients
  * @since          0.37.0
  *
- * @date           14.07.22
+ * @date           20.07.22
  */
 
 namespace FastyBird\ShellyConnector\Clients\Gen1;
 
-use FastyBird\ShellyConnector\Entities\Clients\MdnsResult;
-use Nette;
-use SplObjectStorage;
+use FastyBird\Metadata\Entities as MetadataEntities;
 
 /**
- * mDNS search results storage
+ * MQTT client factory
  *
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- *
- * @extends SplObjectStorage<MdnsResult, null>
  */
-class MdnsResultStorage extends SplObjectStorage
+interface MqttFactory
 {
 
-	use Nette\SmartObject;
-
 	/**
-	 * {@inheritDoc}
+	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 *
-	 * @phpstan-param MdnsResult $object
-	 *
-	 * @return string
+	 * @return Mqtt
 	 */
-	public function getHash(object $object): string
-	{
-		return serialize($object);
-	}
+	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Mqtt;
 
 }
