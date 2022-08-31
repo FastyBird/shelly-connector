@@ -51,9 +51,9 @@ final class BlockDescription implements Entity
 	 */
 	public function __construct(
 		Types\MessageSource $source,
-		int                 $identifier,
-		string              $description,
-		array               $sensors = []
+		int $identifier,
+		string $description,
+		array $sensors = []
 	) {
 		$this->source = $source;
 		$this->identifier = $identifier;

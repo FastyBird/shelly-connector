@@ -54,8 +54,8 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 * @param EventLoop\LoopInterface $eventLoop
 	 */
 	public function __construct(
-		Clients\Client          $client,
-		Consumers\Messages      $consumer,
+		Clients\Client $client,
+		Consumers\Messages $consumer,
 		EventLoop\LoopInterface $eventLoop
 	) {
 		$this->client = $client;

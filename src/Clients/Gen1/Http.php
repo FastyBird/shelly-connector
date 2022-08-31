@@ -247,7 +247,8 @@ final class Http
 	private function handleCommunication(): void
 	{
 		foreach ($this->processedProperties as $index => $processedProperty) {
-			if (((float) $this->dateTimeFactory->getNow()->format('Uv') - (float) $processedProperty->format('Uv')) >= 500) {
+			if (((float) $this->dateTimeFactory->getNow()
+                ->format('Uv') - (float) $processedProperty->format('Uv')) >= 500) {
 				unset($this->processedProperties[$index]);
 			}
 		}
@@ -334,7 +335,8 @@ final class Http
 
 		if (
 			$httpCmdResult instanceof DateTimeInterface
-			&& ($this->dateTimeFactory->getNow()->getTimestamp() - $httpCmdResult->getTimestamp()) < self::SENDING_CMD_DELAY
+			&& ($this->dateTimeFactory->getNow()
+                ->getTimestamp() - $httpCmdResult->getTimestamp()) < self::SENDING_CMD_DELAY
 		) {
 			return true;
 		}
@@ -409,7 +411,9 @@ final class Http
 					&& $property->isPending()
 				) {
 					$pending = is_string($property->getPending()) ? Utils\DateTime::createFromFormat(DateTimeInterface::ATOM, $property->getPending()) : true;
-					$debounce = array_key_exists($property->getId()->toString(), $this->processedProperties) ? $this->processedProperties[$property->getId()->toString()] : false;
+					$debounce = array_key_exists($property->getId()
+						->toString(), $this->processedProperties) ? $this->processedProperties[$property->getId()
+                            ->toString()] : false;
 
 					if (
 						$debounce !== false
@@ -476,10 +480,10 @@ final class Http
 												'device'    => [
 													'id' => $device->getId()->toString(),
 												],
-												'channel'    => [
+												'channel'   => [
 													'id' => $channel->getId()->toString(),
 												],
-												'property'    => [
+												'property'  => [
 													'id' => $property->getId()->toString(),
 												],
 											]

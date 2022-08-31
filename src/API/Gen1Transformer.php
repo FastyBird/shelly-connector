@@ -187,7 +187,7 @@ final class Gen1Transformer
 				return $value ? 1 : 0;
 			}
 
-            return null;
+			return null;
 		}
 
 		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)) {

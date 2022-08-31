@@ -393,7 +393,7 @@ class Discovery extends Console\Command\Command
 							$table->addRow([
 								$foundDevices,
 								$device->getPlainId(),
-								$device->getName() ?? $device->getIdentifier(),
+									$device->getName() ?? $device->getIdentifier(),
 								$hardwareModelAttribute !== null ? $hardwareModelAttribute->getContent(true) : 'N/A',
 								is_string($ipAddress) ? $ipAddress : 'N/A',
 							]);

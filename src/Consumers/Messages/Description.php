@@ -118,19 +118,19 @@ final class Description implements Consumer
 		DevicesModuleModels\Devices\IDevicesManager $devicesManager,
 		DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository,
 		DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager,
-		DevicesModuleModels\Devices\Attributes\IAttributesRepository  $attributesRepository,
-		DevicesModuleModels\Devices\Attributes\IAttributesManager     $attributesManager,
-		DevicesModuleModels\Channels\IChannelsRepository              $channelsRepository,
-		DevicesModuleModels\Channels\IChannelsManager                 $channelsManager,
+		DevicesModuleModels\Devices\Attributes\IAttributesRepository $attributesRepository,
+		DevicesModuleModels\Devices\Attributes\IAttributesManager $attributesManager,
+		DevicesModuleModels\Channels\IChannelsRepository $channelsRepository,
+		DevicesModuleModels\Channels\IChannelsManager $channelsManager,
 		DevicesModuleModels\Channels\Properties\IPropertiesRepository $channelsPropertiesRepository,
-		DevicesModuleModels\Channels\Properties\IPropertiesManager    $channelsPropertiesManager,
-		DevicesModuleModels\DataStorage\IDevicesRepository            $devicesDataStorageRepository,
-		DevicesModuleModels\DataStorage\IDevicePropertiesRepository   $propertiesDataStorageRepository,
-		DevicesModuleModels\DataStorage\IDeviceAttributesRepository   $attributesDataStorageRepository,
-		DevicesModuleModels\DataStorage\IChannelsRepository           $channelsDataStorageRepository,
-		Mappers\Sensor                                                $sensorMapper,
-		Helpers\Database                                        $databaseHelper,
-		?Log\LoggerInterface                                          $logger = null
+		DevicesModuleModels\Channels\Properties\IPropertiesManager $channelsPropertiesManager,
+		DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository,
+		DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository,
+		DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository,
+		DevicesModuleModels\DataStorage\IChannelsRepository $channelsDataStorageRepository,
+		Mappers\Sensor $sensorMapper,
+		Helpers\Database $databaseHelper,
+		?Log\LoggerInterface $logger = null
 	) {
 		$this->devicesRepository = $devicesRepository;
 		$this->devicesManager = $devicesManager;

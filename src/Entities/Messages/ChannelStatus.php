@@ -47,8 +47,8 @@ final class ChannelStatus implements Entity
 	 */
 	public function __construct(
 		Types\MessageSource $source,
-		int                 $channel,
-		array               $sensors = []
+		int $channel,
+		array $sensors = []
 	) {
 		$this->source = $source;
 		$this->channel = $channel;

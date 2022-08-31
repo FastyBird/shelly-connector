@@ -281,7 +281,7 @@ final class Coap
 				),
 				[
 					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type' => 'coap-client',
+					'type'   => 'coap-client',
 				]
 			);
 
@@ -306,8 +306,8 @@ final class Coap
 					$this->logger->warning(
 						'Received message could not be parsed into entity',
 						[
-							'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-							'type' => 'coap-client',
+							'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+							'type'      => 'coap-client',
 							'exception' => [
 								'message' => $ex->getMessage(),
 								'code'    => $ex->getCode(),
@@ -335,8 +335,8 @@ final class Coap
 					$this->logger->warning(
 						'Received message could not be parsed into entity',
 						[
-							'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-							'type' => 'coap-client',
+							'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+							'type'      => 'coap-client',
 							'exception' => [
 								'message' => $ex->getMessage(),
 								'code'    => $ex->getCode(),

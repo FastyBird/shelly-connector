@@ -47,8 +47,8 @@ final class SensorStatus implements Entity
 	 * @param float|int|string|bool|MetadataTypes\SwitchPayloadType|null $value
 	 */
 	public function __construct(
-		Types\MessageSource                                        $source,
-		int                                                        $identifier,
+		Types\MessageSource $source,
+		int $identifier,
 		float|int|string|bool|MetadataTypes\SwitchPayloadType|null $value
 	) {
 		$this->source = $source;

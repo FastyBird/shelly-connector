@@ -98,7 +98,8 @@ final class Status implements Consumer
 
 		// Check device state...
 		if (
-			!$this->deviceConnectionStateManager->getState($deviceItem)->equalsValue(Metadata\Types\ConnectionStateType::STATE_CONNECTED)
+			!$this->deviceConnectionStateManager->getState($deviceItem)
+				->equalsValue(Metadata\Types\ConnectionStateType::STATE_CONNECTED)
 		) {
 			// ... and if it is not ready, set it to ready
 			$this->deviceConnectionStateManager->setState(

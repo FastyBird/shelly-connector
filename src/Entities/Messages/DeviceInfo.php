@@ -50,13 +50,13 @@ final class DeviceInfo extends Device
 	 */
 	public function __construct(
 		Types\MessageSource $source,
-		Uuid\UuidInterface  $connector,
-		string              $identifier,
-		string              $ipAddress,
-		string              $type,
-		string              $macAddress,
-		bool                $authEnabled,
-		string              $firmwareVersion
+		Uuid\UuidInterface $connector,
+		string $identifier,
+		string $ipAddress,
+		string $type,
+		string $macAddress,
+		bool $authEnabled,
+		string $firmwareVersion
 	) {
 		parent::__construct($source, $connector, $identifier, $type, $ipAddress);
 

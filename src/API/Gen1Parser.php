@@ -389,12 +389,12 @@ final class Gen1Parser
 	 *
 	 * @return Entities\Messages\SensorRange
 	 */
-    private function parseSensorRange(
+	private function parseSensorRange(
 		Types\MessageSource $source,
 		string $block,
 		string $description,
-        string|array|null $rawRange
-    ): Entities\Messages\SensorRange {
+		string|array|null $rawRange
+	): Entities\Messages\SensorRange {
 		$invalidValue = null;
 
 		if (is_array($rawRange) && count($rawRange) === 2) {
@@ -430,7 +430,7 @@ final class Gen1Parser
 			);
 		}
 
-        if ($normalValue === 'U8') {
+		if ($normalValue === 'U8') {
 			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
@@ -443,7 +443,7 @@ final class Gen1Parser
 			);
 		}
 
-        if ($normalValue === 'U16') {
+		if ($normalValue === 'U16') {
 			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
@@ -456,7 +456,7 @@ final class Gen1Parser
 			);
 		}
 
-        if ($normalValue === 'U32') {
+		if ($normalValue === 'U32') {
 			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
@@ -469,7 +469,7 @@ final class Gen1Parser
 			);
 		}
 
-        if ($normalValue === 'I8') {
+		if ($normalValue === 'I8') {
 			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
@@ -482,7 +482,7 @@ final class Gen1Parser
 			);
 		}
 
-        if ($normalValue === 'I16') {
+		if ($normalValue === 'I16') {
 			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
@@ -495,7 +495,7 @@ final class Gen1Parser
 			);
 		}
 
-        if ($normalValue === 'I32') {
+		if ($normalValue === 'I32') {
 			return new Entities\Messages\SensorRange(
 				$source,
 				$this->adjustSensorDataType(
@@ -508,7 +508,7 @@ final class Gen1Parser
 			);
 		}
 
-        if (Utils\Strings::contains($normalValue, '/')) {
+		if (Utils\Strings::contains($normalValue, '/')) {
 			$normalValueParts = explode('/', $normalValue);
 
 			if (
@@ -532,7 +532,7 @@ final class Gen1Parser
 				);
 			}
 
-            if (
+			if (
 				count($normalValueParts) === 2
 				&& $normalValueParts[0] === (string) (float) $normalValueParts[0]
 				&& $normalValueParts[1] === (string) (float) $normalValueParts[1]
@@ -590,7 +590,7 @@ final class Gen1Parser
 	 *
 	 * @return MetadataTypes\DataTypeType
 	 */
-    private function adjustSensorDataType(
+	private function adjustSensorDataType(
 		string $block,
 		string $description,
 		MetadataTypes\DataTypeType $dataType
@@ -617,7 +617,7 @@ final class Gen1Parser
 		string $block,
 		string $description,
 		array|null $format
-    ): ?array {
+	): ?array {
 		if (Utils\Strings::startsWith($block, 'relay') && Utils\Strings::lower($description) === 'output') {
 			return [
 				[MetadataTypes\SwitchPayloadType::PAYLOAD_ON, '1', Types\RelayPayload::PAYLOAD_ON],

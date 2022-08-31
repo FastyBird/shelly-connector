@@ -365,7 +365,10 @@ final class Info implements Consumer
 			if ($attribute !== null) {
 				/** @var DevicesModuleEntities\Devices\Attributes\IAttribute $attribute */
 				$attribute = $this->databaseHelper->transaction(
-					function () use ($firmwareVersion, $attribute): DevicesModuleEntities\Devices\Attributes\IAttribute {
+					function () use (
+						$firmwareVersion,
+						$attribute
+					): DevicesModuleEntities\Devices\Attributes\IAttribute {
 						return $this->attributesManager->update($attribute, Utils\ArrayHash::from([
 							'content' => $firmwareVersion,
 						]));

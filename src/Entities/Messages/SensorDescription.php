@@ -75,16 +75,16 @@ final class SensorDescription implements Entity
 	 * @param bool $settable
 	 */
 	public function __construct(
-		Types\MessageSource    $source,
-		int                        $identifier,
-		Types\SensorType       $type,
-		string                     $description,
+		Types\MessageSource $source,
+		int $identifier,
+		Types\SensorType $type,
+		string $description,
 		MetadataTypes\DataTypeType $dataType,
-		?Types\SensorUnit          $unit = null,
-		?array                     $format = null,
-		float|int|string|null      $invalid = null,
-		bool                       $queryable = false,
-		bool                       $settable = false
+		?Types\SensorUnit $unit = null,
+		?array $format = null,
+		float|int|string|null $invalid = null,
+		bool $queryable = false,
+		bool $settable = false
 	) {
 		$this->source = $source;
 		$this->identifier = $identifier;

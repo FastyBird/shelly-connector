@@ -42,11 +42,11 @@ final class DeviceDescription extends Device
 	 */
 	public function __construct(
 		Types\MessageSource $source,
-		Uuid\UuidInterface  $connector,
-		string              $identifier,
-		?string             $type,
-		string              $ipAddress,
-		array               $blocks
+		Uuid\UuidInterface $connector,
+		string $identifier,
+		?string $type,
+		string $ipAddress,
+		array $blocks
 	) {
 		parent::__construct($source, $connector, $identifier, $type, $ipAddress);
 

@@ -42,11 +42,11 @@ final class DeviceStatus extends Device
 	 */
 	public function __construct(
 		Types\MessageSource $source,
-		Uuid\UuidInterface  $connector,
-		string              $identifier,
-		string              $type,
-		string              $ipAddress,
-		array               $channels
+		Uuid\UuidInterface $connector,
+		string $identifier,
+		string $type,
+		string $ipAddress,
+		array $channels
 	) {
 		parent::__construct($source, $connector, $identifier, $type, $ipAddress);
 

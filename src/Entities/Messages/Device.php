@@ -56,10 +56,10 @@ abstract class Device implements Entity
 	 */
 	public function __construct(
 		Types\MessageSource $source,
-		Uuid\UuidInterface  $connector,
-		string              $identifier,
-		?string             $type,
-		string              $ipAddress
+		Uuid\UuidInterface $connector,
+		string $identifier,
+		?string $type,
+		string $ipAddress
 	) {
 		$this->source = $source;
 		$this->connector = $connector;
