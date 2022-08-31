@@ -22,6 +22,7 @@ use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
+use FastyBird\ShellyConnector\Entities;
 use FastyBird\ShellyConnector\Helpers;
 use Nette\Utils;
 use Psr\Log;
@@ -135,13 +136,19 @@ trait TConsumeDeviceProperty
 		}
 
 		if ($propertyItem === null) {
-			/** @var DevicesModuleEntities\Devices\IDevice|null $deviceEntity */
+			/** @var Entities\ShellyDevice|null $deviceEntity */
 			$deviceEntity = $this->databaseHelper->query(
-				function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
+				function () use ($deviceId): ?Entities\ShellyDevice {
 					$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
 					$findDeviceQuery->byId($deviceId);
 
-					return $this->devicesRepository->findOneBy($findDeviceQuery);
+					/** @var Entities\ShellyDevice|null $deviceEntity */
+					$deviceEntity = $this->devicesRepository->findOneBy(
+						$findDeviceQuery,
+						Entities\ShellyDevice::class
+					);
+
+					return $deviceEntity;
 				}
 			);
 
