@@ -135,19 +135,19 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 			->setType(API\Gen1Transformer::class);
 
 		// Consumers
-		$builder->addDefinition($this->prefix('consumer.proxy'), new DI\Definitions\ServiceDefinition())
+		$builder->addDefinition($this->prefix('consumer.messages'), new DI\Definitions\ServiceDefinition())
 			->setType(Consumers\Messages::class);
 
-		$builder->addDefinition($this->prefix('consumer.device.description.message'), new DI\Definitions\ServiceDefinition())
+		$builder->addDefinition($this->prefix('consumer.messages.device.description'), new DI\Definitions\ServiceDefinition())
 			->setType(Consumers\Messages\Description::class);
 
-		$builder->addDefinition($this->prefix('consumer.device.status.message'), new DI\Definitions\ServiceDefinition())
+		$builder->addDefinition($this->prefix('consumer.messages.device.status'), new DI\Definitions\ServiceDefinition())
 			->setType(Consumers\Messages\Status::class);
 
-		$builder->addDefinition($this->prefix('consumer.device.info.message'), new DI\Definitions\ServiceDefinition())
+		$builder->addDefinition($this->prefix('consumer.messages.device.info'), new DI\Definitions\ServiceDefinition())
 			->setType(Consumers\Messages\Info::class);
 
-		$builder->addDefinition($this->prefix('consumer.device.discovery.message'), new DI\Definitions\ServiceDefinition())
+		$builder->addDefinition($this->prefix('consumer.messages.device.discovery'), new DI\Definitions\ServiceDefinition())
 			->setType(Consumers\Messages\Discovery::class);
 
 		// Events subscribers
