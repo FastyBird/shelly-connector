@@ -23,6 +23,7 @@ use FastyBird\Metadata;
 use FastyBird\ShellyConnector\Consumers\Consumer;
 use FastyBird\ShellyConnector\Entities;
 use FastyBird\ShellyConnector\Helpers;
+use FastyBird\ShellyConnector\Types;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
@@ -39,8 +40,8 @@ final class Discovery implements Consumer
 {
 
 	use Nette\SmartObject;
-	use TConsumeIpAddress;
-	use TConsumeDeviceType;
+	use TConsumeDeviceAttribute;
+	use TConsumeDeviceProperty;
 
 	/** @var DevicesModuleModels\Connectors\IConnectorsRepository */
 	private DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository;
@@ -140,7 +141,7 @@ final class Discovery implements Consumer
 		);
 
 		if ($deviceItem === null) {
-			$connector = $this->databaseHelper->query(
+			$connectorEntity = $this->databaseHelper->query(
 				function () use ($entity): ?DevicesModuleEntities\Connectors\IConnector {
 					$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
 					$findConnectorQuery->byId($entity->getConnector());
@@ -149,18 +150,21 @@ final class Discovery implements Consumer
 				}
 			);
 
-			if ($connector === null) {
+			if ($connectorEntity === null) {
 				return true;
 			}
 
-			/** @var DevicesModuleEntities\Devices\IDevice $device */
-			$device = $this->databaseHelper->transaction(
-				function () use ($entity, $connector): DevicesModuleEntities\Devices\IDevice {
-					return $this->devicesManager->create(Utils\ArrayHash::from([
+			/** @var Entities\ShellyDevice $deviceEntity */
+			$deviceEntity = $this->databaseHelper->transaction(
+				function () use ($entity, $connectorEntity): Entities\ShellyDevice {
+					/** @var Entities\ShellyDevice $deviceEntity */
+					$deviceEntity = $this->devicesManager->create(Utils\ArrayHash::from([
 						'entity'     => Entities\ShellyDevice::class,
-						'connector'  => $connector,
+						'connector'  => $connectorEntity,
 						'identifier' => $entity->getIdentifier(),
 					]));
+
+					return $deviceEntity;
 				}
 			);
 
@@ -170,7 +174,7 @@ final class Discovery implements Consumer
 					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 					'type'   => 'discovery-message-consumer',
 					'device' => [
-						'id'         => $device->getPlainId(),
+						'id'         => $deviceEntity->getPlainId(),
 						'identifier' => $entity->getIdentifier(),
 						'address'    => $entity->getIpAddress(),
 					],
@@ -199,8 +203,16 @@ final class Discovery implements Consumer
 			return true;
 		}
 
-		$this->setDeviceIpAddress($deviceItem->getId(), $entity->getIpAddress());
-		$this->setDeviceHardwareModel($deviceItem->getId(), $entity->getType());
+		$this->setDeviceProperty(
+			$deviceItem->getId(),
+			$entity->getIpAddress(),
+			Types\DevicePropertyIdentifier::IDENTIFIER_IP_ADDRESS
+		);
+		$this->setDeviceAttribute(
+			$deviceItem->getId(),
+			$entity->getType(),
+			Types\DeviceAttributeIdentifier::IDENTIFIER_MODEL
+		);
 
 		$this->logger->debug(
 			'Consumed device found message',

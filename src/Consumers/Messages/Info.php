@@ -16,12 +16,9 @@
 namespace FastyBird\ShellyConnector\Consumers\Messages;
 
 use Doctrine\DBAL;
-use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Metadata;
-use FastyBird\Metadata\Entities as MetadataEntities;
-use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\ShellyConnector\Consumers\Consumer;
 use FastyBird\ShellyConnector\Entities;
 use FastyBird\ShellyConnector\Helpers;
@@ -29,7 +26,6 @@ use FastyBird\ShellyConnector\Types;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
-use Ramsey\Uuid;
 
 /**
  * Device description message consumer
@@ -43,8 +39,8 @@ final class Info implements Consumer
 {
 
 	use Nette\SmartObject;
-	use TConsumeIpAddress;
-	use TConsumeDeviceType;
+	use TConsumeDeviceAttribute;
+	use TConsumeDeviceProperty;
 
 	/** @var DevicesModuleModels\Devices\IDevicesRepository */
 	private DevicesModuleModels\Devices\IDevicesRepository $devicesRepository;
@@ -142,32 +138,55 @@ final class Info implements Consumer
 		}
 
 		if ($deviceItem->getName() === null && $deviceItem->getName() !== $entity->getType()) {
-			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
-			$device = $this->databaseHelper->query(
-				function () use ($deviceItem): ?DevicesModuleEntities\Devices\IDevice {
+			/** @var Entities\ShellyDevice|null $deviceEntity */
+			$deviceEntity = $this->databaseHelper->query(
+				function () use ($deviceItem): ?Entities\ShellyDevice {
 					$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
 					$findDeviceQuery->byId($deviceItem->getId());
 
-					return $this->devicesRepository->findOneBy($findDeviceQuery);
+					/** @var Entities\ShellyDevice|null $deviceEntity */
+					$deviceEntity = $this->devicesRepository->findOneBy($findDeviceQuery);
+
+					return $deviceEntity;
 				}
 			);
 
-			if ($device === null) {
+			if ($deviceEntity === null) {
 				return true;
 			}
 
-			$this->databaseHelper->transaction(function () use ($entity, $device): void {
-				$this->devicesManager->update($device, Utils\ArrayHash::from([
+			$this->databaseHelper->transaction(function () use ($entity, $deviceEntity): void {
+				$this->devicesManager->update($deviceEntity, Utils\ArrayHash::from([
 					'name' => $entity->getType(),
 				]));
 			});
 		}
 
-		$this->setDeviceIpAddress($deviceItem->getId(), $entity->getIpAddress());
-		$this->setDeviceHardwareModel($deviceItem->getId(), $entity->getType());
-		$this->setDeviceMacAddress($deviceItem->getId(), $entity->getMacAddress());
-		$this->setDeviceFirmwareVersion($deviceItem->getId(), $entity->getFirmwareVersion());
-		$this->setDeviceAuthEnabled($deviceItem->getId(), $entity->isAuthEnabled());
+		$this->setDeviceProperty(
+			$deviceItem->getId(),
+			$entity->getIpAddress(),
+			Types\DevicePropertyIdentifier::IDENTIFIER_IP_ADDRESS
+		);
+		$this->setDeviceProperty(
+			$deviceItem->getId(),
+			$entity->isAuthEnabled(),
+			Types\DevicePropertyIdentifier::IDENTIFIER_AUTH_ENABLED
+		);
+		$this->setDeviceAttribute(
+			$deviceItem->getId(),
+			$entity->getType(),
+			Types\DeviceAttributeIdentifier::IDENTIFIER_MODEL
+		);
+		$this->setDeviceAttribute(
+			$deviceItem->getId(),
+			$entity->getMacAddress(),
+			Types\DeviceAttributeIdentifier::IDENTIFIER_MAC_ADDRESS
+		);
+		$this->setDeviceAttribute(
+			$deviceItem->getId(),
+			$entity->getFirmwareVersion(),
+			Types\DeviceAttributeIdentifier::IDENTIFIER_FIRMWARE_VERSION
+		);
 
 		$this->logger->debug(
 			'Consumed device info message',
@@ -182,383 +201,6 @@ final class Info implements Consumer
 		);
 
 		return true;
-	}
-
-	/**
-	 * @param Uuid\UuidInterface $deviceId
-	 * @param string $macAddress
-	 *
-	 * @return void
-	 *
-	 * @throws DBAL\Exception
-	 */
-	private function setDeviceMacAddress(Uuid\UuidInterface $deviceId, string $macAddress): void
-	{
-		$macAddressAttributeItem = $this->attributesDataStorageRepository->findByIdentifier(
-			$deviceId,
-			Types\DeviceAttributeIdentifier::IDENTIFIER_MAC_ADDRESS
-		);
-
-		if ($macAddressAttributeItem !== null && $macAddressAttributeItem->getContent() === $macAddress) {
-			return;
-		}
-
-		if ($macAddressAttributeItem === null) {
-			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
-			$device = $this->databaseHelper->query(function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
-				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
-				$findDeviceQuery->byId($deviceId);
-
-				return $this->devicesRepository->findOneBy($findDeviceQuery);
-			});
-
-			if ($device === null) {
-				return;
-			}
-
-			/** @var DevicesModuleEntities\Devices\Attributes\IAttribute $attribute */
-			$attribute = $this->databaseHelper->transaction(
-				function () use ($device, $macAddress): DevicesModuleEntities\Devices\Attributes\IAttribute {
-					return $this->attributesManager->create(Utils\ArrayHash::from([
-						'device'     => $device,
-						'identifier' => Types\DeviceAttributeIdentifier::IDENTIFIER_MAC_ADDRESS,
-						'content'    => $macAddress,
-					]));
-				}
-			);
-
-			$this->logger->debug(
-				'Device mac address attribute was created',
-				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'discovery-message-consumer',
-					'device'    => [
-						'id' => $deviceId->toString(),
-					],
-					'attribute' => [
-						'id' => $attribute->getPlainId(),
-					],
-				]
-			);
-
-		} else {
-			/** @var DevicesModuleEntities\Devices\Attributes\IAttribute|null $attribute */
-			$attribute = $this->databaseHelper->query(
-				function () use ($macAddressAttributeItem): ?DevicesModuleEntities\Devices\Attributes\IAttribute {
-					$findAttributeQuery = new DevicesModuleQueries\FindDeviceAttributesQuery();
-					$findAttributeQuery->byId($macAddressAttributeItem->getId());
-
-					return $this->attributesRepository->findOneBy($findAttributeQuery);
-				}
-			);
-
-			if ($attribute !== null) {
-				/** @var DevicesModuleEntities\Devices\Attributes\IAttribute $attribute */
-				$attribute = $this->databaseHelper->transaction(
-					function () use ($macAddress, $attribute): DevicesModuleEntities\Devices\Attributes\IAttribute {
-						return $this->attributesManager->update($attribute, Utils\ArrayHash::from([
-							'content' => $macAddress,
-						]));
-					}
-				);
-
-				$this->logger->debug(
-					'Device mac address attribute was updated',
-					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'discovery-message-consumer',
-						'device'    => [
-							'id' => $deviceId->toString(),
-						],
-						'attribute' => [
-							'id' => $attribute->getPlainId(),
-						],
-					]
-				);
-
-			} else {
-				$this->logger->error(
-					'Device mac address attribute could not be updated',
-					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'discovery-message-consumer',
-						'device'    => [
-							'id' => $deviceId->toString(),
-						],
-						'attribute' => [
-							'id' => $macAddressAttributeItem->getId()->toString(),
-						],
-					]
-				);
-			}
-		}
-	}
-
-	/**
-	 * @param Uuid\UuidInterface $deviceId
-	 * @param string $firmwareVersion
-	 *
-	 * @return void
-	 *
-	 * @throws DBAL\Exception
-	 */
-	private function setDeviceFirmwareVersion(Uuid\UuidInterface $deviceId, string $firmwareVersion): void
-	{
-		$firmwareVersionAttributeItem = $this->attributesDataStorageRepository->findByIdentifier(
-			$deviceId,
-			Types\DeviceAttributeIdentifier::IDENTIFIER_FIRMWARE_VERSION
-		);
-
-		if ($firmwareVersionAttributeItem !== null && $firmwareVersionAttributeItem->getContent() === $firmwareVersion) {
-			return;
-		}
-
-		if ($firmwareVersionAttributeItem === null) {
-			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
-			$device = $this->databaseHelper->query(function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
-				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
-				$findDeviceQuery->byId($deviceId);
-
-				return $this->devicesRepository->findOneBy($findDeviceQuery);
-			});
-
-			if ($device === null) {
-				return;
-			}
-
-			/** @var DevicesModuleEntities\Devices\Attributes\IAttribute $attribute */
-			$attribute = $this->databaseHelper->transaction(
-				function () use ($device, $firmwareVersion): DevicesModuleEntities\Devices\Attributes\IAttribute {
-					return $this->attributesManager->create(Utils\ArrayHash::from([
-						'device'     => $device,
-						'identifier' => Types\DeviceAttributeIdentifier::IDENTIFIER_FIRMWARE_VERSION,
-						'content'    => $firmwareVersion,
-					]));
-				}
-			);
-
-			$this->logger->debug(
-				'Device firmware version attribute was created',
-				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'discovery-message-consumer',
-					'device'    => [
-						'id' => $deviceId->toString(),
-					],
-					'attribute' => [
-						'id' => $attribute->getPlainId(),
-					],
-				]
-			);
-
-		} else {
-			/** @var DevicesModuleEntities\Devices\Attributes\IAttribute|null $attribute */
-			$attribute = $this->databaseHelper->query(
-				function () use ($firmwareVersionAttributeItem): ?DevicesModuleEntities\Devices\Attributes\IAttribute {
-					$findAttributeQuery = new DevicesModuleQueries\FindDeviceAttributesQuery();
-					$findAttributeQuery->byId($firmwareVersionAttributeItem->getId());
-
-					return $this->attributesRepository->findOneBy($findAttributeQuery);
-				}
-			);
-
-			if ($attribute !== null) {
-				/** @var DevicesModuleEntities\Devices\Attributes\IAttribute $attribute */
-				$attribute = $this->databaseHelper->transaction(
-					function () use (
-						$firmwareVersion,
-						$attribute
-					): DevicesModuleEntities\Devices\Attributes\IAttribute {
-						return $this->attributesManager->update($attribute, Utils\ArrayHash::from([
-							'content' => $firmwareVersion,
-						]));
-					}
-				);
-
-				$this->logger->debug(
-					'Device firmware version attribute was updated',
-					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'discovery-message-consumer',
-						'device'    => [
-							'id' => $deviceId->toString(),
-						],
-						'attribute' => [
-							'id' => $attribute->getPlainId(),
-						],
-					]
-				);
-
-			} else {
-				$this->logger->error(
-					'Device firmware version attribute could not be updated',
-					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'discovery-message-consumer',
-						'device'    => [
-							'id' => $deviceId->toString(),
-						],
-						'attribute' => [
-							'id' => $firmwareVersionAttributeItem->getId()->toString(),
-						],
-					]
-				);
-			}
-		}
-	}
-
-	/**
-	 * @param Uuid\UuidInterface $deviceId
-	 * @param bool $authEnabled
-	 *
-	 * @return void
-	 *
-	 * @throws DBAL\Exception
-	 */
-	private function setDeviceAuthEnabled(Uuid\UuidInterface $deviceId, bool $authEnabled): void
-	{
-		$authEnabledPropertyItem = $this->propertiesDataStorageRepository->findByIdentifier(
-			$deviceId,
-			Types\DevicePropertyIdentifier::IDENTIFIER_AUTH_ENABLED
-		);
-
-		if (
-			$authEnabledPropertyItem instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
-			&& $authEnabledPropertyItem->getValue() === $authEnabled
-		) {
-			return;
-		}
-
-		if (
-			$authEnabledPropertyItem !== null
-			&& !$authEnabledPropertyItem instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
-		) {
-			/** @var DevicesModuleEntities\Devices\Properties\IProperty|null $property */
-			$property = $this->databaseHelper->query(
-				function () use ($authEnabledPropertyItem): ?DevicesModuleEntities\Devices\Properties\IProperty {
-					$findPropertyQuery = new DevicesModuleQueries\FindDevicePropertiesQuery();
-					$findPropertyQuery->byId($authEnabledPropertyItem->getId());
-
-					return $this->propertiesRepository->findOneBy($findPropertyQuery);
-				}
-			);
-
-			if ($property !== null) {
-				$this->databaseHelper->transaction(function () use ($property): void {
-					$this->propertiesManager->delete($property);
-				});
-
-				$this->logger->warning(
-					'Device auth enabled property is not valid type',
-					[
-						'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'     => 'discovery-message-consumer',
-						'device'   => [
-							'id' => $deviceId->toString(),
-						],
-						'property' => [
-							'id' => $property->getPlainId(),
-						],
-					]
-				);
-			}
-
-			$authEnabledPropertyItem = null;
-		}
-
-		if ($authEnabledPropertyItem === null) {
-			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
-			$device = $this->databaseHelper->query(function () use ($deviceId): ?DevicesModuleEntities\Devices\IDevice {
-				$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
-				$findDeviceQuery->byId($deviceId);
-
-				return $this->devicesRepository->findOneBy($findDeviceQuery);
-			});
-
-			if ($device === null) {
-				return;
-			}
-
-			/** @var DevicesModuleEntities\Devices\Properties\IProperty $property */
-			$property = $this->databaseHelper->transaction(
-				function () use ($device, $authEnabled): DevicesModuleEntities\Devices\Properties\IProperty {
-					return $this->propertiesManager->create(Utils\ArrayHash::from([
-						'entity'     => DevicesModuleEntities\Devices\Properties\StaticProperty::class,
-						'device'     => $device,
-						'identifier' => Types\DevicePropertyIdentifier::IDENTIFIER_AUTH_ENABLED,
-						'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_BOOLEAN),
-						'settable'   => false,
-						'queryable'  => false,
-						'value'      => $authEnabled,
-					]));
-				}
-			);
-
-			$this->logger->debug(
-				'Device auth enabled property was created',
-				[
-					'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'     => 'discovery-message-consumer',
-					'device'   => [
-						'id' => $deviceId->toString(),
-					],
-					'property' => [
-						'id' => $property->getPlainId(),
-					],
-				]
-			);
-
-		} else {
-			/** @var DevicesModuleEntities\Devices\Properties\IProperty|null $property */
-			$property = $this->databaseHelper->query(
-				function () use ($authEnabledPropertyItem): ?DevicesModuleEntities\Devices\Properties\IProperty {
-					$findPropertyQuery = new DevicesModuleQueries\FindDevicePropertiesQuery();
-					$findPropertyQuery->byId($authEnabledPropertyItem->getId());
-
-					return $this->propertiesRepository->findOneBy($findPropertyQuery);
-				}
-			);
-
-			if ($property !== null) {
-				/** @var DevicesModuleEntities\Devices\Properties\IProperty $property */
-				$property = $this->databaseHelper->transaction(
-					function () use ($authEnabled, $property): DevicesModuleEntities\Devices\Properties\IProperty {
-						return $this->propertiesManager->update($property, Utils\ArrayHash::from([
-							'value' => $authEnabled,
-						]));
-					}
-				);
-
-				$this->logger->debug(
-					'Device auth enabled property was updated',
-					[
-						'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'     => 'discovery-message-consumer',
-						'device'   => [
-							'id' => $deviceId->toString(),
-						],
-						'property' => [
-							'id' => $property->getPlainId(),
-						],
-					]
-				);
-
-			} else {
-				$this->logger->error(
-					'Device auth enabled property could not be updated',
-					[
-						'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'     => 'discovery-message-consumer',
-						'device'   => [
-							'id' => $deviceId->toString(),
-						],
-						'property' => [
-							'id' => $authEnabledPropertyItem->getId()->toString(),
-						],
-					]
-				);
-			}
-		}
 	}
 
 }

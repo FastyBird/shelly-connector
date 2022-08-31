@@ -24,6 +24,7 @@ use FastyBird\ShellyConnector\Consumers\Consumer;
 use FastyBird\ShellyConnector\Entities;
 use FastyBird\ShellyConnector\Helpers;
 use FastyBird\ShellyConnector\Mappers;
+use FastyBird\ShellyConnector\Types;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
@@ -40,8 +41,8 @@ final class Description implements Consumer
 {
 
 	use Nette\SmartObject;
-	use TConsumeIpAddress;
-	use TConsumeDeviceType;
+	use TConsumeDeviceAttribute;
+	use TConsumeDeviceProperty;
 
 	/** @var DevicesModuleModels\Devices\IDevicesRepository */
 	private DevicesModuleModels\Devices\IDevicesRepository $devicesRepository;
@@ -175,31 +176,45 @@ final class Description implements Consumer
 		}
 
 		if ($deviceItem->getName() === null && $deviceItem->getName() !== $entity->getType()) {
-			/** @var DevicesModuleEntities\Devices\IDevice|null $device */
-			$device = $this->databaseHelper->query(
-				function () use ($deviceItem): ?DevicesModuleEntities\Devices\IDevice {
+			/** @var Entities\ShellyDevice|null $deviceEntity */
+			$deviceEntity = $this->databaseHelper->query(
+				function () use ($deviceItem): ?Entities\ShellyDevice {
 					$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
 					$findDeviceQuery->byId($deviceItem->getId());
 
-					return $this->devicesRepository->findOneBy($findDeviceQuery);
+					/** @var Entities\ShellyDevice|null $deviceEntity */
+					$deviceEntity = $this->devicesRepository->findOneBy(
+						$findDeviceQuery,
+						Entities\ShellyDevice::class
+					);
+
+					return $deviceEntity;
 				}
 			);
 
-			if ($device === null) {
+			if ($deviceEntity === null) {
 				return true;
 			}
 
 			$this->databaseHelper->transaction(
-				function () use ($entity, $device): void {
-					$this->devicesManager->update($device, Utils\ArrayHash::from([
+				function () use ($entity, $deviceEntity): void {
+					$this->devicesManager->update($deviceEntity, Utils\ArrayHash::from([
 						'name' => $entity->getType(),
 					]));
 				}
 			);
 		}
 
-		$this->setDeviceIpAddress($deviceItem->getId(), $entity->getIpAddress());
-		$this->setDeviceHardwareModel($deviceItem->getId(), $entity->getType());
+		$this->setDeviceProperty(
+			$deviceItem->getId(),
+			$entity->getIpAddress(),
+			Types\DevicePropertyIdentifier::IDENTIFIER_IP_ADDRESS
+		);
+		$this->setDeviceAttribute(
+			$deviceItem->getId(),
+			$entity->getType(),
+			Types\DeviceAttributeIdentifier::IDENTIFIER_MODEL
+		);
 
 		foreach ($entity->getBlocks() as $block) {
 			$channelItem = $this->channelsDataStorageRepository->findByIdentifier(
@@ -208,23 +223,26 @@ final class Description implements Consumer
 			);
 
 			if ($channelItem === null) {
-				/** @var DevicesModuleEntities\Devices\IDevice|null $device */
-				$device = $this->databaseHelper->query(
-					function () use ($deviceItem): ?DevicesModuleEntities\Devices\IDevice {
+				/** @var Entities\ShellyDevice|null $deviceEntity */
+				$deviceEntity = $this->databaseHelper->query(
+					function () use ($deviceItem): ?Entities\ShellyDevice {
 						$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
 						$findDeviceQuery->byId($deviceItem->getId());
 
-						return $this->devicesRepository->findOneBy($findDeviceQuery);
+						/** @var Entities\ShellyDevice|null $deviceEntity */
+						$deviceEntity = $this->devicesRepository->findOneBy($findDeviceQuery);
+
+						return $deviceEntity;
 					}
 				);
 
-				if ($device === null) {
+				if ($deviceEntity === null) {
 					return true;
 				}
 
-				$this->databaseHelper->transaction(function () use ($block, $device): void {
+				$this->databaseHelper->transaction(function () use ($block, $deviceEntity): void {
 					$this->channelsManager->create(Utils\ArrayHash::from([
-						'device'     => $device,
+						'device'     => $deviceEntity,
 						'identifier' => sprintf('%d_%s', $block->getIdentifier(), $block->getDescription()),
 						'name'       => $block->getDescription(),
 					]));
@@ -239,8 +257,8 @@ final class Description implements Consumer
 				);
 
 				if ($channelProperty === null) {
-					/** @var DevicesModuleEntities\Channels\IChannel|null $channel */
-					$channel = $this->databaseHelper->query(
+					/** @var DevicesModuleEntities\Channels\IChannel|null $channelEntity */
+					$channelEntity = $this->databaseHelper->query(
 						function () use ($deviceItem, $block): ?DevicesModuleEntities\Channels\IChannel {
 							$findChannelQuery = new DevicesModuleQueries\FindChannelsQuery();
 							$findChannelQuery->byDeviceId($deviceItem->getId());
@@ -250,15 +268,15 @@ final class Description implements Consumer
 						}
 					);
 
-					if ($channel === null) {
+					if ($channelEntity === null) {
 						continue;
 					}
 
 					/** @var DevicesModuleEntities\Channels\Properties\IProperty $property */
 					$property = $this->databaseHelper->transaction(
-						function () use ($sensor, $channel): DevicesModuleEntities\Channels\Properties\IProperty {
+						function () use ($sensor, $channelEntity): DevicesModuleEntities\Channels\Properties\IProperty {
 							return $this->channelsPropertiesManager->create(Utils\ArrayHash::from([
-								'channel'    => $channel,
+								'channel'    => $channelEntity,
 								'entity'     => DevicesModuleEntities\Channels\Properties\DynamicProperty::class,
 								'identifier' => sprintf(
 									'%d_%s_%s',
@@ -295,8 +313,8 @@ final class Description implements Consumer
 					);
 
 				} else {
-					/** @var DevicesModuleEntities\Channels\Properties\IProperty|null $property */
-					$property = $this->databaseHelper->query(
+					/** @var DevicesModuleEntities\Channels\Properties\IProperty|null $propertyEntity */
+					$propertyEntity = $this->databaseHelper->query(
 						function () use ($channelProperty): ?DevicesModuleEntities\Channels\Properties\IProperty {
 							$findPropertyQuery = new DevicesModuleQueries\FindChannelPropertiesQuery();
 							$findPropertyQuery->byId($channelProperty->getId());
@@ -305,11 +323,14 @@ final class Description implements Consumer
 						}
 					);
 
-					if ($property !== null) {
-						/** @var DevicesModuleEntities\Channels\Properties\IProperty $property */
-						$property = $this->databaseHelper->transaction(
-							function () use ($sensor, $property): DevicesModuleEntities\Channels\Properties\IProperty {
-								return $this->channelsPropertiesManager->update($property, Utils\ArrayHash::from([
+					if ($propertyEntity !== null) {
+						/** @var DevicesModuleEntities\Channels\Properties\IProperty $propertyEntity */
+						$propertyEntity = $this->databaseHelper->transaction(
+							function () use (
+								$sensor,
+								$propertyEntity
+							): DevicesModuleEntities\Channels\Properties\IProperty {
+								return $this->channelsPropertiesManager->update($propertyEntity, Utils\ArrayHash::from([
 									'identifier' => sprintf(
 										'%d_%s_%s',
 										$sensor->getIdentifier(),
@@ -336,10 +357,10 @@ final class Description implements Consumer
 									'id' => $deviceItem->getId()->toString(),
 								],
 								'channel'  => [
-									'id' => $property->getChannel()->getPlainId(),
+									'id' => $propertyEntity->getChannel()->getPlainId(),
 								],
 								'property' => [
-									'id' => $property->getPlainId(),
+									'id' => $propertyEntity->getPlainId(),
 								],
 							]
 						);
