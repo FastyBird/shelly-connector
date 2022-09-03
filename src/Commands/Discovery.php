@@ -294,7 +294,7 @@ class Discovery extends Console\Command\Command
 
 				$progressBar = new Console\Helper\ProgressBar(
 					$output,
-					intval(self::DISCOVERY_WAITING_INTERVAL * 60)
+					intval(self::DISCOVERY_MAX_PROCESSING_INTERVAL * 60)
 				);
 
 				$progressBar->setFormat('[%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %');
@@ -343,7 +343,7 @@ class Discovery extends Console\Command\Command
 					);
 
 					$this->eventLoop->addTimer(
-						self::DISCOVERY_WAITING_INTERVAL,
+						self::DISCOVERY_MAX_PROCESSING_INTERVAL,
 						function () use ($client, $io): void {
 							$client->disconnect();
 
@@ -486,8 +486,7 @@ class Discovery extends Console\Command\Command
 		} else {
 			if (
 				$this->executedTime !== null
-				&& $this->dateTimeFactory->getNow()
-					->getTimestamp() - $this->executedTime->getTimestamp() > self::DISCOVERY_MAX_PROCESSING_INTERVAL
+				&& $this->dateTimeFactory->getNow()->getTimestamp() - $this->executedTime->getTimestamp() > self::DISCOVERY_MAX_PROCESSING_INTERVAL
 			) {
 				$this->logger->error('Discovery exceeded reserved time and have been terminated', [
 					'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
