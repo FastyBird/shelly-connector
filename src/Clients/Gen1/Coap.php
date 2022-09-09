@@ -129,13 +129,7 @@ final class Coap
 			return;
 		}
 
-		$message = '';
-
-		$buffer = [80, 1, 0, 10, 179, 99, 105, 116, 1, 100, 255];
-
-		foreach ($buffer as $value) {
-			$message .= pack('C', $value);
-		}
+		$message = pack('C*', 80, 1, 0, 10, 179, 99, 105, 116, 1, 100, 255);
 
 		$this->logger->debug(
 			'Sending CoAP discover UDP',

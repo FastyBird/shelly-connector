@@ -34,7 +34,6 @@ use Psr\Log;
 use React\EventLoop;
 use React\Http as ReactHttp;
 use React\Promise;
-use RuntimeException;
 use Throwable;
 
 /**
@@ -247,8 +246,7 @@ final class Http
 	private function handleCommunication(): void
 	{
 		foreach ($this->processedProperties as $index => $processedProperty) {
-			if (((float) $this->dateTimeFactory->getNow()
-                ->format('Uv') - (float) $processedProperty->format('Uv')) >= 500) {
+			if (((float) $this->dateTimeFactory->getNow()->format('Uv') - (float) $processedProperty->format('Uv')) >= 500) {
 				unset($this->processedProperties[$index]);
 			}
 		}
@@ -335,8 +333,7 @@ final class Http
 
 		if (
 			$httpCmdResult instanceof DateTimeInterface
-			&& ($this->dateTimeFactory->getNow()
-                ->getTimestamp() - $httpCmdResult->getTimestamp()) < self::SENDING_CMD_DELAY
+			&& ($this->dateTimeFactory->getNow()->getTimestamp() - $httpCmdResult->getTimestamp()) < self::SENDING_CMD_DELAY
 		) {
 			return true;
 		}
@@ -378,7 +375,7 @@ final class Http
 					}
 				}
 
-				if ($ex instanceof RuntimeException) {
+				if ($ex instanceof Exceptions\Runtime) {
 					$this->deviceConnectionStateManager->setState(
 						$device,
 						MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_LOST)
@@ -411,9 +408,7 @@ final class Http
 					&& $property->isPending()
 				) {
 					$pending = is_string($property->getPending()) ? Utils\DateTime::createFromFormat(DateTimeInterface::ATOM, $property->getPending()) : true;
-					$debounce = array_key_exists($property->getId()
-						->toString(), $this->processedProperties) ? $this->processedProperties[$property->getId()
-                            ->toString()] : false;
+					$debounce = array_key_exists($property->getId()->toString(), $this->processedProperties) ? $this->processedProperties[$property->getId()->toString()] : false;
 
 					if (
 						$debounce !== false

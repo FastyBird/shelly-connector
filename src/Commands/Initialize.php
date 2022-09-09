@@ -27,7 +27,6 @@ use FastyBird\ShellyConnector\Exceptions;
 use FastyBird\ShellyConnector\Types;
 use Nette\Utils;
 use Psr\Log;
-use RuntimeException;
 use Symfony\Component\Console;
 use Symfony\Component\Console\Input;
 use Symfony\Component\Console\Output;
@@ -200,7 +199,7 @@ class Initialize extends Console\Command\Command
 
 		$question->setValidator(function ($answer) {
 			if ($answer !== null && $this->connectorsDataStorageRepository->findByIdentifier($answer) !== null) {
-				throw new RuntimeException('This identifier is already used');
+				throw new Exceptions\Runtime('This identifier is already used');
 			}
 
 			return $answer;
