@@ -254,7 +254,7 @@ class Discovery extends Console\Command\Command
 					$this->logger->alert(
 						'Connector identifier was not able to get from answer',
 						[
-							'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
+							'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 							'type'   => 'discovery-cmd',
 						]
 					);
@@ -271,7 +271,7 @@ class Discovery extends Console\Command\Command
 				$this->logger->alert(
 					'Connector was not found',
 					[
-						'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'   => 'discovery-cmd',
 					]
 				);
@@ -521,7 +521,7 @@ class Discovery extends Console\Command\Command
 				$this->logger->error(
 					'Discovery exceeded reserved time and have been terminated',
 					[
-						'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'   => 'discovery-cmd',
 					]
 				);

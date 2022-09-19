@@ -190,7 +190,7 @@ class Execute extends Console\Command\Command
 					$this->logger->alert(
 						'Connector identifier was not able to get from answer',
 						[
-							'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
+							'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 							'type'   => 'execute-cmd',
 						]
 					);
@@ -207,7 +207,7 @@ class Execute extends Console\Command\Command
 				$this->logger->alert(
 					'Connector was not found',
 					[
-						'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'   => 'execute-cmd',
 					]
 				);
