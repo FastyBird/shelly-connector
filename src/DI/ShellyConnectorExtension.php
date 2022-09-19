@@ -16,12 +16,13 @@
 namespace FastyBird\ShellyConnector\DI;
 
 use Doctrine\Persistence;
-use FastyBird\ShellyConnector;
+use FastyBird\DevicesModule\DI as DevicesModuleDI;
 use FastyBird\ShellyConnector\API;
 use FastyBird\ShellyConnector\Clients;
 use FastyBird\ShellyConnector\Commands;
 use FastyBird\ShellyConnector\Connector;
 use FastyBird\ShellyConnector\Consumers;
+use FastyBird\ShellyConnector\Entities;
 use FastyBird\ShellyConnector\Helpers;
 use FastyBird\ShellyConnector\Hydrators;
 use FastyBird\ShellyConnector\Mappers;
@@ -89,14 +90,14 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 		}
 
 		// Service factory
-		$builder->addDefinition($this->prefix('service.factory'), new DI\Definitions\ServiceDefinition())
-			->setType(ShellyConnector\ConnectorFactory::class);
-
-		// Connector
-		$builder->addFactoryDefinition($this->prefix('connector'))
+		$builder->addFactoryDefinition($this->prefix('executor.factory'))
 			->setImplement(Connector\ConnectorFactory::class)
 			->getResultDefinition()
-			->setType(Connector\Connector::class);
+			->setType(Connector\Connector::class)
+			->addTag(
+				DevicesModuleDI\DevicesModuleExtension::CONNECTOR_TYPE_TAG,
+				Entities\ShellyConnector::CONNECTOR_TYPE
+			);
 
 		// Clients
 		$builder->addFactoryDefinition($this->prefix('client.gen1'))

@@ -26,6 +26,7 @@ use Nette;
 use Psr\Log;
 use React\Datagram;
 use React\EventLoop;
+use Throwable;
 
 /**
  * CoAP client
@@ -99,14 +100,6 @@ final class Coap
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function isConnected(): bool
-	{
-		return $this->server !== null;
-	}
-
-	/**
 	 * @return void
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
@@ -115,15 +108,20 @@ final class Coap
 	{
 		if ($this->server === null) {
 			$this->logger->warning(
-				'CoAP client is not running, discovery process could not be processed',
+				'Client is not running, discovery process could not be processed',
 				[
-					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'   => 'coap-client',
+					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'      => 'coap-client',
+					'connector' => [
+						'id' => $this->connector->getId()->toString(),
+					],
 				]
 			);
 
 			if ($this->onlyDiscovery) {
-				throw new DevicesModuleExceptions\TerminateException('Server is not created, discovery could not be performed');
+				throw new DevicesModuleExceptions\TerminateException(
+					'Discovery client is not created, discovery could not be performed'
+				);
 			}
 
 			return;
@@ -132,10 +130,13 @@ final class Coap
 		$message = pack('C*', 80, 1, 0, 10, 179, 99, 105, 116, 1, 100, 255);
 
 		$this->logger->debug(
-			'Sending CoAP discover UDP',
+			'Sending discover devices packet',
 			[
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'coap-client',
+				'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type'      => 'coap-client',
+				'connector' => [
+					'id' => $this->connector->getId()->toString(),
+				],
 			]
 		);
 
@@ -157,6 +158,42 @@ final class Coap
 
 		$this->server->on('message', function ($message, $remote): void {
 			$this->handlePacket($message, $remote);
+		});
+
+		$this->server->on('error', function (Throwable $ex): void {
+			$this->logger->error(
+				'An error occurred during handling requests',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'      => 'coap-client',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code'    => $ex->getCode(),
+					],
+					'connector' => [
+						'id' => $this->connector->getId()->toString(),
+					],
+				]
+			);
+
+			throw new DevicesModuleExceptions\TerminateException(
+				'Devices state listener client was terminated',
+				$ex->getCode(),
+				$ex
+			);
+		});
+
+		$this->server->on('close', function (): void {
+			$this->logger->info(
+				'Client connection was successfully closed',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'      => 'coap-client',
+					'connector' => [
+						'id' => $this->connector->getId()->toString(),
+					],
+				]
+			);
 		});
 
 		if ($onlyDiscovery) {
@@ -274,8 +311,11 @@ final class Coap
 					str_replace(' ', '', $message),
 				),
 				[
-					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'   => 'coap-client',
+					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'      => 'coap-client',
+					'connector' => [
+						'id' => $this->connector->getId()->toString(),
+					],
 				]
 			);
 
@@ -306,6 +346,9 @@ final class Coap
 								'message' => $ex->getMessage(),
 								'code'    => $ex->getCode(),
 							],
+							'connector' => [
+								'id' => $this->connector->getId()->toString(),
+							],
 						]
 					);
 				}
@@ -334,6 +377,9 @@ final class Coap
 							'exception' => [
 								'message' => $ex->getMessage(),
 								'code'    => $ex->getCode(),
+							],
+							'connector' => [
+								'id' => $this->connector->getId()->toString(),
 							],
 						]
 					);

@@ -185,14 +185,6 @@ final class Http
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function isConnected(): bool
-	{
-		return $this->browser !== null;
-	}
-
-	/**
 	 * @return void
 	 */
 	public function connect(): void
@@ -215,26 +207,6 @@ final class Http
 		if ($this->handlerTimer !== null) {
 			$this->eventLoop->cancelTimer($this->handlerTimer);
 		}
-	}
-
-	/**
-	 * @param MetadataEntities\Actions\IActionDeviceControlEntity $action
-	 *
-	 * @return void
-	 */
-	public function writeDeviceControl(MetadataEntities\Actions\IActionDeviceControlEntity $action): void
-	{
-		// TODO: Implement writeDeviceControl() method.
-	}
-
-	/**
-	 * @param MetadataEntities\Actions\IActionChannelControlEntity $action
-	 *
-	 * @return void
-	 */
-	public function writeChannelControl(MetadataEntities\Actions\IActionChannelControlEntity $action): void
-	{
-		// TODO: Implement writeChannelControl() method.
 	}
 
 	/**
@@ -472,6 +444,9 @@ final class Http
 													'message' => $ex->getMessage(),
 													'code'    => $ex->getCode(),
 												],
+												'connector' => [
+													'id' => $this->connector->getId()->toString(),
+												],
 												'device'    => [
 													'id' => $device->getId()->toString(),
 												],
@@ -487,7 +462,9 @@ final class Http
 									} elseif ($ex->getCode() >= 500 && $ex->getCode() < 599) {
 										$this->deviceConnectionStateManager->setState(
 											$device,
-											MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_LOST)
+											MetadataTypes\ConnectionStateType::get(
+												MetadataTypes\ConnectionStateType::STATE_LOST
+											)
 										);
 									}
 								}
@@ -552,6 +529,9 @@ final class Http
 									'message' => $ex->getMessage(),
 									'code'    => $ex->getCode(),
 								],
+								'connector' => [
+									'id' => $this->connector->getId()->toString(),
+								],
 							]
 						);
 					}
@@ -563,18 +543,21 @@ final class Http
 					[
 						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'      => 'http-client',
+						'exception' => [
+							'message' => $ex->getMessage(),
+							'code'    => $ex->getCode(),
+						],
 						'endpoint'  => Utils\Strings::replace(
 							self::SHELLY_ENDPOINT,
 							[
 								'/ADDRESS/' => $address,
 							]
 						),
+						'connector' => [
+							'id' => $this->connector->getId()->toString(),
+						],
 						'device'    => [
 							'id' => $device->getId()->toString(),
-						],
-						'exception' => [
-							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
 						],
 					]
 				);
@@ -631,6 +614,9 @@ final class Http
 									'message' => $ex->getMessage(),
 									'code'    => $ex->getCode(),
 								],
+								'connector' => [
+									'id' => $this->connector->getId()->toString(),
+								],
 							]
 						);
 					}
@@ -642,18 +628,21 @@ final class Http
 					[
 						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'      => 'http-client',
+						'exception' => [
+							'message' => $ex->getMessage(),
+							'code'    => $ex->getCode(),
+						],
 						'endpoint'  => Utils\Strings::replace(
 							self::DESCRIPTION_ENDPOINT,
 							[
 								'/ADDRESS/' => $address,
 							]
 						),
+						'connector' => [
+							'id' => $this->connector->getId()->toString(),
+						],
 						'device'    => [
 							'id' => $device->getId()->toString(),
-						],
-						'exception' => [
-							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
 						],
 					]
 				);
@@ -690,19 +679,25 @@ final class Http
 			|| !array_key_exists('identifier', $channelMatches)
 			|| !array_key_exists('description', $channelMatches)
 		) {
-			$this->logger->error('Channel identifier is not in expected format', [
-				'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'     => 'http-client',
-				'device'   => [
-					'id' => $device->getId()->toString(),
-				],
-				'channel'  => [
-					'id' => $channel->getId()->toString(),
-				],
-				'property' => [
-					'id' => $property->getId()->toString(),
-				],
-			]);
+			$this->logger->error(
+				'Channel identifier is not in expected format',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'      => 'http-client',
+					'connector' => [
+						'id' => $this->connector->getId()->toString(),
+					],
+					'device'    => [
+						'id' => $device->getId()->toString(),
+					],
+					'channel'   => [
+						'id' => $channel->getId()->toString(),
+					],
+					'property'  => [
+						'id' => $property->getId()->toString(),
+					],
+				]
+			);
 
 			return Promise\reject(new Exceptions\InvalidState('Channel identifier is not in expected format'));
 		}
@@ -712,44 +707,58 @@ final class Http
 			|| !array_key_exists('channelName', $blockMatches)
 			|| !array_key_exists('channelIndex', $blockMatches)
 		) {
-			$this->logger->error('Channel - block description is not in expected format', [
-				'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'     => 'http-client',
-				'device'   => [
-					'id' => $device->getId()->toString(),
-				],
-				'channel'  => [
-					'id' => $channel->getId()->toString(),
-				],
-				'property' => [
-					'id' => $property->getId()->toString(),
-				],
-			]);
+			$this->logger->error(
+				'Channel - block description is not in expected format',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'      => 'http-client',
+					'connector' => [
+						'id' => $this->connector->getId()->toString(),
+					],
+					'device'    => [
+						'id' => $device->getId()->toString(),
+					],
+					'channel'   => [
+						'id' => $channel->getId()->toString(),
+					],
+					'property'  => [
+						'id' => $property->getId()->toString(),
+					],
+				]
+			);
 
-			return Promise\reject(new Exceptions\InvalidState('Channel - block description is not in expected format'));
+			return Promise\reject(
+				new Exceptions\InvalidState('Channel - block description is not in expected format')
+			);
 		}
 
 		try {
 			$sensorAction = $this->buildSensorAction($property);
 
 		} catch (Exceptions\InvalidState $ex) {
-			$this->logger->error('Sensor action could not be created', [
-				'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'      => 'http-client',
-				'device'    => [
-					'id' => $device->getId()->toString(),
-				],
-				'channel'   => [
-					'id' => $channel->getId()->toString(),
-				],
-				'property'  => [
-					'id' => $property->getId()->toString(),
-				],
-				'exception' => [
-					'message' => $ex->getMessage(),
-					'code'    => $ex->getCode(),
-				],
-			]);
+			$this->logger->error(
+				'Sensor action could not be created',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'      => 'http-client',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code'    => $ex->getCode(),
+					],
+					'connector' => [
+						'id' => $this->connector->getId()->toString(),
+					],
+					'device'    => [
+						'id' => $device->getId()->toString(),
+					],
+					'channel'   => [
+						'id' => $channel->getId()->toString(),
+					],
+					'property'  => [
+						'id' => $property->getId()->toString(),
+					],
+				]
+			);
 
 			return Promise\reject(new Exceptions\InvalidState('Sensor action could not be created'));
 		}
@@ -781,6 +790,10 @@ final class Http
 					[
 						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'      => 'http-client',
+						'exception' => [
+							'message' => $ex->getMessage(),
+							'code'    => $ex->getCode(),
+						],
 						'endpoint'  => Utils\Strings::replace(
 							self::SET_CHANNEL_SENSOR_ENDPOINT,
 							[
@@ -791,6 +804,9 @@ final class Http
 								'/VALUE/'   => $valueToWrite,
 							]
 						),
+						'connector' => [
+							'id' => $this->connector->getId()->toString(),
+						],
 						'device'    => [
 							'id' => $device->getId()->toString(),
 						],
@@ -799,10 +815,6 @@ final class Http
 						],
 						'property'  => [
 							'id' => $property->getId()->toString(),
-						],
-						'exception' => [
-							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
 						],
 					]
 				);
@@ -842,13 +854,19 @@ final class Http
 		);
 
 		if (!is_string($ipAddress)) {
-			$this->logger->error('Device IP address could not be determined', [
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'http-client',
-				'device' => [
-					'id' => $device->getId()->toString(),
-				],
-			]);
+			$this->logger->error(
+				'Device IP address could not be determined',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'      => 'http-client',
+					'connector' => [
+						'id' => $this->connector->getId()->toString(),
+					],
+					'device'    => [
+						'id' => $device->getId()->toString(),
+					],
+				]
+			);
 
 			return null;
 		}

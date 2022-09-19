@@ -69,8 +69,19 @@ class Execute extends Console\Command\Command
 			->setDescription('Shelly connector service')
 			->setDefinition(
 				new Input\InputDefinition([
-					new Input\InputOption('connector', 'c', Input\InputOption::VALUE_OPTIONAL, 'Run devices module connector', true),
-					new Input\InputOption('no-confirm', null, Input\InputOption::VALUE_NONE, 'Do not ask for any confirmation'),
+					new Input\InputOption(
+						'connector',
+						'c',
+						Input\InputOption::VALUE_OPTIONAL,
+						'Run devices module connector',
+						true
+					),
+					new Input\InputOption(
+						'no-confirm',
+						null,
+						Input\InputOption::VALUE_NONE,
+						'Do not ask for any confirmation'
+					),
 				])
 			);
 	}
@@ -176,10 +187,13 @@ class Execute extends Console\Command\Command
 				if ($connectorIdentifierKey === false) {
 					$io->error('Something went wrong, connector could not be loaded');
 
-					$this->logger->alert('Connector identifier was not able to get from answer', [
-						'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
-						'type'   => 'execute-cmd',
-					]);
+					$this->logger->alert(
+						'Connector identifier was not able to get from answer',
+						[
+							'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
+							'type'   => 'execute-cmd',
+						]
+					);
 
 					return Console\Command\Command::FAILURE;
 				}
@@ -190,10 +204,13 @@ class Execute extends Console\Command\Command
 			if ($connector === null) {
 				$io->error('Something went wrong, connector could not be loaded');
 
-				$this->logger->alert('Connector was not found', [
-					'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
-					'type'   => 'execute-cmd',
-				]);
+				$this->logger->alert(
+					'Connector was not found',
+					[
+						'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
+						'type'   => 'execute-cmd',
+					]
+				);
 
 				return Console\Command\Command::FAILURE;
 			}

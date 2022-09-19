@@ -127,7 +127,12 @@ class Initialize extends Console\Command\Command
 			->setDescription('Shelly connector initialization')
 			->setDefinition(
 				new Input\InputDefinition([
-					new Input\InputOption('no-confirm', null, Input\InputOption::VALUE_NONE, 'Do not ask for any confirmation'),
+					new Input\InputOption(
+						'no-confirm',
+						null,
+						Input\InputOption::VALUE_NONE,
+						'Do not ask for any confirmation'
+					),
 				])
 			);
 	}
@@ -328,14 +333,17 @@ class Initialize extends Console\Command\Command
 			));
 		} catch (Throwable $ex) {
 			// Log caught exception
-			$this->logger->error('An unhandled error occurred', [
-				'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'      => 'initialize-cmd',
-				'exception' => [
-					'message' => $ex->getMessage(),
-					'code'    => $ex->getCode(),
-				],
-			]);
+			$this->logger->error(
+				'An unhandled error occurred',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'      => 'initialize-cmd',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code'    => $ex->getCode(),
+					],
+				]
+			);
 
 			$io->error('Something went wrong, connector could not be created. Error was logged.');
 		} finally {
@@ -396,10 +404,13 @@ class Initialize extends Console\Command\Command
 		if ($connectorIdentifier === false) {
 			$io->error('Something went wrong, connector could not be loaded');
 
-			$this->logger->alert('Connector identifier was not able to get from answer', [
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'initialize-cmd',
-			]);
+			$this->logger->alert(
+				'Connector identifier was not able to get from answer',
+				[
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'   => 'initialize-cmd',
+				]
+			);
 
 			return;
 		}
@@ -412,10 +423,13 @@ class Initialize extends Console\Command\Command
 		if ($connector === null) {
 			$io->error('Something went wrong, connector could not be loaded');
 
-			$this->logger->alert('Connector was not found', [
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'initialize-cmd',
-			]);
+			$this->logger->alert(
+				'Connector was not found',
+				[
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'   => 'initialize-cmd',
+				]
+			);
 
 			return;
 		}
@@ -666,14 +680,17 @@ class Initialize extends Console\Command\Command
 			));
 		} catch (Throwable $ex) {
 			// Log caught exception
-			$this->logger->error('An unhandled error occurred', [
-				'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'      => 'initialize-cmd',
-				'exception' => [
-					'message' => $ex->getMessage(),
-					'code'    => $ex->getCode(),
-				],
-			]);
+			$this->logger->error(
+				'An unhandled error occurred',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'      => 'initialize-cmd',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code'    => $ex->getCode(),
+					],
+				]
+			);
 
 			$io->error('Something went wrong, connector could not be updated. Error was logged.');
 		} finally {
@@ -723,10 +740,13 @@ class Initialize extends Console\Command\Command
 		if ($connectorIdentifier === false) {
 			$io->error('Something went wrong, connector could not be loaded');
 
-			$this->logger->alert('Connector identifier was not able to get from answer', [
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'initialize-cmd',
-			]);
+			$this->logger->alert(
+				'Connector identifier was not able to get from answer',
+				[
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'   => 'initialize-cmd',
+				]
+			);
 
 			return;
 		}
@@ -739,10 +759,13 @@ class Initialize extends Console\Command\Command
 		if ($connector === null) {
 			$io->error('Something went wrong, connector could not be loaded');
 
-			$this->logger->alert('Connector was not found', [
-				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'initialize-cmd',
-			]);
+			$this->logger->alert(
+				'Connector was not found',
+				[
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'   => 'initialize-cmd',
+				]
+			);
 
 			return;
 		}
@@ -773,14 +796,17 @@ class Initialize extends Console\Command\Command
 			));
 		} catch (Throwable $ex) {
 			// Log caught exception
-			$this->logger->error('An unhandled error occurred', [
-				'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'      => 'initialize-cmd',
-				'exception' => [
-					'message' => $ex->getMessage(),
-					'code'    => $ex->getCode(),
-				],
-			]);
+			$this->logger->error(
+				'An unhandled error occurred',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type'      => 'initialize-cmd',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code'    => $ex->getCode(),
+					],
+				]
+			);
 
 			$io->error('Something went wrong, connector could not be removed. Error was logged.');
 		} finally {

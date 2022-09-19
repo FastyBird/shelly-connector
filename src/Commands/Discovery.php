@@ -140,8 +140,19 @@ class Discovery extends Console\Command\Command
 			->setDescription('Shelly connector devices discovery')
 			->setDefinition(
 				new Input\InputDefinition([
-					new Input\InputOption('connector', 'c', Input\InputOption::VALUE_OPTIONAL, 'Run devices module connector', true),
-					new Input\InputOption('no-confirm', null, Input\InputOption::VALUE_NONE, 'Do not ask for any confirmation'),
+					new Input\InputOption(
+						'connector',
+						'c',
+						Input\InputOption::VALUE_OPTIONAL,
+						'Run devices module connector',
+						true
+					),
+					new Input\InputOption(
+						'no-confirm',
+						null,
+						Input\InputOption::VALUE_NONE,
+						'Do not ask for any confirmation'
+					),
 				])
 			);
 	}
@@ -239,10 +250,13 @@ class Discovery extends Console\Command\Command
 				if ($connectorIdentifier === false) {
 					$io->error('Something went wrong, connector could not be loaded');
 
-					$this->logger->alert('Connector identifier was not able to get from answer', [
-						'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
-						'type'   => 'discovery-cmd',
-					]);
+					$this->logger->alert(
+						'Connector identifier was not able to get from answer',
+						[
+							'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
+							'type'   => 'discovery-cmd',
+						]
+					);
 
 					return Console\Command\Command::FAILURE;
 				}
@@ -253,10 +267,13 @@ class Discovery extends Console\Command\Command
 			if ($connector === null) {
 				$io->error('Something went wrong, connector could not be loaded');
 
-				$this->logger->alert('Connector was not found', [
-					'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
-					'type'   => 'discovery-cmd',
-				]);
+				$this->logger->alert(
+					'Connector was not found',
+					[
+						'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
+						'type'   => 'discovery-cmd',
+					]
+				);
 
 				return Console\Command\Command::FAILURE;
 			}
@@ -301,10 +318,13 @@ class Discovery extends Console\Command\Command
 
 				try {
 					$this->eventLoop->addSignal(SIGINT, function (int $signal) use ($client, $io): void {
-						$this->logger->info('Stopping Shelly connector discovery...', [
-							'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-							'type'   => 'discovery-cmd',
-						]);
+						$this->logger->info(
+							'Stopping Shelly connector discovery...',
+							[
+								'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+								'type'   => 'discovery-cmd',
+							]
+						);
 
 						$io->info('Stopping Shelly connector discovery...');
 
@@ -314,10 +334,13 @@ class Discovery extends Console\Command\Command
 					});
 
 					$this->eventLoop->futureTick(function () use ($client, $io, $progressBar): void {
-						$this->logger->info('Starting Shelly connector discovery...', [
-							'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-							'type'   => 'discovery-cmd',
-						]);
+						$this->logger->info(
+							'Starting Shelly connector discovery...',
+							[
+								'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+								'type'   => 'discovery-cmd',
+							]
+						);
 
 						$io->info('Starting Shelly connector discovery...');
 
@@ -385,15 +408,19 @@ class Discovery extends Console\Command\Command
 
 							$ipAddress = $this->deviceHelper->getConfiguration(
 								$device->getId(),
-								Types\DevicePropertyIdentifier::get(Types\DevicePropertyIdentifier::IDENTIFIER_IP_ADDRESS)
+								Types\DevicePropertyIdentifier::get(
+									Types\DevicePropertyIdentifier::IDENTIFIER_IP_ADDRESS
+								)
 							);
 
-							$hardwareModelAttribute = $device->findAttribute(Types\DeviceAttributeIdentifier::IDENTIFIER_MODEL);
+							$hardwareModelAttribute = $device->findAttribute(
+								Types\DeviceAttributeIdentifier::IDENTIFIER_MODEL
+							);
 
 							$table->addRow([
 								$foundDevices,
 								$device->getPlainId(),
-									$device->getName() ?? $device->getIdentifier(),
+								$device->getName() ?? $device->getIdentifier(),
 								$hardwareModelAttribute !== null ? $hardwareModelAttribute->getContent(true) : 'N/A',
 								is_string($ipAddress) ? $ipAddress : 'N/A',
 							]);
@@ -418,40 +445,42 @@ class Discovery extends Console\Command\Command
 					return Console\Command\Command::SUCCESS;
 
 				} catch (DevicesModuleExceptions\TerminateException $ex) {
-					$this->logger->error('An error occurred', [
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'discovery-cmd',
-						'exception' => [
-							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
-						],
-					]);
+					$this->logger->error(
+						'An error occurred',
+						[
+							'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+							'type'      => 'discovery-cmd',
+							'exception' => [
+								'message' => $ex->getMessage(),
+								'code'    => $ex->getCode(),
+							],
+						]
+					);
 
 					$io->error('Something went wrong, discovery could not be finished. Error was logged.');
 
-					if ($client->isConnected()) {
-						$client->disconnect();
-					}
+					$client->disconnect();
 
 					$this->eventLoop->stop();
 
 					return Console\Command\Command::FAILURE;
 
 				} catch (Throwable $ex) {
-					$this->logger->error('An unhandled error occurred', [
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'discovery-cmd',
-						'exception' => [
-							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
-						],
-					]);
+					$this->logger->error(
+						'An unhandled error occurred',
+						[
+							'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+							'type'      => 'discovery-cmd',
+							'exception' => [
+								'message' => $ex->getMessage(),
+								'code'    => $ex->getCode(),
+							],
+						]
+					);
 
 					$io->error('Something went wrong, discovery could not be finished. Error was logged.');
 
-					if ($client->isConnected()) {
-						$client->disconnect();
-					}
+					$client->disconnect();
 
 					$this->eventLoop->stop();
 
@@ -488,10 +517,13 @@ class Discovery extends Console\Command\Command
 				$this->executedTime !== null
 				&& $this->dateTimeFactory->getNow()->getTimestamp() - $this->executedTime->getTimestamp() > self::DISCOVERY_MAX_PROCESSING_INTERVAL
 			) {
-				$this->logger->error('Discovery exceeded reserved time and have been terminated', [
-					'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
-					'type'   => 'discovery-cmd',
-				]);
+				$this->logger->error(
+					'Discovery exceeded reserved time and have been terminated',
+					[
+						'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
+						'type'   => 'discovery-cmd',
+					]
+				);
 
 				if ($this->consumerTimer !== null) {
 					$this->eventLoop->cancelTimer($this->consumerTimer);

@@ -299,7 +299,7 @@ final class Description implements Consumer
 						'Device sensor was created',
 						[
 							'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-							'type'     => 'discovery-message-consumer',
+							'type'     => 'description-message-consumer',
 							'device'   => [
 								'id' => $deviceItem->getId()->toString(),
 							],
@@ -352,7 +352,7 @@ final class Description implements Consumer
 							'Device sensor was updated',
 							[
 								'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-								'type'     => 'discovery-message-consumer',
+								'type'     => 'description-message-consumer',
 								'device'   => [
 									'id' => $deviceItem->getId()->toString(),
 								],

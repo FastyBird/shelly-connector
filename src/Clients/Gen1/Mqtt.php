@@ -45,14 +45,6 @@ final class Mqtt
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function isConnected(): bool
-	{
-		return false;
-	}
-
-	/**
 	 * @return void
 	 *
 	 * @throws DevicesModuleExceptions\TerminateException
@@ -74,26 +66,6 @@ final class Mqtt
 		throw new DevicesModuleExceptions\TerminateException(
 			sprintf('MQTT client is not implemented for connector %s', $this->connector->getIdentifier())
 		);
-	}
-
-	/**
-	 * @param MetadataEntities\Actions\IActionDeviceControlEntity $action
-	 *
-	 * @return void
-	 */
-	public function writeDeviceControl(MetadataEntities\Actions\IActionDeviceControlEntity $action): void
-	{
-		// TODO: Implement writeDeviceControl() method.
-	}
-
-	/**
-	 * @param MetadataEntities\Actions\IActionChannelControlEntity $action
-	 *
-	 * @return void
-	 */
-	public function writeChannelControl(MetadataEntities\Actions\IActionChannelControlEntity $action): void
-	{
-		// TODO: Implement writeChannelControl() method.
 	}
 
 }

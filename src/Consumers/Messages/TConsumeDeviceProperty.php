@@ -176,7 +176,7 @@ trait TConsumeDeviceProperty
 			);
 
 			$this->logger->debug(
-				'Device ip address property was created',
+				'Device property was created',
 				[
 					'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 					'type'     => 'message-consumer',
@@ -212,7 +212,7 @@ trait TConsumeDeviceProperty
 				);
 
 				$this->logger->debug(
-					'Device ip address property was updated',
+					'Device property was updated',
 					[
 						'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'     => 'message-consumer',
@@ -228,7 +228,7 @@ trait TConsumeDeviceProperty
 
 			} else {
 				$this->logger->error(
-					'Device ip address property could not be updated',
+					'Device property could not be updated',
 					[
 						'source'   => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
 						'type'     => 'message-consumer',

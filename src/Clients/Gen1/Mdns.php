@@ -57,6 +57,12 @@ final class Mdns
 	/** @var Consumers\Messages */
 	private Consumers\Messages $consumer;
 
+	/** @var Dns\Protocol\Parser */
+	private Dns\Protocol\Parser $parser;
+
+	/** @var Dns\Protocol\BinaryDumper */
+	private Dns\Protocol\BinaryDumper $dumper;
+
 	/** @var EventLoop\LoopInterface */
 	private EventLoop\LoopInterface $eventLoop;
 
@@ -87,14 +93,9 @@ final class Mdns
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		$this->searchResult = new MdnsResultStorage();
-	}
 
-	/**
-	 * @return bool
-	 */
-	public function isConnected(): bool
-	{
-		return $this->server !== null;
+		$this->parser = new Dns\Protocol\Parser();
+		$this->dumper = new Dns\Protocol\BinaryDumper();
 	}
 
 	/**
@@ -106,26 +107,36 @@ final class Mdns
 
 		$server = $this->server = $factory->createReceiver(self::DNS_ADDRESS . ':' . self::DNS_PORT);
 
-		$parser = new Dns\Protocol\Parser();
-
-		$this->server->on('message', function ($message, $remote) use ($parser): void {
+		$this->server->on('message', function ($message, $remote): void {
 			try {
-				$response = $parser->parseMessage($message);
+				$response = $this->parser->parseMessage($message);
 
 			} catch (InvalidArgumentException) {
-				$this->logger->warning('Invalid DNS question response received', [
-					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'   => 'mdns-client',
-				]);
+				$this->logger->warning(
+					'Invalid DNS question response received',
+					[
+						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type'      => 'mdns-client',
+						'connector' => [
+							'id' => $this->connector->getId()->toString(),
+						],
+					]
+				);
 
 				return;
 			}
 
 			if ($response->tc) {
-				$this->logger->warning('The server set the truncated bit although we issued a TCP request', [
-					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'   => 'mdns-client',
-				]);
+				$this->logger->warning(
+					'The server set the truncated bit although we issued a TCP request',
+					[
+						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type'      => 'mdns-client',
+						'connector' => [
+							'id' => $this->connector->getId()->toString(),
+						],
+					]
+				);
 
 				return;
 			}
@@ -177,17 +188,15 @@ final class Mdns
 		});
 
 		$this->eventLoop->futureTick(function () use ($server): void {
-			$dumper = new Dns\Protocol\BinaryDumper();
-
 			$query = new Dns\Query\Query(
 				'_http._tcp.local',
 				Dns\Model\Message::TYPE_PTR,
 				Dns\Model\Message::CLASS_IN
 			);
 
-			$queryData = $dumper->toBinary(Dns\Model\Message::createRequestForQuery($query));
+			$request = $this->dumper->toBinary(Dns\Model\Message::createRequestForQuery($query));
 
-			$server->send($queryData, self::DNS_ADDRESS . ':' . self::DNS_PORT);
+			$server->send($request, self::DNS_ADDRESS . ':' . self::DNS_PORT);
 		});
 	}
 
