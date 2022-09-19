@@ -35,6 +35,7 @@ use Symfony\Component\Console\Input;
 use Symfony\Component\Console\Output;
 use Symfony\Component\Console\Style;
 use Throwable;
+use function React\Async\async;
 
 /**
  * Connector devices discovery command
@@ -353,25 +354,25 @@ class Discovery extends Console\Command\Command
 
 					$this->consumerTimer = $this->eventLoop->addPeriodicTimer(
 						self::QUEUE_PROCESSING_INTERVAL,
-						function (): void {
+						async(function (): void {
 							$this->consumer->consume();
-						}
+						})
 					);
 
 					$this->progressBarTimer = $this->eventLoop->addPeriodicTimer(
 						0.1,
-						function () use ($progressBar): void {
+						async(function () use ($progressBar): void {
 							$progressBar->advance();
-						}
+						})
 					);
 
 					$this->eventLoop->addTimer(
 						self::DISCOVERY_MAX_PROCESSING_INTERVAL,
-						function () use ($client, $io): void {
+						async(function () use ($client, $io): void {
 							$client->disconnect();
 
 							$this->checkAndTerminate($io);
-						}
+						})
 					);
 
 					$this->eventLoop->run();
@@ -540,9 +541,9 @@ class Discovery extends Console\Command\Command
 
 			$this->eventLoop->addTimer(
 				self::DISCOVERY_WAITING_INTERVAL,
-				function () use ($io): void {
+				async(function () use ($io): void {
 					$this->checkAndTerminate($io);
-				}
+				})
 			);
 		}
 	}

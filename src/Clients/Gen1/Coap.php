@@ -27,6 +27,7 @@ use Psr\Log;
 use React\Datagram;
 use React\EventLoop;
 use Throwable;
+use function React\Async\async;
 
 /**
  * CoAP client
@@ -202,9 +203,12 @@ final class Coap
 			});
 
 		} else {
-			$this->eventLoop->addTimer(self::AUTOMATIC_DISCOVERY_DELAY, function (): void {
-				$this->discover();
-			});
+			$this->eventLoop->addTimer(
+				self::AUTOMATIC_DISCOVERY_DELAY,
+				async(function (): void {
+					$this->discover();
+				})
+			);
 		}
 	}
 

@@ -25,6 +25,7 @@ use FastyBird\ShellyConnector\Types;
 use Nette;
 use React\EventLoop;
 use ReflectionClass;
+use function React\Async\async;
 
 /**
  * Connector service executor
@@ -123,9 +124,9 @@ final class Connector implements DevicesModuleConnectors\IConnector
 
 		$this->consumerTimer = $this->eventLoop->addPeriodicTimer(
 			self::QUEUE_PROCESSING_INTERVAL,
-			function (): void {
+			async(function (): void {
 				$this->consumer->consume();
-			}
+			})
 		);
 	}
 
