@@ -92,7 +92,6 @@ final class Description implements Consumer
 		}
 
 		if ($deviceItem->getName() === null && $deviceItem->getName() !== $entity->getType()) {
-			/** @var mixed $deviceEntity */
 			$deviceEntity = $this->databaseHelper->query(
 				function () use ($deviceItem): Entities\ShellyDevice|null {
 					$findDeviceQuery = new DevicesModuleQueries\FindDevices();
@@ -107,7 +106,6 @@ final class Description implements Consumer
 					return $deviceEntity;
 				},
 			);
-			assert($deviceEntity instanceof Entities\ShellyDevice || $deviceEntity === null);
 
 			if ($deviceEntity === null) {
 				return true;
@@ -140,7 +138,6 @@ final class Description implements Consumer
 			);
 
 			if ($channelItem === null) {
-				/** @var mixed $deviceEntity */
 				$deviceEntity = $this->databaseHelper->query(
 					function () use ($deviceItem): Entities\ShellyDevice|null {
 						$findDeviceQuery = new DevicesModuleQueries\FindDevices();
@@ -152,7 +149,6 @@ final class Description implements Consumer
 						return $deviceEntity;
 					},
 				);
-				assert($deviceEntity instanceof Entities\ShellyDevice || $deviceEntity === null);
 
 				if ($deviceEntity === null) {
 					return true;
@@ -175,7 +171,6 @@ final class Description implements Consumer
 				);
 
 				if ($channelProperty === null) {
-					/** @var mixed $channelEntity */
 					$channelEntity = $this->databaseHelper->query(
 						function () use ($deviceItem, $block): DevicesModuleEntities\Channels\Channel|null {
 							$findChannelQuery = new DevicesModuleQueries\FindChannels();
@@ -185,15 +180,11 @@ final class Description implements Consumer
 							return $this->channelsRepository->findOneBy($findChannelQuery);
 						},
 					);
-					assert(
-						$channelEntity instanceof DevicesModuleEntities\Channels\Channel || $channelEntity === null,
-					);
 
 					if ($channelEntity === null) {
 						continue;
 					}
 
-					/** @var mixed $property */
 					$property = $this->databaseHelper->transaction(
 						fn (): DevicesModuleEntities\Channels\Properties\Property => $this->channelsPropertiesManager->create(
 							Utils\ArrayHash::from([
@@ -215,7 +206,6 @@ final class Description implements Consumer
 							]),
 						),
 					);
-					assert($property instanceof DevicesModuleEntities\Channels\Properties\Property);
 
 					$this->logger->debug(
 						'Device sensor was created',
@@ -235,7 +225,6 @@ final class Description implements Consumer
 					);
 
 				} else {
-					/** @var mixed $propertyEntity */
 					$propertyEntity = $this->databaseHelper->query(
 						function () use ($channelProperty): DevicesModuleEntities\Channels\Properties\Property|null {
 							$findPropertyQuery = new DevicesModuleQueries\FindChannelProperties();
@@ -243,9 +232,6 @@ final class Description implements Consumer
 
 							return $this->channelsPropertiesRepository->findOneBy($findPropertyQuery);
 						},
-					);
-					assert(
-						$propertyEntity instanceof DevicesModuleEntities\Channels\Properties\Property || $propertyEntity === null,
 					);
 
 					if ($propertyEntity !== null) {

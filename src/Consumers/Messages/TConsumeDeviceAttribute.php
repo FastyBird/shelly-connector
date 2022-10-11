@@ -61,7 +61,6 @@ trait TConsumeDeviceAttribute
 		);
 
 		if ($attributeItem !== null && $value === null) {
-			/** @var mixed $attributeEntity */
 			$attributeEntity = $this->databaseHelper->query(
 				function () use ($attributeItem): DevicesModuleEntities\Devices\Attributes\Attribute|null {
 					$findAttributeQuery = new DevicesModuleQueries\FindDeviceAttributes();
@@ -69,9 +68,6 @@ trait TConsumeDeviceAttribute
 
 					return $this->attributesRepository->findOneBy($findAttributeQuery);
 				},
-			);
-			assert(
-				$attributeEntity instanceof DevicesModuleEntities\Devices\Attributes\Attribute || $attributeEntity === null,
 			);
 
 			if ($attributeEntity !== null) {
@@ -94,7 +90,6 @@ trait TConsumeDeviceAttribute
 		}
 
 		if ($attributeItem === null) {
-			/** @var mixed $deviceEntity */
 			$deviceEntity = $this->databaseHelper->query(
 				function () use ($deviceId): Entities\ShellyDevice|null {
 					$findDeviceQuery = new DevicesModuleQueries\FindDevices();
@@ -109,13 +104,11 @@ trait TConsumeDeviceAttribute
 					return $deviceEntity;
 				},
 			);
-			assert($deviceEntity instanceof Entities\ShellyDevice || $deviceEntity === null);
 
 			if ($deviceEntity === null) {
 				return;
 			}
 
-			/** @var mixed $attributeEntity */
 			$attributeEntity = $this->databaseHelper->transaction(
 				fn (): DevicesModuleEntities\Devices\Attributes\Attribute => $this->attributesManager->create(
 					Utils\ArrayHash::from([
@@ -125,7 +118,6 @@ trait TConsumeDeviceAttribute
 					]),
 				),
 			);
-			assert($attributeEntity instanceof DevicesModuleEntities\Devices\Attributes\Attribute);
 
 			$this->logger->debug(
 				'Device attribute was created',
@@ -143,7 +135,6 @@ trait TConsumeDeviceAttribute
 			);
 
 		} else {
-			/** @var mixed $attributeEntity */
 			$attributeEntity = $this->databaseHelper->query(
 				function () use ($attributeItem): DevicesModuleEntities\Devices\Attributes\Attribute|null {
 					$findAttributeQuery = new DevicesModuleQueries\FindDeviceAttributes();
@@ -152,12 +143,8 @@ trait TConsumeDeviceAttribute
 					return $this->attributesRepository->findOneBy($findAttributeQuery);
 				},
 			);
-			assert(
-				$attributeEntity instanceof DevicesModuleEntities\Devices\Attributes\Attribute || $attributeEntity === null,
-			);
 
 			if ($attributeEntity !== null) {
-				/** @var mixed $attributeEntity */
 				$attributeEntity = $this->databaseHelper->transaction(
 					fn (): DevicesModuleEntities\Devices\Attributes\Attribute => $this->attributesManager->update(
 						$attributeEntity,
@@ -166,7 +153,6 @@ trait TConsumeDeviceAttribute
 						]),
 					),
 				);
-				assert($attributeEntity instanceof DevicesModuleEntities\Devices\Attributes\Attribute);
 
 				$this->logger->debug(
 					'Device attribute was updated',

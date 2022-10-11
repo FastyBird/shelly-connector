@@ -63,7 +63,6 @@ trait TConsumeDeviceProperty
 		);
 
 		if ($propertyItem !== null && $value === null) {
-			/** @var mixed $propertyEntity */
 			$propertyEntity = $this->databaseHelper->query(
 				function () use ($propertyItem): DevicesModuleEntities\Devices\Properties\Property|null {
 					$findPropertyQuery = new DevicesModuleQueries\FindDeviceProperties();
@@ -71,9 +70,6 @@ trait TConsumeDeviceProperty
 
 					return $this->propertiesRepository->findOneBy($findPropertyQuery);
 				},
-			);
-			assert(
-				$propertyEntity instanceof DevicesModuleEntities\Devices\Properties\Property || $propertyEntity === null,
 			);
 
 			if ($propertyEntity !== null) {
@@ -102,7 +98,6 @@ trait TConsumeDeviceProperty
 			$propertyItem !== null
 			&& !$propertyItem instanceof MetadataEntities\DevicesModule\DeviceVariableProperty
 		) {
-			/** @var mixed $propertyEntity */
 			$propertyEntity = $this->databaseHelper->query(
 				function () use ($propertyItem): DevicesModuleEntities\Devices\Properties\Property|null {
 					$findPropertyQuery = new DevicesModuleQueries\FindDeviceProperties();
@@ -110,9 +105,6 @@ trait TConsumeDeviceProperty
 
 					return $this->propertiesRepository->findOneBy($findPropertyQuery);
 				},
-			);
-			assert(
-				$propertyEntity instanceof DevicesModuleEntities\Devices\Properties\Property || $propertyEntity === null,
 			);
 
 			if ($propertyEntity !== null) {
@@ -140,7 +132,6 @@ trait TConsumeDeviceProperty
 		}
 
 		if ($propertyItem === null) {
-			/** @var mixed $deviceEntity */
 			$deviceEntity = $this->databaseHelper->query(
 				function () use ($deviceId): Entities\ShellyDevice|null {
 					$findDeviceQuery = new DevicesModuleQueries\FindDevices();
@@ -155,7 +146,6 @@ trait TConsumeDeviceProperty
 					return $deviceEntity;
 				},
 			);
-			assert($deviceEntity instanceof Entities\ShellyDevice || $deviceEntity === null);
 
 			if ($deviceEntity === null) {
 				return;
@@ -192,7 +182,6 @@ trait TConsumeDeviceProperty
 			);
 
 		} else {
-			/** @var mixed $propertyEntity */
 			$propertyEntity = $this->databaseHelper->query(
 				function () use ($propertyItem): DevicesModuleEntities\Devices\Properties\Property|null {
 					$findPropertyQuery = new DevicesModuleQueries\FindDeviceProperties();
@@ -200,9 +189,6 @@ trait TConsumeDeviceProperty
 
 					return $this->propertiesRepository->findOneBy($findPropertyQuery);
 				},
-			);
-			assert(
-				$propertyEntity instanceof DevicesModuleEntities\Devices\Properties\Property || $propertyEntity === null,
 			);
 
 			if ($propertyEntity !== null) {

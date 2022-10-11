@@ -82,7 +82,6 @@ final class Info implements Consumer
 		}
 
 		if ($deviceItem->getName() === null && $deviceItem->getName() !== $entity->getType()) {
-			/** @var mixed $deviceEntity */
 			$deviceEntity = $this->databaseHelper->query(
 				function () use ($deviceItem): Entities\ShellyDevice|null {
 					$findDeviceQuery = new DevicesModuleQueries\FindDevices();
@@ -94,7 +93,6 @@ final class Info implements Consumer
 					return $deviceEntity;
 				},
 			);
-			assert($deviceEntity instanceof Entities\ShellyDevice || $deviceEntity === null);
 
 			if ($deviceEntity === null) {
 				return true;

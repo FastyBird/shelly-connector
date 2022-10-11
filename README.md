@@ -13,9 +13,8 @@
 
 ## What is Shelly connector?
 
-Shelly connector is a [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things)
-extension which is integrating [Shelly](https://shelly.cloud) devices into [FastyBird](https://www.fastybird.com) IoT
-system
+Shelly connector is extension for [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) ecosystem
+which is integrating [Shelly](https://shelly.cloud) devices.
 
 Shelly connector is an [Apache2 licensed](http://www.apache.org/licenses/LICENSE-2.0) distributed extension, developed
 in [PHP](https://www.php.net) with [Nette framework](https://nette.org).
@@ -23,17 +22,14 @@ in [PHP](https://www.php.net) with [Nette framework](https://nette.org).
 ### Features:
 
 - Shelly gen1 devices support
-- Shelly connector management
-  for [FastyBird IoT](https://www.fastybird.com) [devices module](https://github.com/FastyBird/devices-module)
-- Shelly device management
-  for [FastyBird IoT](https://www.fastybird.com) [devices module](https://github.com/FastyBird/devices-module)
+- Shelly connector management for [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) [devices module](https://github.com/FastyBird/devices-module)
+- Shelly device management for [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) [devices module](https://github.com/FastyBird/devices-module)
 - [{JSON:API}](https://jsonapi.org/) schemas for full api access
 
 ## Requirements
 
-Shelly connector is tested against PHP 8.1
-and [ReactPHP Socket](https://github.com/reactphp/socket) 1.11 async, streaming plaintext TCP/IP and secure TLS socket server and client connections
-and [Nette framework](https://nette.org/en/) 3.0 PHP framework for real programmers
+Shelly connector is tested against PHP 8.1 and require installed [Process Control](https://www.php.net/manual/en/book.pcntl.php)
+PHP extension.
 
 ## Installation
 
@@ -45,14 +41,14 @@ The best way to install **fastybird/shelly-connector** is using [Composer](http:
 composer require fastybird/shelly-connector
 ```
 
-### Marketplace installation
+### Marketplace installation [WIP]
 
-You could install this connector in your [FastyBird IoT](https://www.fastybird.com) application under marketplace
+You could install this connector in your [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) application under marketplace
 section
 
 ## Documentation
 
-Learn how to connect Shelly devices and manage them with [FastyBird IoT](https://www.fastybird.com) system
+Learn how to connect Shelly devices and manage them with [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) system
 in [documentation](https://github.com/FastyBird/shelly-connector/blob/master/.docs/en/index.md).
 
 ## Feedback
@@ -74,7 +70,7 @@ For release info check [release page](https://github.com/FastyBird/shelly-connec
 		<tr>
 			<td align="center">
 				<a href="https://github.com/akadlec">
-					<img width="80" height="80" src="https://avatars3.githubusercontent.com/u/1866672?s=460&amp;v=4">
+					<img alt="akadlec" width="80" height="80" src="https://avatars3.githubusercontent.com/u/1866672?s=460&amp;v=4" />
 				</a>
 				<br>
 				<a href="https://github.com/akadlec">Adam Kadlec</a>
