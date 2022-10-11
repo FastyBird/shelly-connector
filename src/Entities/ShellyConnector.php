@@ -7,7 +7,7 @@
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:ShellyConnector!
- * @subpackage     Entities
+ * @subpackage     Properties
  * @since          0.1.0
  *
  * @date           22.01.22
@@ -22,33 +22,24 @@ use FastyBird\Metadata\Types as MetadataTypes;
 /**
  * @ORM\Entity
  */
-class ShellyConnector extends DevicesModuleEntities\Connectors\Connector implements IShellyConnector
+class ShellyConnector extends DevicesModuleEntities\Connectors\Connector
 {
 
 	public const CONNECTOR_TYPE = 'shelly';
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getType(): string
 	{
 		return self::CONNECTOR_TYPE;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getDiscriminatorName(): string
 	{
 		return self::CONNECTOR_TYPE;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getSource(): MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType
+	public function getSource(): MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource
 	{
-		return MetadataTypes\ConnectorSourceType::get(MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_SHELLY);
+		return MetadataTypes\ConnectorSource::get(MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_SHELLY);
 	}
 
 }
