@@ -21,19 +21,15 @@ use FastyBird\ShellyConnector\Entities;
 /**
  * Shelly device entity hydrator
  *
+ * @phpstan-extends DevicesModuleHydrators\Devices\Device<Entities\ShellyDevice>
+ *
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Hydrators
- *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- *
- * @phpstan-extends DevicesModuleHydrators\Devices\DeviceHydrator<Entities\ShellyDevice>
  */
-final class ShellyDevice extends DevicesModuleHydrators\Devices\DeviceHydrator
+final class ShellyDevice extends DevicesModuleHydrators\Devices\Device
 {
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getEntityName(): string
 	{
 		return Entities\ShellyDevice::class;

@@ -30,41 +30,22 @@ final class MdnsResult
 
 	use Nette\SmartObject;
 
-	/** @var string */
-	private string $address;
-
-	/** @var string */
-	private string $name;
-
-	/** @var Array<string, string|int|float> */
-	private array $data;
-
 	/**
-	 * @param string $address
-	 * @param string $name
 	 * @param Array<string, string|int|float> $data
 	 */
 	public function __construct(
-		string $address,
-		string $name,
-		array $data
-	) {
-		$this->address = $address;
-		$this->name = $name;
-		$this->data = $data;
+		private readonly string $address,
+		private readonly string $name,
+		private readonly array $data,
+	)
+	{
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getAddress(): string
 	{
 		return $this->address;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName(): string
 	{
 		return $this->name;
@@ -85,8 +66,8 @@ final class MdnsResult
 	{
 		return [
 			'address' => $this->getAddress(),
-			'name'    => $this->getName(),
-			'data'    => $this->getData(),
+			'name' => $this->getName(),
+			'data' => $this->getData(),
 		];
 	}
 

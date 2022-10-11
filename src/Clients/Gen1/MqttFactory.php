@@ -28,11 +28,6 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 interface MqttFactory
 {
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 *
-	 * @return Mqtt
-	 */
-	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Mqtt;
+	public function create(MetadataEntities\DevicesModule\Connector $connector): Mqtt;
 
 }

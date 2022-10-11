@@ -17,9 +17,13 @@ namespace FastyBird\ShellyConnector\Mappers;
 
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\ShellyConnector;
 use Nette;
 use Ramsey\Uuid;
+use function array_key_exists;
+use function intval;
+use function preg_match;
 
 /**
  * Device sensor to module property mapper
@@ -37,48 +41,29 @@ final class Sensor
 	/** @var Array<string, Uuid\UuidInterface> */
 	private array $sensorsToProperties = [];
 
-	/** @var DevicesModuleModels\DataStorage\IDevicesRepository */
-	private DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository;
-
-	/** @var DevicesModuleModels\DataStorage\IChannelsRepository */
-	private DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository;
-
-	/** @var DevicesModuleModels\DataStorage\IChannelPropertiesRepository */
-	private DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository;
-
-	/**
-	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository
-	 * @param DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository
-	 * @param DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository
-	 */
 	public function __construct(
-		DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository,
-		DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository,
-		DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository
-	) {
-		$this->devicesRepository = $devicesRepository;
-		$this->channelsRepository = $channelsRepository;
-		$this->channelPropertiesRepository = $channelPropertiesRepository;
+		private readonly DevicesModuleModels\DataStorage\DevicesRepository $devicesRepository,
+		private readonly DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
+		private readonly DevicesModuleModels\DataStorage\ChannelPropertiesRepository $channelPropertiesRepository,
+	)
+	{
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connector
-	 * @param string $deviceIdentifier
-	 * @param int $sensorIdentifier
-	 *
-	 * @return MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|null
+	 * @throws MetadataExceptions\FileNotFound
 	 */
 	public function findProperty(
 		Uuid\UuidInterface $connector,
 		string $deviceIdentifier,
-		int $sensorIdentifier
-	): ?MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity {
+		int $sensorIdentifier,
+	): MetadataEntities\DevicesModule\ChannelDynamicProperty|null
+	{
 		$key = $deviceIdentifier . '-' . $sensorIdentifier;
 
 		if (array_key_exists($key, $this->sensorsToProperties)) {
 			$property = $this->channelPropertiesRepository->findById($this->sensorsToProperties[$key]);
 
-			if ($property instanceof MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity) {
+			if ($property instanceof MetadataEntities\DevicesModule\ChannelDynamicProperty) {
 				return $property;
 			}
 		}
@@ -93,17 +78,14 @@ final class Sensor
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connector
-	 * @param string $deviceIdentifier
-	 * @param int $sensorIdentifier
-	 *
-	 * @return MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity|null
+	 * @throws MetadataExceptions\FileNotFound
 	 */
 	private function loadProperty(
 		Uuid\UuidInterface $connector,
 		string $deviceIdentifier,
-		int $sensorIdentifier
-	): ?MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity {
+		int $sensorIdentifier,
+	): MetadataEntities\DevicesModule\ChannelDynamicProperty|null
+	{
 		$device = $this->devicesRepository->findByIdentifier($connector, $deviceIdentifier);
 
 		if ($device === null) {
@@ -117,13 +99,17 @@ final class Sensor
 
 			foreach ($properties as $property) {
 				if (
-					preg_match(ShellyConnector\Constants::GEN_1_PROPERTY_SENSOR, $property->getIdentifier(), $propertyMatches) === 1
+					preg_match(
+						ShellyConnector\Constants::GEN_1_PROPERTY_SENSOR,
+						$property->getIdentifier(),
+						$propertyMatches,
+					) === 1
 					&& array_key_exists('identifier', $propertyMatches)
 					&& array_key_exists('type', $propertyMatches)
 					&& array_key_exists('description', $propertyMatches)
 					&& intval($propertyMatches['identifier']) === $sensorIdentifier
 				) {
-					if ($property instanceof MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity) {
+					if ($property instanceof MetadataEntities\DevicesModule\ChannelDynamicProperty) {
 						return $property;
 					}
 

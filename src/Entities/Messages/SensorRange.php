@@ -32,63 +32,36 @@ final class SensorRange implements Entity
 
 	use Nette\SmartObject;
 
-	/** @var Types\MessageSource */
-	private Types\MessageSource $source;
-
-	/** @var MetadataTypes\DataTypeType */
-	private MetadataTypes\DataTypeType $dataType;
-
-	/** @var string[]|int[]|float[]|Array<int, Array<int, string|null>>|Array<int, int|null>|Array<int, float|null>|Array<int, MetadataTypes\SwitchPayloadType|string|Types\RelayPayload|null>|null */
-	private ?array $format;
-
-	/** @var int|float|string|null */
-	private int|float|string|null $invalid;
-
 	/**
-	 * @param Types\MessageSource $source
-	 * @param MetadataTypes\DataTypeType $dataType
-	 * @param string[]|int[]|float[]|Array<int, Array<int, string|null>>|Array<int, int|null>|Array<int, float|null>|Array<int, MetadataTypes\SwitchPayloadType|string|Types\RelayPayload|null>|null $format
-	 * @param int|float|string|null $invalid
+	 * @param Array<string>|Array<int>|Array<float>|Array<int, Array<int, (string|null)>>|Array<int, (int|null)>|Array<int, (float|null)>|Array<int, (MetadataTypes\SwitchPayload|string|Types\RelayPayload|null)>|null $format
 	 */
 	public function __construct(
-		Types\MessageSource $source,
-		MetadataTypes\DataTypeType $dataType,
-		?array $format,
-		int|float|string|null $invalid
-	) {
-		$this->source = $source;
-		$this->dataType = $dataType;
-		$this->format = $format;
-		$this->invalid = $invalid;
+		private readonly Types\MessageSource $source,
+		private readonly MetadataTypes\DataType $dataType,
+		private readonly array|null $format,
+		private readonly int|float|string|null $invalid,
+	)
+	{
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getSource(): Types\MessageSource
 	{
 		return $this->source;
 	}
 
-	/**
-	 * @return MetadataTypes\DataTypeType
-	 */
-	public function getDataType(): MetadataTypes\DataTypeType
+	public function getDataType(): MetadataTypes\DataType
 	{
 		return $this->dataType;
 	}
 
 	/**
-	 * @return string[]|int[]|float[]|Array<int, Array<int, string|null>>|Array<int, int|null>|Array<int, float|null>|Array<int, MetadataTypes\SwitchPayloadType|string|Types\RelayPayload|null>|null
+	 * @return Array<string>|Array<int>|Array<float>|Array<int, Array<int, (string|null)>>|Array<int, (int|null)>|Array<int, (float|null)>|Array<int, (MetadataTypes\SwitchPayload|string|Types\RelayPayload|null)>|null
 	 */
-	public function getFormat(): ?array
+	public function getFormat(): array|null
 	{
 		return $this->format;
 	}
 
-	/**
-	 * @return float|int|string|null
-	 */
 	public function getInvalid(): float|int|string|null
 	{
 		return $this->invalid;
@@ -100,10 +73,10 @@ final class SensorRange implements Entity
 	public function toArray(): array
 	{
 		return [
-			'source'    => $this->getSource()->getValue(),
+			'source' => $this->getSource()->getValue(),
 			'data_type' => $this->dataType->getValue(),
-			'format'    => $this->format,
-			'invalid'   => $this->invalid,
+			'format' => $this->format,
+			'invalid' => $this->invalid,
 		];
 	}
 

@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * Sensor unit types
@@ -32,22 +33,31 @@ class SensorUnit extends Consistence\Enum\Enum
 	 * Define device states
 	 */
 	public const UNIT_WATTS = 'W';
+
 	public const UNIT_WATT_MINUTES = 'Wmin';
+
 	public const UNIT_WATT_HOURS = 'Wh';
+
 	public const UNIT_VOLTS = 'V';
+
 	public const UNIT_AMPERES = 'A';
+
 	public const UNIT_CELSIUS = 'C';
+
 	public const UNIT_FAHRENHEIT = 'F';
+
 	public const UNIT_KELVIN = 'K';
+
 	public const UNIT_DEGREES = 'deg';
+
 	public const UNIT_LUX = 'lux';
+
 	public const UNIT_PARTS_PER_MILLION = 'ppm';
+
 	public const UNIT_SECONDS = 's';
+
 	public const UNIT_PERCENT = 'pct';
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

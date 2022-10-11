@@ -17,6 +17,10 @@ namespace FastyBird\ShellyConnector\Entities\Messages;
 
 use FastyBird\ShellyConnector\Types;
 use Ramsey\Uuid;
+use function array_map;
+use function array_merge;
+use function array_unique;
+use const SORT_REGULAR;
 
 /**
  * Device description message entity
@@ -29,48 +33,32 @@ use Ramsey\Uuid;
 final class DeviceDescription extends Device
 {
 
-	/** @var BlockDescription[] */
+	/** @var Array<BlockDescription> */
 	private array $blocks;
 
 	/**
-	 * @param Types\MessageSource $source
-	 * @param Uuid\UuidInterface $connector
-	 * @param string $identifier
-	 * @param string|null $type
-	 * @param string $ipAddress
-	 * @param BlockDescription[] $blocks
+	 * @param Array<BlockDescription> $blocks
 	 */
 	public function __construct(
 		Types\MessageSource $source,
 		Uuid\UuidInterface $connector,
 		string $identifier,
-		?string $type,
+		string|null $type,
 		string $ipAddress,
-		array $blocks
-	) {
+		array $blocks,
+	)
+	{
 		parent::__construct($source, $connector, $identifier, $type, $ipAddress);
 
 		$this->blocks = array_unique($blocks, SORT_REGULAR);
 	}
 
 	/**
-	 * @return BlockDescription[]
+	 * @return Array<BlockDescription>
 	 */
 	public function getBlocks(): array
 	{
 		return $this->blocks;
-	}
-
-	/**
-	 * @param BlockDescription $block
-	 *
-	 * @return void
-	 */
-	public function addBlock(BlockDescription $block): void
-	{
-		$this->blocks[] = $block;
-
-		$this->blocks = array_unique($this->blocks, SORT_REGULAR);
 	}
 
 	/**
@@ -79,9 +67,7 @@ final class DeviceDescription extends Device
 	public function toArray(): array
 	{
 		return array_merge(parent::toArray(), [
-			'blocks' => array_map(function (BlockDescription $block): array {
-				return $block->toArray();
-			}, $this->getBlocks()),
+			'blocks' => array_map(static fn (BlockDescription $block): array => $block->toArray(), $this->getBlocks()),
 		]);
 	}
 

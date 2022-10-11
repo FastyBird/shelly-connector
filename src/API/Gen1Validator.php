@@ -20,6 +20,7 @@ use FastyBird\Metadata\Schemas as MetadataSchemas;
 use FastyBird\ShellyConnector;
 use Nette;
 use Nette\Utils;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * Generation 1 devices messages validator
@@ -35,29 +36,21 @@ final class Gen1Validator
 	use Nette\SmartObject;
 
 	public const COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME = 'gen1_coap_description.json';
+
 	public const COAP_STATUS_MESSAGE_SCHEMA_FILENAME = 'gen1_coap_status.json';
+
 	public const HTTP_SHELLY_INFO_MESSAGE_SCHEMA_FILENAME = 'gen1_http_shelly.json';
+
 	public const HTTP_STATUS_MESSAGE_SCHEMA_FILENAME = 'gen1_http_status.json';
+
 	public const HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME = 'gen1_http_description.json';
+
 	public const HTTP_SETTINGS_MESSAGE_SCHEMA_FILENAME = 'gen1_http_settings.json';
 
-	/** @var MetadataSchemas\IValidator */
-	private MetadataSchemas\IValidator $schemaValidator;
-
-	/**
-	 * @param MetadataSchemas\IValidator $schemaValidator
-	 */
-	public function __construct(
-		MetadataSchemas\IValidator $schemaValidator
-	) {
-		$this->schemaValidator = $schemaValidator;
+	public function __construct(private MetadataSchemas\Validator $schemaValidator)
+	{
 	}
 
-	/**
-	 * @param string $message
-	 *
-	 * @return bool
-	 */
 	public function isValidCoapDescriptionMessage(string $message): bool
 	{
 		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
@@ -71,18 +64,13 @@ final class Gen1Validator
 
 		try {
 			$this->schemaValidator->validate($message, $schema);
-		} catch (MetadataExceptions\MalformedInputException | MetadataExceptions\LogicException | MetadataExceptions\InvalidDataException) {
+		} catch (MetadataExceptions\MalformedInput | MetadataExceptions\Logic | MetadataExceptions\InvalidData) {
 			return false;
 		}
 
 		return true;
 	}
 
-	/**
-	 * @param string $message
-	 *
-	 * @return bool
-	 */
 	public function isValidCoapStatusMessage(string $message): bool
 	{
 		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::COAP_STATUS_MESSAGE_SCHEMA_FILENAME;
@@ -96,18 +84,13 @@ final class Gen1Validator
 
 		try {
 			$this->schemaValidator->validate($message, $schema);
-		} catch (MetadataExceptions\MalformedInputException | MetadataExceptions\LogicException | MetadataExceptions\InvalidDataException) {
+		} catch (MetadataExceptions\MalformedInput | MetadataExceptions\Logic | MetadataExceptions\InvalidData) {
 			return false;
 		}
 
 		return true;
 	}
 
-	/**
-	 * @param string $message
-	 *
-	 * @return bool
-	 */
 	public function isValidHttpShellyMessage(string $message): bool
 	{
 		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::HTTP_SHELLY_INFO_MESSAGE_SCHEMA_FILENAME;
@@ -121,18 +104,13 @@ final class Gen1Validator
 
 		try {
 			$this->schemaValidator->validate($message, $schema);
-		} catch (MetadataExceptions\MalformedInputException | MetadataExceptions\LogicException | MetadataExceptions\InvalidDataException) {
+		} catch (MetadataExceptions\MalformedInput | MetadataExceptions\Logic | MetadataExceptions\InvalidData) {
 			return false;
 		}
 
 		return true;
 	}
 
-	/**
-	 * @param string $message
-	 *
-	 * @return bool
-	 */
 	public function isValidHttpDescriptionMessage(string $message): bool
 	{
 		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
@@ -146,7 +124,7 @@ final class Gen1Validator
 
 		try {
 			$this->schemaValidator->validate($message, $schema);
-		} catch (MetadataExceptions\MalformedInputException | MetadataExceptions\LogicException | MetadataExceptions\InvalidDataException) {
+		} catch (MetadataExceptions\MalformedInput | MetadataExceptions\Logic | MetadataExceptions\InvalidData) {
 			return false;
 		}
 

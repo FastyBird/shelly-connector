@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * Writable sensor type types
@@ -32,19 +33,25 @@ class WritableSensorType extends Consistence\Enum\Enum
 	 * Define device states
 	 */
 	public const TYPE_MODE = 'mode';
+
 	public const TYPE_OUTPUT = 'output';
+
 	public const TYPE_ROLLER = 'roller';
+
 	public const TYPE_RED = 'red';
+
 	public const TYPE_GREEN = 'green';
+
 	public const TYPE_BLUE = 'blue';
+
 	public const TYPE_WHITE = 'white';
+
 	public const TYPE_GAIN = 'gain';
+
 	public const TYPE_COLOR_TEMP = 'colorTemp';
+
 	public const TYPE_BRIGHTNESS = 'brightness';
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

@@ -28,22 +28,16 @@ interface Client
 
 	/**
 	 * Discover new devices
-	 *
-	 * @return void
 	 */
 	public function discover(): void;
 
 	/**
 	 * Create servers/clients
-	 *
-	 * @return void
 	 */
 	public function connect(): void;
 
 	/**
 	 * Destroy servers/clients
-	 *
-	 * @return void
 	 */
 	public function disconnect(): void;
 

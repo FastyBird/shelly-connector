@@ -18,6 +18,7 @@ namespace FastyBird\ShellyConnector\Clients\Gen1;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
+use function sprintf;
 
 /**
  * MQTT client
@@ -32,39 +33,29 @@ final class Mqtt
 
 	use Nette\SmartObject;
 
-	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
-
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 */
 	public function __construct(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	) {
-		$this->connector = $connector;
+		private readonly MetadataEntities\DevicesModule\Connector $connector,
+	)
+	{
 	}
 
 	/**
-	 * @return void
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 */
 	public function connect(): void
 	{
-		throw new DevicesModuleExceptions\TerminateException(
-			sprintf('MQTT client is not implemented for connector %s', $this->connector->getIdentifier())
+		throw new DevicesModuleExceptions\Terminate(
+			sprintf('MQTT client is not implemented for connector %s', $this->connector->getIdentifier()),
 		);
 	}
 
 	/**
-	 * @return void
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 */
 	public function disconnect(): void
 	{
-		throw new DevicesModuleExceptions\TerminateException(
-			sprintf('MQTT client is not implemented for connector %s', $this->connector->getIdentifier())
+		throw new DevicesModuleExceptions\Terminate(
+			sprintf('MQTT client is not implemented for connector %s', $this->connector->getIdentifier()),
 		);
 	}
 

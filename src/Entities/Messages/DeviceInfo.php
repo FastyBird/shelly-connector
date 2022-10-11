@@ -17,6 +17,7 @@ namespace FastyBird\ShellyConnector\Entities\Messages;
 
 use FastyBird\ShellyConnector\Types;
 use Ramsey\Uuid;
+use function array_merge;
 
 /**
  * Device info message entity
@@ -29,61 +30,30 @@ use Ramsey\Uuid;
 final class DeviceInfo extends Device
 {
 
-	/** @var string */
-	private string $macAddress;
-
-	/** @var bool */
-	private bool $authEnabled;
-
-	/** @var string */
-	private string $firmwareVersion;
-
-	/**
-	 * @param Types\MessageSource $source
-	 * @param Uuid\UuidInterface $connector
-	 * @param string $identifier
-	 * @param string $ipAddress
-	 * @param string $type
-	 * @param string $macAddress
-	 * @param bool $authEnabled
-	 * @param string $firmwareVersion
-	 */
 	public function __construct(
 		Types\MessageSource $source,
 		Uuid\UuidInterface $connector,
 		string $identifier,
 		string $ipAddress,
 		string $type,
-		string $macAddress,
-		bool $authEnabled,
-		string $firmwareVersion
-	) {
+		private readonly string $macAddress,
+		private readonly bool $authEnabled,
+		private readonly string $firmwareVersion,
+	)
+	{
 		parent::__construct($source, $connector, $identifier, $type, $ipAddress);
-
-		$this->macAddress = $macAddress;
-		$this->authEnabled = $authEnabled;
-		$this->firmwareVersion = $firmwareVersion;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getMacAddress(): string
 	{
 		return $this->macAddress;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isAuthEnabled(): bool
 	{
 		return $this->authEnabled;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getFirmwareVersion(): string
 	{
 		return $this->firmwareVersion;
@@ -95,8 +65,8 @@ final class DeviceInfo extends Device
 	public function toArray(): array
 	{
 		return array_merge(parent::toArray(), [
-			'mac_address'      => $this->getMacAddress(),
-			'auth_enabled'     => $this->isAuthEnabled(),
+			'mac_address' => $this->getMacAddress(),
+			'auth_enabled' => $this->isAuthEnabled(),
 			'firmware_version' => $this->getFirmwareVersion(),
 		]);
 	}

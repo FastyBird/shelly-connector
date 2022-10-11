@@ -38,73 +38,31 @@ final class Gen1 implements Client
 
 	use Nette\SmartObject;
 
-	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
+	private Clients\Gen1\Coap|null $coapClient = null;
 
-	/** @var Clients\Gen1\Coap|null */
-	private ?Clients\Gen1\Coap $coapClient = null;
+	private Clients\Gen1\Mdns|null $mdnsClient = null;
 
-	/** @var Clients\Gen1\Mdns|null */
-	private ?Clients\Gen1\Mdns $mdnsClient = null;
+	private Clients\Gen1\Http|null $httpClient = null;
 
-	/** @var Clients\Gen1\Http|null */
-	private ?Clients\Gen1\Http $httpClient = null;
+	private Clients\Gen1\Mqtt|null $mqttClient = null;
 
-	/** @var Gen1\Mqtt|null */
-	private ?Clients\Gen1\Mqtt $mqttClient = null;
-
-	/** @var Gen1\CoapFactory */
-	private Clients\Gen1\CoapFactory $coapClientFactory;
-
-	/** @var Gen1\MdnsFactory */
-	private Clients\Gen1\MdnsFactory $mdnsClientFactory;
-
-	/** @var Gen1\HttpFactory */
-	private Clients\Gen1\HttpFactory $httpClientFactory;
-
-	/** @var Gen1\MqttFactory */
-	private Clients\Gen1\MqttFactory $mqttClientFactory;
-
-	/** @var Helpers\Connector */
-	private Helpers\Connector $connectorHelper;
-
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 * @param Gen1\CoapFactory $coapClientFactory
-	 * @param Gen1\MdnsFactory $mdnsClientFactory
-	 * @param Gen1\HttpFactory $httpClientFactory
-	 * @param Gen1\MqttFactory $mqttClientFactory
-	 * @param Helpers\Connector $connectorHelper
-	 * @param Log\LoggerInterface|null $logger
-	 */
 	public function __construct(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		Clients\Gen1\CoapFactory $coapClientFactory,
-		Clients\Gen1\MdnsFactory $mdnsClientFactory,
-		Clients\Gen1\HttpFactory $httpClientFactory,
-		Clients\Gen1\MqttFactory $mqttClientFactory,
-		Helpers\Connector $connectorHelper,
-		?Log\LoggerInterface $logger = null
-	) {
-		$this->connector = $connector;
-
-		$this->connectorHelper = $connectorHelper;
-
-		$this->coapClientFactory = $coapClientFactory;
-		$this->mdnsClientFactory = $mdnsClientFactory;
-		$this->httpClientFactory = $httpClientFactory;
-		$this->mqttClientFactory = $mqttClientFactory;
-
+		private readonly MetadataEntities\DevicesModule\Connector $connector,
+		private readonly Clients\Gen1\CoapFactory $coapClientFactory,
+		private readonly Clients\Gen1\MdnsFactory $mdnsClientFactory,
+		private readonly Clients\Gen1\HttpFactory $httpClientFactory,
+		private readonly Clients\Gen1\MqttFactory $mqttClientFactory,
+		private readonly Helpers\Connector $connectorHelper,
+		Log\LoggerInterface|null $logger = null,
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	/**
-	 * @return void
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 */
 	public function discover(): void
 	{
@@ -117,22 +75,22 @@ final class Gen1 implements Client
 			$this->logger->error(
 				'CoAP client could not be started',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'gen1-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'gen1-client',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 
-			throw new DevicesModuleExceptions\TerminateException(
+			throw new DevicesModuleExceptions\Terminate(
 				'CoAP client could not be started',
 				$ex->getCode(),
-				$ex
+				$ex,
 			);
 		}
 
@@ -142,40 +100,39 @@ final class Gen1 implements Client
 			$this->logger->error(
 				'mDNS client could not be started',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'gen1-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'gen1-client',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 
-			throw new DevicesModuleExceptions\TerminateException(
+			throw new DevicesModuleExceptions\Terminate(
 				'mDNS client could not be started',
 				$ex->getCode(),
-				$ex
+				$ex,
 			);
 		}
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function connect(): void
 	{
 		$mode = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
-			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_MODE)
+			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_MODE),
 		);
 
 		if ($mode === null) {
-			throw new DevicesModuleExceptions\TerminateException('Connector client mode is not configured');
+			throw new DevicesModuleExceptions\Terminate('Connector client mode is not configured');
 		}
 
 		if ($mode === Types\ClientMode::TYPE_GEN_1_CLASSIC) {
@@ -189,22 +146,22 @@ final class Gen1 implements Client
 				$this->logger->error(
 					'CoAP client could not be started',
 					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'gen1-client',
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type' => 'gen1-client',
 						'exception' => [
 							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
+							'code' => $ex->getCode(),
 						],
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
-					]
+					],
 				);
 
-				throw new DevicesModuleExceptions\TerminateException(
+				throw new DevicesModuleExceptions\Terminate(
 					'CoAP client could not be started',
 					$ex->getCode(),
-					$ex
+					$ex,
 				);
 			}
 
@@ -214,22 +171,22 @@ final class Gen1 implements Client
 				$this->logger->error(
 					'mDNS client could not be started',
 					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'gen1-client',
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type' => 'gen1-client',
 						'exception' => [
 							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
+							'code' => $ex->getCode(),
 						],
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
-					]
+					],
 				);
 
-				throw new DevicesModuleExceptions\TerminateException(
+				throw new DevicesModuleExceptions\Terminate(
 					'mDNS client could not be started',
 					$ex->getCode(),
-					$ex
+					$ex,
 				);
 			}
 
@@ -239,22 +196,22 @@ final class Gen1 implements Client
 				$this->logger->error(
 					'Http api client could not be started',
 					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'gen1-client',
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type' => 'gen1-client',
 						'exception' => [
 							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
+							'code' => $ex->getCode(),
 						],
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
-					]
+					],
 				);
 
-				throw new DevicesModuleExceptions\TerminateException(
+				throw new DevicesModuleExceptions\Terminate(
 					'Http api client could not be started',
 					$ex->getCode(),
-					$ex
+					$ex,
 				);
 			}
 		} elseif ($mode === Types\ClientMode::TYPE_GEN_1_MQTT) {
@@ -266,32 +223,29 @@ final class Gen1 implements Client
 				$this->logger->error(
 					'MQTT client could not be started',
 					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'gen1-client',
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type' => 'gen1-client',
 						'exception' => [
 							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
+							'code' => $ex->getCode(),
 						],
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
-					]
+					],
 				);
 
-				throw new DevicesModuleExceptions\TerminateException(
+				throw new DevicesModuleExceptions\Terminate(
 					'MQTT client could not be started',
 					$ex->getCode(),
-					$ex
+					$ex,
 				);
 			}
 		} else {
-			throw new DevicesModuleExceptions\TerminateException('Client mode is not configured');
+			throw new DevicesModuleExceptions\Terminate('Client mode is not configured');
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function disconnect(): void
 	{
 		try {
@@ -300,16 +254,16 @@ final class Gen1 implements Client
 			$this->logger->error(
 				'CoAP client could not be disconnected',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'gen1-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'gen1-client',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 		}
 
@@ -319,16 +273,16 @@ final class Gen1 implements Client
 			$this->logger->error(
 				'mDNS client could not be disconnected',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'gen1-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'gen1-client',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 		}
 
@@ -338,16 +292,16 @@ final class Gen1 implements Client
 			$this->logger->error(
 				'Http api client could not be disconnected',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'gen1-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'gen1-client',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 		}
 
@@ -357,16 +311,16 @@ final class Gen1 implements Client
 			$this->logger->error(
 				'MQTT client could not be disconnected',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'gen1-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'gen1-client',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 		}
 	}

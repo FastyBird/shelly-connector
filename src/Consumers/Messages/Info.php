@@ -26,6 +26,7 @@ use FastyBird\ShellyConnector\Types;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
+use function assert;
 
 /**
  * Device description message consumer
@@ -42,85 +43,28 @@ final class Info implements Consumer
 	use TConsumeDeviceAttribute;
 	use TConsumeDeviceProperty;
 
-	/** @var DevicesModuleModels\Devices\IDevicesRepository */
-	private DevicesModuleModels\Devices\IDevicesRepository $devicesRepository;
-
-	/** @var DevicesModuleModels\Devices\IDevicesManager */
-	private DevicesModuleModels\Devices\IDevicesManager $devicesManager;
-
-	/** @var DevicesModuleModels\Devices\Properties\IPropertiesRepository */
-	private DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository;
-
-	/** @var DevicesModuleModels\Devices\Properties\IPropertiesManager */
-	private DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager;
-
-	/** @var DevicesModuleModels\Devices\Attributes\IAttributesRepository */
-	private DevicesModuleModels\Devices\Attributes\IAttributesRepository $attributesRepository;
-
-	/** @var DevicesModuleModels\Devices\Attributes\IAttributesManager */
-	private DevicesModuleModels\Devices\Attributes\IAttributesManager $attributesManager;
-
-	/** @var DevicesModuleModels\DataStorage\IDevicesRepository */
-	private DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository;
-
-	/** @var DevicesModuleModels\DataStorage\IDevicePropertiesRepository */
-	private DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository;
-
-	/** @var DevicesModuleModels\DataStorage\IDeviceAttributesRepository */
-	private DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository;
-
-	/** @var Helpers\Database */
-	private Helpers\Database $databaseHelper;
-
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param DevicesModuleModels\Devices\IDevicesRepository $devicesRepository
-	 * @param DevicesModuleModels\Devices\IDevicesManager $devicesManager
-	 * @param DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository
-	 * @param DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager
-	 * @param DevicesModuleModels\Devices\Attributes\IAttributesRepository $attributesRepository
-	 * @param DevicesModuleModels\Devices\Attributes\IAttributesManager $attributesManager
-	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository
-	 * @param DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository
-	 * @param DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository
-	 * @param Helpers\Database $databaseHelper
-	 * @param Log\LoggerInterface|null $logger
-	 */
 	public function __construct(
-		DevicesModuleModels\Devices\IDevicesRepository $devicesRepository,
-		DevicesModuleModels\Devices\IDevicesManager $devicesManager,
-		DevicesModuleModels\Devices\Properties\IPropertiesRepository $propertiesRepository,
-		DevicesModuleModels\Devices\Properties\IPropertiesManager $propertiesManager,
-		DevicesModuleModels\Devices\Attributes\IAttributesRepository $attributesRepository,
-		DevicesModuleModels\Devices\Attributes\IAttributesManager $attributesManager,
-		DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository,
-		DevicesModuleModels\DataStorage\IDevicePropertiesRepository $propertiesDataStorageRepository,
-		DevicesModuleModels\DataStorage\IDeviceAttributesRepository $attributesDataStorageRepository,
-		Helpers\Database $databaseHelper,
-		?Log\LoggerInterface $logger = null
-	) {
-		$this->devicesRepository = $devicesRepository;
-		$this->devicesManager = $devicesManager;
-		$this->propertiesRepository = $propertiesRepository;
-		$this->propertiesManager = $propertiesManager;
-		$this->attributesRepository = $attributesRepository;
-		$this->attributesManager = $attributesManager;
-
-		$this->devicesDataStorageRepository = $devicesDataStorageRepository;
-		$this->propertiesDataStorageRepository = $propertiesDataStorageRepository;
-		$this->attributesDataStorageRepository = $attributesDataStorageRepository;
-
-		$this->databaseHelper = $databaseHelper;
-
+		private readonly DevicesModuleModels\Devices\DevicesRepository $devicesRepository,
+		private readonly DevicesModuleModels\Devices\DevicesManager $devicesManager,
+		private readonly DevicesModuleModels\Devices\Properties\PropertiesRepository $propertiesRepository,
+		private readonly DevicesModuleModels\Devices\Properties\PropertiesManager $propertiesManager,
+		private readonly DevicesModuleModels\Devices\Attributes\AttributesRepository $attributesRepository,
+		private readonly DevicesModuleModels\Devices\Attributes\AttributesManager $attributesManager,
+		private readonly DevicesModuleModels\DataStorage\DevicesRepository $devicesDataStorageRepository,
+		private readonly DevicesModuleModels\DataStorage\DevicePropertiesRepository $propertiesDataStorageRepository,
+		private readonly DevicesModuleModels\DataStorage\DeviceAttributesRepository $attributesDataStorageRepository,
+		private readonly Helpers\Database $databaseHelper,
+		Log\LoggerInterface|null $logger = null,
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function consume(Entities\Messages\Entity $entity): bool
 	{
@@ -130,7 +74,7 @@ final class Info implements Consumer
 
 		$deviceItem = $this->devicesDataStorageRepository->findByIdentifier(
 			$entity->getConnector(),
-			$entity->getIdentifier()
+			$entity->getIdentifier(),
 		);
 
 		if ($deviceItem === null) {
@@ -138,18 +82,19 @@ final class Info implements Consumer
 		}
 
 		if ($deviceItem->getName() === null && $deviceItem->getName() !== $entity->getType()) {
-			/** @var Entities\ShellyDevice|null $deviceEntity */
+			/** @var mixed $deviceEntity */
 			$deviceEntity = $this->databaseHelper->query(
-				function () use ($deviceItem): ?Entities\ShellyDevice {
-					$findDeviceQuery = new DevicesModuleQueries\FindDevicesQuery();
+				function () use ($deviceItem): Entities\ShellyDevice|null {
+					$findDeviceQuery = new DevicesModuleQueries\FindDevices();
 					$findDeviceQuery->byId($deviceItem->getId());
 
-					/** @var Entities\ShellyDevice|null $deviceEntity */
 					$deviceEntity = $this->devicesRepository->findOneBy($findDeviceQuery);
+					assert($deviceEntity instanceof Entities\ShellyDevice || $deviceEntity === null);
 
 					return $deviceEntity;
-				}
+				},
 			);
+			assert($deviceEntity instanceof Entities\ShellyDevice || $deviceEntity === null);
 
 			if ($deviceEntity === null) {
 				return true;
@@ -165,39 +110,39 @@ final class Info implements Consumer
 		$this->setDeviceProperty(
 			$deviceItem->getId(),
 			$entity->getIpAddress(),
-			Types\DevicePropertyIdentifier::IDENTIFIER_IP_ADDRESS
+			Types\DevicePropertyIdentifier::IDENTIFIER_IP_ADDRESS,
 		);
 		$this->setDeviceProperty(
 			$deviceItem->getId(),
 			$entity->isAuthEnabled(),
-			Types\DevicePropertyIdentifier::IDENTIFIER_AUTH_ENABLED
+			Types\DevicePropertyIdentifier::IDENTIFIER_AUTH_ENABLED,
 		);
 		$this->setDeviceAttribute(
 			$deviceItem->getId(),
 			$entity->getType(),
-			Types\DeviceAttributeIdentifier::IDENTIFIER_MODEL
+			Types\DeviceAttributeIdentifier::IDENTIFIER_MODEL,
 		);
 		$this->setDeviceAttribute(
 			$deviceItem->getId(),
 			$entity->getMacAddress(),
-			Types\DeviceAttributeIdentifier::IDENTIFIER_MAC_ADDRESS
+			Types\DeviceAttributeIdentifier::IDENTIFIER_MAC_ADDRESS,
 		);
 		$this->setDeviceAttribute(
 			$deviceItem->getId(),
 			$entity->getFirmwareVersion(),
-			Types\DeviceAttributeIdentifier::IDENTIFIER_FIRMWARE_VERSION
+			Types\DeviceAttributeIdentifier::IDENTIFIER_FIRMWARE_VERSION,
 		);
 
 		$this->logger->debug(
 			'Consumed device info message',
 			[
 				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'info-message-consumer',
+				'type' => 'info-message-consumer',
 				'device' => [
 					'id' => $deviceItem->getId()->toString(),
 				],
-				'data'   => $entity->toArray(),
-			]
+				'data' => $entity->toArray(),
+			],
 		);
 
 		return true;

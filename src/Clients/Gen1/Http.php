@@ -35,6 +35,10 @@ use React\EventLoop;
 use React\Http as ReactHttp;
 use React\Promise;
 use Throwable;
+use function array_key_exists;
+use function in_array;
+use function is_string;
+use function preg_match;
 
 /**
  * HTTP api client
@@ -50,6 +54,7 @@ final class Http
 	use Nette\SmartObject;
 
 	private const SHELLY_ENDPOINT = 'http://ADDRESS/shelly';
+
 	// private const STATUS_ENDPOINT = 'http://ADDRESS/status';
 	// private const SETTINGS_ENDPOINT = 'http://ADDRESS/settings';
 	private const DESCRIPTION_ENDPOINT = 'http://ADDRESS/cit/d';
@@ -57,21 +62,25 @@ final class Http
 	private const SET_CHANNEL_SENSOR_ENDPOINT = 'http://ADDRESS/CHANNEL/INDEX?ACTION=VALUE';
 
 	private const CHANNEL_BLOCK = '/^(?P<identifier>[0-9]+)_(?P<description>[a-zA-Z0-9_]+)$/';
+
 	private const PROPERTY_SENSOR = '/^(?P<identifier>[0-9]+)_(?P<type>[a-zA-Z]{1,3})_(?P<description>[a-zA-Z0-9]+)$/';
 
 	private const BLOCK_PARTS = '/^(?P<channelName>[a-zA-Z]+)_(?P<channelIndex>[0-9_]+)$/';
 
 	private const CMD_SHELLY = 'shelly';
+
 	// private const CMD_SETTINGS = 'settings';
 	private const CMD_DESCRIPTION = 'description';
+
 	// private const CMD_STATUS = 'status';
 
 	private const SENDING_CMD_DELAY = 120;
 
 	private const HANDLER_START_DELAY = 2;
+
 	private const HANDLER_PROCESSING_INTERVAL = 0.01;
 
-	/** @var string[] */
+	/** @var Array<string> */
 	private array $processedDevices = [];
 
 	/** @var Array<string, Array<string, DateTimeInterface|bool>> */
@@ -80,113 +89,32 @@ final class Http
 	/** @var Array<string, DateTimeInterface> */
 	private array $processedProperties = [];
 
-	/** @var EventLoop\TimerInterface|null */
-	private ?EventLoop\TimerInterface $handlerTimer;
+	private EventLoop\TimerInterface|null $handlerTimer;
 
-	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
+	private ReactHttp\Browser|null $browser = null;
 
-	/** @var API\Gen1Validator */
-	private API\Gen1Validator $validator;
-
-	/** @var API\Gen1Parser */
-	private API\Gen1Parser $parser;
-
-	/** @var API\Gen1Transformer */
-	private API\Gen1Transformer $transformer;
-
-	/** @var Helpers\Device */
-	private Helpers\Device $deviceHelper;
-
-	/** @var Helpers\Property */
-	private Helpers\Property $propertyStateHelper;
-
-	/** @var Consumers\Messages */
-	private Consumers\Messages $consumer;
-
-	/** @var ReactHttp\Browser|null */
-	private ?ReactHttp\Browser $browser = null;
-
-	/** @var DevicesModuleModels\DataStorage\IDevicesRepository */
-	private DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository;
-
-	/** @var DevicesModuleModels\DataStorage\IChannelsRepository */
-	private DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository;
-
-	/** @var DevicesModuleModels\DataStorage\IChannelPropertiesRepository */
-	private DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository;
-
-	/** @var DevicesModuleModels\States\DeviceConnectionStateManager */
-	private DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager;
-
-	/** @var DateTimeFactory\DateTimeFactory */
-	private DateTimeFactory\DateTimeFactory $dateTimeFactory;
-
-	/** @var EventLoop\LoopInterface */
-	private EventLoop\LoopInterface $eventLoop;
-
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 * @param API\Gen1Validator $validator
-	 * @param API\Gen1Parser $parser
-	 * @param API\Gen1Transformer $transformer
-	 * @param Helpers\Device $deviceHelper
-	 * @param Helpers\Property $propertyStateHelper
-	 * @param Consumers\Messages $consumer
-	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository
-	 * @param DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository
-	 * @param DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository
-	 * @param DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager
-	 * @param DateTimeFactory\DateTimeFactory $dateTimeFactory
-	 * @param EventLoop\LoopInterface $eventLoop
-	 * @param Log\LoggerInterface|null $logger
-	 */
 	public function __construct(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		API\Gen1Validator $validator,
-		API\Gen1Parser $parser,
-		API\Gen1Transformer $transformer,
-		Helpers\Device $deviceHelper,
-		Helpers\Property $propertyStateHelper,
-		Consumers\Messages $consumer,
-		DevicesModuleModels\DataStorage\IDevicesRepository $devicesRepository,
-		DevicesModuleModels\DataStorage\IChannelsRepository $channelsRepository,
-		DevicesModuleModels\DataStorage\IChannelPropertiesRepository $channelPropertiesRepository,
-		DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager,
-		DateTimeFactory\DateTimeFactory $dateTimeFactory,
-		EventLoop\LoopInterface $eventLoop,
-		?Log\LoggerInterface $logger = null
-	) {
-		$this->connector = $connector;
-
-		$this->validator = $validator;
-		$this->parser = $parser;
-		$this->transformer = $transformer;
-
-		$this->deviceHelper = $deviceHelper;
-		$this->propertyStateHelper = $propertyStateHelper;
-		$this->consumer = $consumer;
-
-		$this->devicesRepository = $devicesRepository;
-
-		$this->channelsRepository = $channelsRepository;
-		$this->channelPropertiesRepository = $channelPropertiesRepository;
-
-		$this->deviceConnectionStateManager = $deviceConnectionStateManager;
-
-		$this->dateTimeFactory = $dateTimeFactory;
-
-		$this->eventLoop = $eventLoop;
-
+		private readonly MetadataEntities\DevicesModule\Connector $connector,
+		private readonly API\Gen1Validator $validator,
+		private readonly API\Gen1Parser $parser,
+		private readonly API\Gen1Transformer $transformer,
+		private readonly Helpers\Device $deviceHelper,
+		private readonly Helpers\Property $propertyStateHelper,
+		private readonly Consumers\Messages $consumer,
+		private readonly DevicesModuleModels\DataStorage\DevicesRepository $devicesRepository,
+		private readonly DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
+		private readonly DevicesModuleModels\DataStorage\ChannelPropertiesRepository $channelPropertiesRepository,
+		private readonly DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager,
+		private readonly DateTimeFactory\Factory $dateTimeFactory,
+		private readonly EventLoop\LoopInterface $eventLoop,
+		Log\LoggerInterface|null $logger = null,
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
-	/**
-	 * @return void
-	 */
 	public function connect(): void
 	{
 		$this->browser = new ReactHttp\Browser($this->eventLoop);
@@ -195,13 +123,10 @@ final class Http
 			self::HANDLER_START_DELAY,
 			function (): void {
 				$this->registerLoopHandler();
-			}
+			},
 		);
 	}
 
-	/**
-	 * @return void
-	 */
 	public function disconnect(): void
 	{
 		if ($this->handlerTimer !== null) {
@@ -210,15 +135,15 @@ final class Http
 	}
 
 	/**
-	 * @return void
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 * @throws Throwable
 	 */
 	private function handleCommunication(): void
 	{
 		foreach ($this->processedProperties as $index => $processedProperty) {
-			if (((float) $this->dateTimeFactory->getNow()->format('Uv') - (float) $processedProperty->format('Uv')) >= 500) {
+			if ((float) $this->dateTimeFactory->getNow()->format('Uv') - (float) $processedProperty->format(
+				'Uv',
+			) >= 500) {
 				unset($this->processedProperties[$index]);
 			}
 		}
@@ -226,14 +151,14 @@ final class Http
 		foreach ($this->devicesRepository->findAllByConnector($this->connector->getId()) as $device) {
 			$ipAddress = $this->deviceHelper->getConfiguration(
 				$device->getId(),
-				Types\DevicePropertyIdentifier::get(Types\DevicePropertyIdentifier::IDENTIFIER_IP_ADDRESS)
+				Types\DevicePropertyIdentifier::get(Types\DevicePropertyIdentifier::IDENTIFIER_IP_ADDRESS),
 			);
 
 			if (
 				!in_array($device->getId()->toString(), $this->processedDevices, true)
 				&& is_string($ipAddress)
 				&& !$this->deviceConnectionStateManager->getState($device)
-					->equalsValue(MetadataTypes\ConnectionStateType::STATE_STOPPED)
+					->equalsValue(MetadataTypes\ConnectionState::STATE_STOPPED)
 			) {
 				$this->processedDevices[] = $device->getId()->toString();
 
@@ -251,14 +176,10 @@ final class Http
 	}
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 *
-	 * @return bool
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 * @throws Throwable
 	 */
-	private function processDevice(MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): bool
+	private function processDevice(MetadataEntities\DevicesModule\Device $device): bool
 	{
 		if ($this->readDeviceData(self::CMD_SHELLY, $device)) {
 			return true;
@@ -270,7 +191,7 @@ final class Http
 
 		if (
 			$this->deviceConnectionStateManager->getState($device)
-				->equalsValue(MetadataTypes\ConnectionStateType::STATE_CONNECTED)
+				->equalsValue(MetadataTypes\ConnectionState::STATE_CONNECTED)
 		) {
 			return $this->writeChannelsProperty($device);
 		}
@@ -279,15 +200,10 @@ final class Http
 	}
 
 	/**
-	 * @param string $cmd
-	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 *
-	 * @return bool
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 * @throws Throwable
 	 */
-	private function readDeviceData(string $cmd, MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): bool
+	private function readDeviceData(string $cmd, MetadataEntities\DevicesModule\Device $device): bool
 	{
 		$httpCmdResult = null;
 
@@ -330,19 +246,19 @@ final class Http
 					if ($ex->getCode() >= 400 && $ex->getCode() < 499) {
 						$this->deviceConnectionStateManager->setState(
 							$device,
-							MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_STOPPED)
+							MetadataTypes\ConnectionState::get(MetadataTypes\ConnectionState::STATE_STOPPED),
 						);
 
 					} elseif ($ex->getCode() >= 500 && $ex->getCode() < 599) {
 						$this->deviceConnectionStateManager->setState(
 							$device,
-							MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_LOST)
+							MetadataTypes\ConnectionState::get(MetadataTypes\ConnectionState::STATE_LOST),
 						);
 
 					} else {
 						$this->deviceConnectionStateManager->setState(
 							$device,
-							MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_UNKNOWN)
+							MetadataTypes\ConnectionState::get(MetadataTypes\ConnectionState::STATE_UNKNOWN),
 						);
 					}
 				}
@@ -350,7 +266,7 @@ final class Http
 				if ($ex instanceof Exceptions\Runtime) {
 					$this->deviceConnectionStateManager->setState(
 						$device,
-						MetadataTypes\ConnectionStateType::get(MetadataTypes\ConnectionStateType::STATE_LOST)
+						MetadataTypes\ConnectionState::get(MetadataTypes\ConnectionState::STATE_LOST),
 					);
 				}
 
@@ -361,26 +277,35 @@ final class Http
 	}
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 *
-	 * @return bool
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 * @throws Throwable
 	 */
-	private function writeChannelsProperty(MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): bool
+	private function writeChannelsProperty(MetadataEntities\DevicesModule\Device $device): bool
 	{
 		$now = $this->dateTimeFactory->getNow();
 
 		foreach ($this->channelsRepository->findAllByDevice($device->getId()) as $channel) {
-			foreach ($this->channelPropertiesRepository->findAllByChannel($channel->getId(), MetadataEntities\Modules\DevicesModule\ChannelDynamicPropertyEntity::class) as $property) {
+			foreach ($this->channelPropertiesRepository->findAllByChannel(
+				$channel->getId(),
+				MetadataEntities\DevicesModule\ChannelDynamicProperty::class,
+			) as $property) {
 				if (
 					$property->isSettable()
 					&& $property->getExpectedValue() !== null
 					&& $property->isPending()
 				) {
-					$pending = is_string($property->getPending()) ? Utils\DateTime::createFromFormat(DateTimeInterface::ATOM, $property->getPending()) : true;
-					$debounce = array_key_exists($property->getId()->toString(), $this->processedProperties) ? $this->processedProperties[$property->getId()->toString()] : false;
+					$pending = is_string($property->getPending())
+						? Utils\DateTime::createFromFormat(
+							DateTimeInterface::ATOM,
+							$property->getPending(),
+						)
+						: true;
+					$debounce = array_key_exists(
+						$property->getId()->toString(),
+						$this->processedProperties,
+					)
+						? $this->processedProperties[$property->getId()->toString()]
+						: false;
 
 					if (
 						$debounce !== false
@@ -395,7 +320,7 @@ final class Http
 						$pending === true
 						|| (
 							$pending !== false
-							&& (float) $now->format('Uv') - (float) $pending->format('Uv') > 2000
+							&& (float) $now->format('Uv') - (float) $pending->format('Uv') > 2_000
 						)
 					) {
 						$this->processedProperties[$property->getId()->toString()] = $now;
@@ -403,7 +328,7 @@ final class Http
 						$valueToWrite = $this->transformer->transformValueToDevice(
 							$property->getDataType(),
 							$property->getFormat(),
-							$property->getExpectedValue()
+							$property->getExpectedValue(),
 						);
 
 						if ($valueToWrite === null) {
@@ -414,14 +339,14 @@ final class Http
 							$device,
 							$channel,
 							$property,
-							$valueToWrite
+							$valueToWrite,
 						)
 							->then(function () use ($property): void {
 								$this->propertyStateHelper->setValue(
 									$property,
 									Utils\ArrayHash::from([
 										'pending' => $this->dateTimeFactory->getNow()->format(DateTimeInterface::ATOM),
-									])
+									]),
 								);
 							})
 							->otherwise(function (Throwable $ex) use ($device, $channel, $property): void {
@@ -431,40 +356,40 @@ final class Http
 											$property,
 											Utils\ArrayHash::from([
 												'expectedValue' => null,
-												'pending'       => false,
-											])
+												'pending' => false,
+											]),
 										);
 
 										$this->logger->warning(
 											'Expected value could not be set',
 											[
-												'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-												'type'      => 'http-client',
+												'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+												'type' => 'http-client',
 												'exception' => [
 													'message' => $ex->getMessage(),
-													'code'    => $ex->getCode(),
+													'code' => $ex->getCode(),
 												],
 												'connector' => [
 													'id' => $this->connector->getId()->toString(),
 												],
-												'device'    => [
+												'device' => [
 													'id' => $device->getId()->toString(),
 												],
-												'channel'   => [
+												'channel' => [
 													'id' => $channel->getId()->toString(),
 												],
-												'property'  => [
+												'property' => [
 													'id' => $property->getId()->toString(),
 												],
-											]
+											],
 										);
 
 									} elseif ($ex->getCode() >= 500 && $ex->getCode() < 599) {
 										$this->deviceConnectionStateManager->setState(
 											$device,
-											MetadataTypes\ConnectionStateType::get(
-												MetadataTypes\ConnectionStateType::STATE_LOST
-											)
+											MetadataTypes\ConnectionState::get(
+												MetadataTypes\ConnectionState::STATE_LOST,
+											),
 										);
 									}
 								}
@@ -482,16 +407,13 @@ final class Http
 	}
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 *
-	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 * @throws Throwable
 	 */
 	private function readDeviceInfo(
-		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface {
+		MetadataEntities\DevicesModule\Device $device,
+	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface
+	{
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
@@ -503,8 +425,8 @@ final class Http
 				self::SHELLY_ENDPOINT,
 				[
 					'/ADDRESS/' => $address,
-				]
-			)
+				],
+			),
 		)
 			->then(function (Message\ResponseInterface $response) use ($device, $address): void {
 				$message = $response->getBody()->getContents();
@@ -516,23 +438,23 @@ final class Http
 								$this->connector->getId(),
 								$device->getIdentifier(),
 								$address,
-								$message
-							)
+								$message,
+							),
 						);
 					} catch (Exceptions\ParseMessage $ex) {
 						$this->logger->warning(
 							'Received message could not be parsed into entity',
 							[
-								'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-								'type'      => 'http-client',
+								'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+								'type' => 'http-client',
 								'exception' => [
 									'message' => $ex->getMessage(),
-									'code'    => $ex->getCode(),
+									'code' => $ex->getCode(),
 								],
 								'connector' => [
 									'id' => $this->connector->getId()->toString(),
 								],
-							]
+							],
 						);
 					}
 				}
@@ -541,25 +463,25 @@ final class Http
 				$this->logger->error(
 					'Failed to call device http api',
 					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'http-client',
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type' => 'http-client',
 						'exception' => [
 							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
+							'code' => $ex->getCode(),
 						],
-						'endpoint'  => Utils\Strings::replace(
+						'endpoint' => Utils\Strings::replace(
 							self::SHELLY_ENDPOINT,
 							[
 								'/ADDRESS/' => $address,
-							]
+							],
 						),
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
-						'device'    => [
+						'device' => [
 							'id' => $device->getId()->toString(),
 						],
-					]
+					],
 				);
 
 				throw $ex;
@@ -567,16 +489,13 @@ final class Http
 	}
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 *
-	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 * @throws Throwable
 	 */
 	private function readDeviceDescription(
-		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface {
+		MetadataEntities\DevicesModule\Device $device,
+	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface
+	{
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
@@ -588,8 +507,8 @@ final class Http
 				self::DESCRIPTION_ENDPOINT,
 				[
 					'/ADDRESS/' => $address,
-				]
-			)
+				],
+			),
 		)
 			->then(function (Message\ResponseInterface $response) use ($device, $address): void {
 				$message = $response->getBody()->getContents();
@@ -601,23 +520,23 @@ final class Http
 								$this->connector->getId(),
 								$device->getIdentifier(),
 								$address,
-								$message
-							)
+								$message,
+							),
 						);
 					} catch (Exceptions\ParseMessage $ex) {
 						$this->logger->warning(
 							'Received message could not be parsed into entity',
 							[
-								'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-								'type'      => 'http-client',
+								'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+								'type' => 'http-client',
 								'exception' => [
 									'message' => $ex->getMessage(),
-									'code'    => $ex->getCode(),
+									'code' => $ex->getCode(),
 								],
 								'connector' => [
 									'id' => $this->connector->getId()->toString(),
 								],
-							]
+							],
 						);
 					}
 				}
@@ -626,25 +545,25 @@ final class Http
 				$this->logger->error(
 					'Failed to call device http api',
 					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'http-client',
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type' => 'http-client',
 						'exception' => [
 							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
+							'code' => $ex->getCode(),
 						],
-						'endpoint'  => Utils\Strings::replace(
+						'endpoint' => Utils\Strings::replace(
 							self::DESCRIPTION_ENDPOINT,
 							[
 								'/ADDRESS/' => $address,
-							]
+							],
 						),
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
-						'device'    => [
+						'device' => [
 							'id' => $device->getId()->toString(),
 						],
-					]
+					],
 				);
 
 				throw $ex;
@@ -652,22 +571,16 @@ final class Http
 	}
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 * @param MetadataEntities\Modules\DevicesModule\IChannelEntity $channel
-	 * @param MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity $property
-	 * @param float|bool|int|string $valueToWrite
-	 *
-	 * @return Promise\ExtendedPromiseInterface|Promise\PromiseInterface
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 * @throws Throwable
 	 */
 	private function writeSensor(
-		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
-		MetadataEntities\Modules\DevicesModule\IChannelEntity $channel,
-		MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity $property,
-		float|bool|int|string $valueToWrite
-	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface {
+		MetadataEntities\DevicesModule\Device $device,
+		MetadataEntities\DevicesModule\Channel $channel,
+		MetadataEntities\DevicesModule\ChannelDynamicProperty $property,
+		float|bool|int|string $valueToWrite,
+	): Promise\ExtendedPromiseInterface|Promise\PromiseInterface
+	{
 		$address = $this->buildDeviceAddress($device);
 
 		if ($address === null) {
@@ -682,21 +595,21 @@ final class Http
 			$this->logger->error(
 				'Channel identifier is not in expected format',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'http-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'http-client',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-					'device'    => [
+					'device' => [
 						'id' => $device->getId()->toString(),
 					],
-					'channel'   => [
+					'channel' => [
 						'id' => $channel->getId()->toString(),
 					],
-					'property'  => [
+					'property' => [
 						'id' => $property->getId()->toString(),
 					],
-				]
+				],
 			);
 
 			return Promise\reject(new Exceptions\InvalidState('Channel identifier is not in expected format'));
@@ -710,25 +623,25 @@ final class Http
 			$this->logger->error(
 				'Channel - block description is not in expected format',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'http-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'http-client',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-					'device'    => [
+					'device' => [
 						'id' => $device->getId()->toString(),
 					],
-					'channel'   => [
+					'channel' => [
 						'id' => $channel->getId()->toString(),
 					],
-					'property'  => [
+					'property' => [
 						'id' => $property->getId()->toString(),
 					],
-				]
+				],
 			);
 
 			return Promise\reject(
-				new Exceptions\InvalidState('Channel - block description is not in expected format')
+				new Exceptions\InvalidState('Channel - block description is not in expected format'),
 			);
 		}
 
@@ -739,25 +652,25 @@ final class Http
 			$this->logger->error(
 				'Sensor action could not be created',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'http-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'http-client',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-					'device'    => [
+					'device' => [
 						'id' => $device->getId()->toString(),
 					],
-					'channel'   => [
+					'channel' => [
 						'id' => $channel->getId()->toString(),
 					],
-					'property'  => [
+					'property' => [
 						'id' => $property->getId()->toString(),
 					],
-				]
+				],
 			);
 
 			return Promise\reject(new Exceptions\InvalidState('Sensor action could not be created'));
@@ -770,11 +683,11 @@ final class Http
 				[
 					'/ADDRESS/' => $address,
 					'/CHANNEL/' => $blockMatches['channelName'],
-					'/INDEX/'   => $blockMatches['channelIndex'],
-					'/ACTION/'  => $sensorAction,
-					'/VALUE/'   => $valueToWrite,
-				]
-			)
+					'/INDEX/' => $blockMatches['channelIndex'],
+					'/ACTION/' => $sensorAction,
+					'/VALUE/' => $valueToWrite,
+				],
+			),
 		)
 			->otherwise(function (Throwable $ex) use (
 				$address,
@@ -783,40 +696,40 @@ final class Http
 				$valueToWrite,
 				$device,
 				$channel,
-				$property
+				$property,
 			): void {
 				$this->logger->error(
 					'Failed to call device http api',
 					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'http-client',
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type' => 'http-client',
 						'exception' => [
 							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
+							'code' => $ex->getCode(),
 						],
-						'endpoint'  => Utils\Strings::replace(
+						'endpoint' => Utils\Strings::replace(
 							self::SET_CHANNEL_SENSOR_ENDPOINT,
 							[
 								'/ADDRESS/' => $address,
 								'/CHANNEL/' => $blockMatches['channelName'],
-								'/INDEX/'   => $blockMatches['channelIndex'],
-								'/ACTION/'  => $sensorAction,
-								'/VALUE/'   => $valueToWrite,
-							]
+								'/INDEX/' => $blockMatches['channelIndex'],
+								'/ACTION/' => $sensorAction,
+								'/VALUE/' => $valueToWrite,
+							],
 						),
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
-						'device'    => [
+						'device' => [
 							'id' => $device->getId()->toString(),
 						],
-						'channel'   => [
+						'channel' => [
 							'id' => $channel->getId()->toString(),
 						],
-						'property'  => [
+						'property' => [
 							'id' => $property->getId()->toString(),
 						],
-					]
+					],
 				);
 
 				throw $ex;
@@ -824,9 +737,7 @@ final class Http
 	}
 
 	/**
-	 * @return ReactHttp\Browser
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 */
 	private function getBrowser(): ReactHttp\Browser
 	{
@@ -835,37 +746,32 @@ final class Http
 		}
 
 		if ($this->browser === null) {
-			throw new DevicesModuleExceptions\TerminateException('HTTP client could not be established');
+			throw new DevicesModuleExceptions\Terminate('HTTP client could not be established');
 		}
 
 		return $this->browser;
 	}
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
-	 *
-	 * @return string|null
-	 */
-	private function buildDeviceAddress(MetadataEntities\Modules\DevicesModule\IDeviceEntity $device): ?string
+	private function buildDeviceAddress(MetadataEntities\DevicesModule\Device $device): string|null
 	{
 		$ipAddress = $this->deviceHelper->getConfiguration(
 			$device->getId(),
-			Types\DevicePropertyIdentifier::get(Types\DevicePropertyIdentifier::IDENTIFIER_IP_ADDRESS)
+			Types\DevicePropertyIdentifier::get(Types\DevicePropertyIdentifier::IDENTIFIER_IP_ADDRESS),
 		);
 
 		if (!is_string($ipAddress)) {
 			$this->logger->error(
 				'Device IP address could not be determined',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'http-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'http-client',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-					'device'    => [
+					'device' => [
 						'id' => $device->getId()->toString(),
 					],
-				]
+				],
 			);
 
 			return null;
@@ -873,12 +779,12 @@ final class Http
 
 		$username = $this->deviceHelper->getConfiguration(
 			$device->getId(),
-			Types\DevicePropertyIdentifier::get(Types\DevicePropertyIdentifier::IDENTIFIER_USERNAME)
+			Types\DevicePropertyIdentifier::get(Types\DevicePropertyIdentifier::IDENTIFIER_USERNAME),
 		);
 
 		$password = $this->deviceHelper->getConfiguration(
 			$device->getId(),
-			Types\DevicePropertyIdentifier::get(Types\DevicePropertyIdentifier::IDENTIFIER_PASSWORD)
+			Types\DevicePropertyIdentifier::get(Types\DevicePropertyIdentifier::IDENTIFIER_PASSWORD),
 		);
 
 		if (is_string($username) && is_string($password)) {
@@ -888,14 +794,10 @@ final class Http
 		return $ipAddress;
 	}
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity $property
-	 *
-	 * @return string
-	 */
 	private function buildSensorAction(
-		MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity $property
-	): string {
+		MetadataEntities\DevicesModule\ChannelDynamicProperty $property,
+	): string
+	{
 		if (preg_match(self::PROPERTY_SENSOR, $property->getIdentifier(), $propertyMatches) !== 1) {
 			throw new Exceptions\InvalidState('Property identifier is not valid');
 		}
@@ -919,16 +821,13 @@ final class Http
 		return $propertyMatches['description'];
 	}
 
-	/**
-	 * @return void
-	 */
 	private function registerLoopHandler(): void
 	{
 		$this->handlerTimer = $this->eventLoop->addTimer(
 			self::HANDLER_PROCESSING_INTERVAL,
 			function (): void {
 				$this->handleCommunication();
-			}
+			},
 		);
 	}
 

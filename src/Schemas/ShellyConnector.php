@@ -22,32 +22,25 @@ use FastyBird\ShellyConnector\Entities;
 /**
  * Shelly connector entity schema
  *
+ * @phpstan-extends DevicesModuleSchemas\Connectors\Connector<Entities\ShellyConnector>
+ *
  * @package        FastyBird:ShellyConnector!
  * @subpackage     Schemas
- *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- *
- * @phpstan-extends DevicesModuleSchemas\Connectors\ConnectorSchema<Entities\ShellyConnector>
  */
-final class ShellyConnector extends DevicesModuleSchemas\Connectors\ConnectorSchema
+final class ShellyConnector extends DevicesModuleSchemas\Connectors\Connector
 {
 
 	/**
 	 * Define entity schema type string
 	 */
-	public const SCHEMA_TYPE = MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_SHELLY . '/connector/' . Entities\ShellyConnector::CONNECTOR_TYPE;
+	public const SCHEMA_TYPE = MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_SHELLY . '/connector/' . Entities\ShellyConnector::CONNECTOR_TYPE;
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getEntityClass(): string
 	{
 		return Entities\ShellyConnector::class;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getType(): string
 	{
 		return self::SCHEMA_TYPE;

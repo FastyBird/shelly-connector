@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * Light switch payload value types
@@ -32,12 +33,11 @@ class LightSwitchPayload extends Consistence\Enum\Enum
 	 * Define device states
 	 */
 	public const PAYLOAD_ON = 'on';
+
 	public const PAYLOAD_OFF = 'off';
+
 	public const PAYLOAD_TOGGLE = 'toggle';
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

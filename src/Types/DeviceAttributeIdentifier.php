@@ -17,6 +17,7 @@ namespace FastyBird\ShellyConnector\Types;
 
 use Consistence;
 use FastyBird\Metadata\Types as MetadataTypes;
+use function strval;
 
 /**
  * Device attribute identifier types
@@ -32,13 +33,12 @@ class DeviceAttributeIdentifier extends Consistence\Enum\Enum
 	/**
 	 * Define device states
 	 */
-	public const IDENTIFIER_FIRMWARE_VERSION = MetadataTypes\DeviceAttributeIdentifierType::IDENTIFIER_FIRMWARE_VERSION;
-	public const IDENTIFIER_MAC_ADDRESS = MetadataTypes\DeviceAttributeIdentifierType::IDENTIFIER_HARDWARE_MAC_ADDRESS;
-	public const IDENTIFIER_MODEL = MetadataTypes\DeviceAttributeIdentifierType::IDENTIFIER_HARDWARE_MODEL;
+	public const IDENTIFIER_FIRMWARE_VERSION = MetadataTypes\DeviceAttributeIdentifier::IDENTIFIER_FIRMWARE_VERSION;
 
-	/**
-	 * @return string
-	 */
+	public const IDENTIFIER_MAC_ADDRESS = MetadataTypes\DeviceAttributeIdentifier::IDENTIFIER_HARDWARE_MAC_ADDRESS;
+
+	public const IDENTIFIER_MODEL = MetadataTypes\DeviceAttributeIdentifier::IDENTIFIER_HARDWARE_MODEL;
+
 	public function __toString(): string
 	{
 		return strval(self::getValue());

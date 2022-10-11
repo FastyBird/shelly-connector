@@ -17,6 +17,8 @@ namespace FastyBird\ShellyConnector\Entities\Messages;
 
 use FastyBird\ShellyConnector\Types;
 use Ramsey\Uuid;
+use function array_map;
+use function array_merge;
 
 /**
  * Device status message entity
@@ -29,16 +31,8 @@ use Ramsey\Uuid;
 final class DeviceStatus extends Device
 {
 
-	/** @var ChannelStatus[] */
-	private array $channels;
-
 	/**
-	 * @param Types\MessageSource $source
-	 * @param Uuid\UuidInterface $connector
-	 * @param string $identifier
-	 * @param string $type
-	 * @param string $ipAddress
-	 * @param ChannelStatus[] $channels
+	 * @param Array<ChannelStatus> $channels
 	 */
 	public function __construct(
 		Types\MessageSource $source,
@@ -46,15 +40,14 @@ final class DeviceStatus extends Device
 		string $identifier,
 		string $type,
 		string $ipAddress,
-		array $channels
-	) {
+		private array $channels,
+	)
+	{
 		parent::__construct($source, $connector, $identifier, $type, $ipAddress);
-
-		$this->channels = $channels;
 	}
 
 	/**
-	 * @return ChannelStatus[]
+	 * @return Array<ChannelStatus>
 	 */
 	public function getChannels(): array
 	{
@@ -67,9 +60,10 @@ final class DeviceStatus extends Device
 	public function toArray(): array
 	{
 		return array_merge(parent::toArray(), [
-			'channels' => array_map(function (ChannelStatus $channel): array {
-				return $channel->toArray();
-			}, $this->getChannels()),
+			'channels' => array_map(
+				static fn (ChannelStatus $channel): array => $channel->toArray(),
+				$this->getChannels(),
+			),
 		]);
 	}
 

@@ -17,6 +17,9 @@ namespace FastyBird\ShellyConnector\Entities\Messages;
 
 use FastyBird\ShellyConnector\Types;
 use Nette;
+use function array_map;
+use function array_unique;
+use const SORT_REGULAR;
 
 /**
  * Block description entity
@@ -31,73 +34,45 @@ final class BlockDescription implements Entity
 
 	use Nette\SmartObject;
 
-	/** @var Types\MessageSource */
-	private Types\MessageSource $source;
-
-	/** @var int */
-	private int $identifier;
-
-	/** @var string */
-	private string $description;
-
-	/** @var SensorDescription[] */
+	/** @var Array<SensorDescription> */
 	private array $sensors;
 
 	/**
-	 * @param Types\MessageSource $source
-	 * @param int $identifier
-	 * @param string $description
-	 * @param SensorDescription[] $sensors
+	 * @param Array<SensorDescription> $sensors
 	 */
 	public function __construct(
-		Types\MessageSource $source,
-		int $identifier,
-		string $description,
-		array $sensors = []
-	) {
-		$this->source = $source;
-		$this->identifier = $identifier;
-		$this->description = $description;
+		private readonly Types\MessageSource $source,
+		private readonly int $identifier,
+		private readonly string $description,
+		array $sensors = [],
+	)
+	{
 		$this->sensors = array_unique($sensors, SORT_REGULAR);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getSource(): Types\MessageSource
 	{
 		return $this->source;
 	}
 
-	/**
-	 * @return int
-	 */
 	public function getIdentifier(): int
 	{
 		return $this->identifier;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getDescription(): string
 	{
 		return $this->description;
 	}
 
 	/**
-	 * @return SensorDescription[]
+	 * @return Array<SensorDescription>
 	 */
 	public function getSensors(): array
 	{
 		return $this->sensors;
 	}
 
-	/**
-	 * @param SensorDescription $sensor
-	 *
-	 * @return void
-	 */
 	public function addSensor(SensorDescription $sensor): void
 	{
 		$this->sensors[] = $sensor;
@@ -111,12 +86,13 @@ final class BlockDescription implements Entity
 	public function toArray(): array
 	{
 		return [
-			'source'      => $this->getSource()->getValue(),
-			'identifier'  => $this->getIdentifier(),
+			'source' => $this->getSource()->getValue(),
+			'identifier' => $this->getIdentifier(),
 			'description' => $this->getDescription(),
-			'sensors'     => array_map(function (SensorDescription $sensor): array {
-				return $sensor->toArray();
-			}, $this->getSensors()),
+			'sensors' => array_map(
+				static fn (SensorDescription $sensor): array => $sensor->toArray(),
+				$this->getSensors(),
+			),
 		];
 	}
 

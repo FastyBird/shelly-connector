@@ -39,47 +39,21 @@ final class Status implements Consumer
 
 	use Nette\SmartObject;
 
-	/** @var DevicesModuleModels\DataStorage\IDevicesRepository */
-	private DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository;
-
-	/** @var DevicesModuleModels\States\DeviceConnectionStateManager */
-	private DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager;
-
-	/** @var Mappers\Sensor */
-	private Mappers\Sensor $sensorMapper;
-
-	/** @var Helpers\Property */
-	private Helpers\Property $propertyStateHelper;
-
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository
-	 * @param DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager
-	 * @param Mappers\Sensor $sensorMapper
-	 * @param Helpers\Property $propertyStateHelper
-	 * @param Log\LoggerInterface|null $logger
-	 */
 	public function __construct(
-		DevicesModuleModels\DataStorage\IDevicesRepository $devicesDataStorageRepository,
-		DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager,
-		Mappers\Sensor $sensorMapper,
-		Helpers\Property $propertyStateHelper,
-		?Log\LoggerInterface $logger
-	) {
-		$this->devicesDataStorageRepository = $devicesDataStorageRepository;
-
-		$this->deviceConnectionStateManager = $deviceConnectionStateManager;
-
-		$this->sensorMapper = $sensorMapper;
-		$this->propertyStateHelper = $propertyStateHelper;
-
+		private readonly DevicesModuleModels\DataStorage\DevicesRepository $devicesDataStorageRepository,
+		private readonly DevicesModuleModels\States\DeviceConnectionStateManager $deviceConnectionStateManager,
+		private readonly Mappers\Sensor $sensorMapper,
+		private readonly Helpers\Property $propertyStateHelper,
+		Log\LoggerInterface|null $logger,
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function consume(Entities\Messages\Entity $entity): bool
 	{
@@ -89,7 +63,7 @@ final class Status implements Consumer
 
 		$deviceItem = $this->devicesDataStorageRepository->findByIdentifier(
 			$entity->getConnector(),
-			$entity->getIdentifier()
+			$entity->getIdentifier(),
 		);
 
 		if ($deviceItem === null) {
@@ -99,12 +73,12 @@ final class Status implements Consumer
 		// Check device state...
 		if (
 			!$this->deviceConnectionStateManager->getState($deviceItem)
-				->equalsValue(Metadata\Types\ConnectionStateType::STATE_CONNECTED)
+				->equalsValue(Metadata\Types\ConnectionState::STATE_CONNECTED)
 		) {
 			// ... and if it is not ready, set it to ready
 			$this->deviceConnectionStateManager->setState(
 				$deviceItem,
-				Metadata\Types\ConnectionStateType::get(Metadata\Types\ConnectionStateType::STATE_CONNECTED)
+				Metadata\Types\ConnectionState::get(Metadata\Types\ConnectionState::STATE_CONNECTED),
 			);
 		}
 
@@ -113,7 +87,7 @@ final class Status implements Consumer
 				$property = $this->sensorMapper->findProperty(
 					$entity->getConnector(),
 					$entity->getIdentifier(),
-					$sensor->getIdentifier()
+					$sensor->getIdentifier(),
 				);
 
 				if ($property !== null) {
@@ -122,13 +96,13 @@ final class Status implements Consumer
 							$property->getDataType(),
 							$sensor->getValue(),
 							$property->getFormat(),
-							$property->getInvalid()
-						)
+							$property->getInvalid(),
+						),
 					);
 
 					$this->propertyStateHelper->setValue($property, Utils\ArrayHash::from([
 						'actualValue' => $actualValue,
-						'valid'       => true,
+						'valid' => true,
 					]));
 				}
 			}
@@ -138,12 +112,12 @@ final class Status implements Consumer
 			'Consumed device status message',
 			[
 				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'   => 'status-message-consumer',
+				'type' => 'status-message-consumer',
 				'device' => [
 					'id' => $deviceItem->getId()->toString(),
 				],
-				'data'   => $entity->toArray(),
-			]
+				'data' => $entity->toArray(),
+			],
 		);
 
 		return true;

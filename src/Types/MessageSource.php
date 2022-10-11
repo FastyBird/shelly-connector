@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * Message client source types
@@ -32,13 +33,13 @@ class MessageSource extends Consistence\Enum\Enum
 	 * Define versions
 	 */
 	public const SOURCE_GEN_1_COAP = 'gen_1_coap';
+
 	public const SOURCE_GEN_1_HTTP = 'gen_1_http';
+
 	public const SOURCE_GEN_1_MDNS = 'gen_1_mdns';
+
 	public const SOURCE_GEN_1_MQTT = 'gen_1_mqtt';
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

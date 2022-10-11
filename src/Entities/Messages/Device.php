@@ -32,77 +32,36 @@ abstract class Device implements Entity
 
 	use Nette\SmartObject;
 
-	/** @var Types\MessageSource */
-	private Types\MessageSource $source;
-
-	/** @var Uuid\UuidInterface */
-	private Uuid\UuidInterface $connector;
-
-	/** @var string */
-	private string $identifier;
-
-	/** @var string|null */
-	private ?string $type;
-
-	/** @var string */
-	private string $ipAddress;
-
-	/**
-	 * @param Types\MessageSource $source
-	 * @param Uuid\UuidInterface $connector
-	 * @param string $identifier
-	 * @param string|null $type
-	 * @param string $ipAddress
-	 */
 	public function __construct(
-		Types\MessageSource $source,
-		Uuid\UuidInterface $connector,
-		string $identifier,
-		?string $type,
-		string $ipAddress
-	) {
-		$this->source = $source;
-		$this->connector = $connector;
-		$this->identifier = $identifier;
-		$this->type = $type;
-		$this->ipAddress = $ipAddress;
+		private readonly Types\MessageSource $source,
+		private readonly Uuid\UuidInterface $connector,
+		private readonly string $identifier,
+		private readonly string|null $type,
+		private readonly string $ipAddress,
+	)
+	{
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getSource(): Types\MessageSource
 	{
 		return $this->source;
 	}
 
-	/**
-	 * @return Uuid\UuidInterface
-	 */
 	public function getConnector(): Uuid\UuidInterface
 	{
 		return $this->connector;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getIdentifier(): string
 	{
 		return $this->identifier;
 	}
 
-	/**
-	 * @return string|null
-	 */
-	public function getType(): ?string
+	public function getType(): string|null
 	{
 		return $this->type;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getIpAddress(): string
 	{
 		return $this->ipAddress;
@@ -114,9 +73,9 @@ abstract class Device implements Entity
 	public function toArray(): array
 	{
 		return [
-			'source'     => $this->getSource()->getValue(),
+			'source' => $this->getSource()->getValue(),
 			'identifier' => $this->getIdentifier(),
-			'type'       => $this->getType(),
+			'type' => $this->getType(),
 			'ip_address' => $this->getIpAddress(),
 		];
 	}

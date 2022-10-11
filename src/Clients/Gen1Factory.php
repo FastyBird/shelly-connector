@@ -31,11 +31,6 @@ interface Gen1Factory extends ClientFactory
 
 	public const VERSION = Types\ClientVersion::TYPE_GEN_1;
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 *
-	 * @return Gen1
-	 */
-	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Gen1;
+	public function create(MetadataEntities\DevicesModule\Connector $connector): Gen1;
 
 }

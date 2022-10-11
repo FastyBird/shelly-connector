@@ -17,6 +17,9 @@ namespace FastyBird\ShellyConnector\Entities\Messages;
 
 use FastyBird\ShellyConnector\Types;
 use Nette;
+use function array_map;
+use function array_unique;
+use const SORT_REGULAR;
 
 /**
  * Block status entity
@@ -31,59 +34,39 @@ final class ChannelStatus implements Entity
 
 	use Nette\SmartObject;
 
-	/** @var Types\MessageSource */
-	private Types\MessageSource $source;
-
-	/** @var int */
-	private int $channel;
-
-	/** @var SensorStatus[] */
+	/** @var Array<SensorStatus> */
 	private array $sensors;
 
 	/**
-	 * @param Types\MessageSource $source
-	 * @param int $channel
-	 * @param SensorStatus[] $sensors
+	 * @param Array<SensorStatus> $sensors
 	 */
 	public function __construct(
-		Types\MessageSource $source,
-		int $channel,
-		array $sensors = []
-	) {
-		$this->source = $source;
-		$this->channel = $channel;
+		private readonly Types\MessageSource $source,
+		private readonly int $channel,
+		array $sensors = [],
+	)
+	{
 		$this->sensors = array_unique($sensors, SORT_REGULAR);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getSource(): Types\MessageSource
 	{
 		return $this->source;
 	}
 
-	/**
-	 * @return int
-	 */
 	public function getChannel(): int
 	{
 		return $this->channel;
 	}
 
 	/**
-	 * @return SensorStatus[]
+	 * @return Array<SensorStatus>
 	 */
 	public function getSensors(): array
 	{
 		return $this->sensors;
 	}
 
-	/**
-	 * @param SensorStatus $sensor
-	 *
-	 * @return void
-	 */
 	public function addSensor(SensorStatus $sensor): void
 	{
 		$this->sensors[] = $sensor;
@@ -97,11 +80,9 @@ final class ChannelStatus implements Entity
 	public function toArray(): array
 	{
 		return [
-			'source'  => $this->getSource()->getValue(),
+			'source' => $this->getSource()->getValue(),
 			'channel' => $this->getChannel(),
-			'sensors' => array_map(function (SensorStatus $sensor): array {
-				return $sensor->toArray();
-			}, $this->getSensors()),
+			'sensors' => array_map(static fn (SensorStatus $sensor): array => $sensor->toArray(), $this->getSensors()),
 		];
 	}
 

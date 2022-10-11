@@ -25,6 +25,19 @@ use FastyBird\ShellyConnector\Types;
 use Nette;
 use Nette\Utils;
 use Ramsey\Uuid;
+use function array_key_exists;
+use function array_map;
+use function array_values;
+use function boolval;
+use function count;
+use function explode;
+use function floatval;
+use function in_array;
+use function intval;
+use function is_array;
+use function is_string;
+use function strval;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * Generation 1 devices messages parser
@@ -39,54 +52,23 @@ final class Gen1Parser
 
 	use Nette\SmartObject;
 
-	/** @var Gen1Validator */
-	private Gen1Validator $validator;
-
-	/** @var Gen1Transformer */
-	private Gen1Transformer $transformer;
-
-	/** @var Mappers\Sensor */
-	private Mappers\Sensor $sensorMapper;
-
-	/** @var MetadataSchemas\IValidator */
-	private MetadataSchemas\IValidator $schemaValidator;
-
-	/**
-	 * @param Gen1Validator $validator
-	 * @param Gen1Transformer $transformer
-	 * @param Mappers\Sensor $sensorMapper
-	 * @param MetadataSchemas\IValidator $schemaValidator
-	 */
 	public function __construct(
-		Gen1Validator $validator,
-		Gen1Transformer $transformer,
-		Mappers\Sensor $sensorMapper,
-		MetadataSchemas\IValidator $schemaValidator
-	) {
-		$this->validator = $validator;
-		$this->transformer = $transformer;
-
-		$this->sensorMapper = $sensorMapper;
-
-		$this->schemaValidator = $schemaValidator;
+		private readonly Gen1Validator $validator,
+		private readonly Gen1Transformer $transformer,
+		private readonly Mappers\Sensor $sensorMapper,
+		private readonly MetadataSchemas\Validator $schemaValidator,
+	)
+	{
 	}
 
-	/**
-	 * @param Uuid\UuidInterface $connector
-	 * @param string $address
-	 * @param string $type
-	 * @param string $identifier
-	 * @param string $message
-	 *
-	 * @return Entities\Messages\DeviceDescription
-	 */
 	public function parseCoapDescriptionMessage(
 		Uuid\UuidInterface $connector,
 		string $address,
 		string $type,
 		string $identifier,
-		string $message
-	): Entities\Messages\DeviceDescription {
+		string $message,
+	): Entities\Messages\DeviceDescription
+	{
 		if (!$this->validator->isValidCoapDescriptionMessage($message)) {
 			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
@@ -104,7 +86,7 @@ final class Gen1Parser
 
 		$blocks = $this->extractBlocksDescription(
 			Types\MessageSource::get(Types\MessageSource::SOURCE_GEN_1_COAP),
-			$parsedMessage
+			$parsedMessage,
 		);
 
 		return new Entities\Messages\DeviceDescription(
@@ -117,22 +99,14 @@ final class Gen1Parser
 		);
 	}
 
-	/**
-	 * @param Uuid\UuidInterface $connector
-	 * @param string $address
-	 * @param string $type
-	 * @param string $identifier
-	 * @param string $message
-	 *
-	 * @return Entities\Messages\DeviceStatus
-	 */
 	public function parseCoapStatusMessage(
 		Uuid\UuidInterface $connector,
 		string $address,
 		string $type,
 		string $identifier,
-		string $message
-	): Entities\Messages\DeviceStatus {
+		string $message,
+	): Entities\Messages\DeviceStatus
+	{
 		if (!$this->validator->isValidCoapStatusMessage($message)) {
 			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
@@ -164,14 +138,14 @@ final class Gen1Parser
 				if (!array_key_exists($channel, $channels)) {
 					$channels[$channel] = new Entities\Messages\ChannelStatus(
 						Types\MessageSource::get(Types\MessageSource::SOURCE_GEN_1_COAP),
-						$channel
+						$channel,
 					);
 				}
 
 				$property = $this->sensorMapper->findProperty(
 					$connector,
-					strval($identifier),
-					intval($sensorIdentifier)
+					$identifier,
+					intval($sensorIdentifier),
 				);
 
 				if ($property !== null) {
@@ -182,9 +156,9 @@ final class Gen1Parser
 							$this->transformer->transformValueFromDevice(
 								$property->getDataType(),
 								$property->getFormat(),
-								strval($sensorValue)
-							)
-						)
+								strval($sensorValue),
+							),
+						),
 					);
 				}
 			}
@@ -196,24 +170,17 @@ final class Gen1Parser
 			$identifier,
 			$type,
 			$address,
-			array_values($channels)
+			array_values($channels),
 		);
 	}
 
-	/**
-	 * @param Uuid\UuidInterface $connector
-	 * @param string $identifier
-	 * @param string $address
-	 * @param string $message
-	 *
-	 * @return Entities\Messages\DeviceInfo
-	 */
 	public function parseHttpShellyMessage(
 		Uuid\UuidInterface $connector,
 		string $identifier,
 		string $address,
-		string $message
-	): Entities\Messages\DeviceInfo {
+		string $message,
+	): Entities\Messages\DeviceInfo
+	{
 		if (!$this->validator->isValidHttpShellyMessage($message)) {
 			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
@@ -230,8 +197,7 @@ final class Gen1Parser
 		$parsedMessage = $this->schemaValidator->validate($message, $schema);
 
 		if (
-			!$parsedMessage instanceof Utils\ArrayHash
-			|| !$parsedMessage->offsetExists('type')
+			!$parsedMessage->offsetExists('type')
 			|| !$parsedMessage->offsetExists('mac')
 			|| !$parsedMessage->offsetExists('auth')
 			|| !$parsedMessage->offsetExists('fw')
@@ -247,24 +213,17 @@ final class Gen1Parser
 			Utils\Strings::lower(strval($parsedMessage->offsetGet('type'))),
 			strval($parsedMessage->offsetGet('mac')),
 			boolval($parsedMessage->offsetGet('auth')),
-			strval($parsedMessage->offsetGet('fw'))
+			strval($parsedMessage->offsetGet('fw')),
 		);
 	}
 
-	/**
-	 * @param Uuid\UuidInterface $connector
-	 * @param string $identifier
-	 * @param string $address
-	 * @param string $message
-	 *
-	 * @return Entities\Messages\DeviceDescription
-	 */
 	public function parseHttpDescriptionMessage(
 		Uuid\UuidInterface $connector,
 		string $identifier,
 		string $address,
-		string $message
-	): Entities\Messages\DeviceDescription {
+		string $message,
+	): Entities\Messages\DeviceDescription
+	{
 		if (!$this->validator->isValidHttpDescriptionMessage($message)) {
 			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
@@ -282,7 +241,7 @@ final class Gen1Parser
 
 		$blocks = $this->extractBlocksDescription(
 			Types\MessageSource::get(Types\MessageSource::SOURCE_GEN_1_HTTP),
-			$parsedMessage
+			$parsedMessage,
 		);
 
 		return new Entities\Messages\DeviceDescription(
@@ -296,15 +255,13 @@ final class Gen1Parser
 	}
 
 	/**
-	 * @param Types\MessageSource $source
-	 * @param Utils\ArrayHash $description
-	 *
-	 * @return Entities\Messages\BlockDescription[]
+	 * @return Array<Entities\Messages\BlockDescription>
 	 */
 	private function extractBlocksDescription(
 		Types\MessageSource $source,
-		Utils\ArrayHash $description
-	): array {
+		Utils\ArrayHash $description,
+	): array
+	{
 		if (!$description->offsetExists('blk') || !$description->offsetExists('sen')) {
 			return [];
 		}
@@ -355,7 +312,13 @@ final class Gen1Parser
 						$source,
 						strval($block->offsetGet('D')),
 						strval($sensor->offsetGet('D')),
-						$sensor->offsetExists('R') ? (is_array($sensor->offsetGet('R')) || $sensor->offsetGet('R') instanceof Utils\ArrayHash ? (array) $sensor->offsetGet('R') : strval($sensor->offsetGet('R'))) : null
+						$sensor->offsetExists('R') ? (is_array($sensor->offsetGet('R')) || $sensor->offsetGet(
+							'R',
+						) instanceof Utils\ArrayHash ? (array) $sensor->offsetGet(
+							'R',
+						) : strval(
+							$sensor->offsetGet('R'),
+						)) : null,
 					);
 
 					$sensorDescription = new Entities\Messages\SensorDescription(
@@ -364,11 +327,13 @@ final class Gen1Parser
 						Types\SensorType::get($sensor->offsetGet('T')),
 						strval($sensor->offsetGet('D')),
 						$sensorRange->getDataType(),
-						$sensor->offsetExists('U') && $sensor->offsetGet('U') !== null ? Types\SensorUnit::get($sensor->offsetGet('U')) : null,
+						$sensor->offsetExists('U') && $sensor->offsetGet('U') !== null ? Types\SensorUnit::get(
+							$sensor->offsetGet('U'),
+						) : null,
 						$sensorRange->getFormat(),
 						$sensorRange->getInvalid(),
 						false,
-						Types\WritableSensorType::isValidValue($sensor->offsetGet('D'))
+						Types\WritableSensorType::isValidValue($sensor->offsetGet('D')),
 					);
 
 					$blockDescription->addSensor($sensorDescription);
@@ -382,24 +347,24 @@ final class Gen1Parser
 	}
 
 	/**
-	 * @param Types\MessageSource $source
-	 * @param string $block
-	 * @param string $description
-	 * @param string|string[]|null $rawRange
-	 *
-	 * @return Entities\Messages\SensorRange
+	 * @param string|Array<string>|null $rawRange
 	 */
 	private function parseSensorRange(
 		Types\MessageSource $source,
 		string $block,
 		string $description,
-		string|array|null $rawRange
-	): Entities\Messages\SensorRange {
+		string|array|null $rawRange,
+	): Entities\Messages\SensorRange
+	{
 		$invalidValue = null;
 
 		if (is_array($rawRange) && count($rawRange) === 2) {
 			$normalValue = $rawRange[0];
-			$invalidValue = $rawRange[1] === (string) (int) $rawRange[1] ? intval($rawRange[1]) : ($rawRange[1] === (string) (float) $rawRange[1] ? floatval($rawRange[1]) : $rawRange[1]);
+			$invalidValue = $rawRange[1] === (string) (int) $rawRange[1]
+				? intval($rawRange[1])
+				: ($rawRange[1] === (string) (float) $rawRange[1] ? floatval(
+					$rawRange[1],
+				) : $rawRange[1]);
 
 		} elseif (is_string($rawRange)) {
 			$normalValue = $rawRange;
@@ -410,10 +375,10 @@ final class Gen1Parser
 				$this->adjustSensorDataType(
 					$block,
 					$description,
-					MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_UNKNOWN)
+					MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UNKNOWN),
 				),
 				$this->adjustSensorFormat($block, $description, null),
-				null
+				null,
 			);
 		}
 
@@ -423,10 +388,10 @@ final class Gen1Parser
 				$this->adjustSensorDataType(
 					$block,
 					$description,
-					MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_BOOLEAN)
+					MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_BOOLEAN),
 				),
 				$this->adjustSensorFormat($block, $description, null),
-				$invalidValue
+				$invalidValue,
 			);
 		}
 
@@ -436,10 +401,10 @@ final class Gen1Parser
 				$this->adjustSensorDataType(
 					$block,
 					$description,
-					MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_UCHAR)
+					MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
 				),
 				$this->adjustSensorFormat($block, $description, null),
-				$invalidValue
+				$invalidValue,
 			);
 		}
 
@@ -449,10 +414,10 @@ final class Gen1Parser
 				$this->adjustSensorDataType(
 					$block,
 					$description,
-					MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_USHORT)
+					MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_USHORT),
 				),
 				$this->adjustSensorFormat($block, $description, null),
-				$invalidValue
+				$invalidValue,
 			);
 		}
 
@@ -462,10 +427,10 @@ final class Gen1Parser
 				$this->adjustSensorDataType(
 					$block,
 					$description,
-					MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_UINT)
+					MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UINT),
 				),
 				$this->adjustSensorFormat($block, $description, null),
-				$invalidValue
+				$invalidValue,
 			);
 		}
 
@@ -475,10 +440,10 @@ final class Gen1Parser
 				$this->adjustSensorDataType(
 					$block,
 					$description,
-					MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_CHAR)
+					MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_CHAR),
 				),
 				$this->adjustSensorFormat($block, $description, null),
-				$invalidValue
+				$invalidValue,
 			);
 		}
 
@@ -488,10 +453,10 @@ final class Gen1Parser
 				$this->adjustSensorDataType(
 					$block,
 					$description,
-					MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_USHORT)
+					MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_USHORT),
 				),
 				$this->adjustSensorFormat($block, $description, null),
-				$invalidValue
+				$invalidValue,
 			);
 		}
 
@@ -501,10 +466,10 @@ final class Gen1Parser
 				$this->adjustSensorDataType(
 					$block,
 					$description,
-					MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_UINT)
+					MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UINT),
 				),
 				$this->adjustSensorFormat($block, $description, null),
-				$invalidValue
+				$invalidValue,
 			);
 		}
 
@@ -521,14 +486,14 @@ final class Gen1Parser
 					$this->adjustSensorDataType(
 						$block,
 						$description,
-						MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_INT)
+						MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_INT),
 					),
 					$this->adjustSensorFormat(
 						$block,
 						$description,
-						[intval($normalValueParts[0]), intval($normalValueParts[1])]
+						[intval($normalValueParts[0]), intval($normalValueParts[1])],
 					),
-					$invalidValue
+					$invalidValue,
 				);
 			}
 
@@ -542,14 +507,14 @@ final class Gen1Parser
 					$this->adjustSensorDataType(
 						$block,
 						$description,
-						MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_FLOAT)
+						MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_FLOAT),
 					),
 					$this->adjustSensorFormat(
 						$block,
 						$description,
-						[floatval($normalValueParts[0]), floatval($normalValueParts[1])]
+						[floatval($normalValueParts[0]), floatval($normalValueParts[1])],
 					),
-					$invalidValue
+					$invalidValue,
 				);
 			}
 
@@ -558,16 +523,14 @@ final class Gen1Parser
 				$this->adjustSensorDataType(
 					$block,
 					$description,
-					MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)
+					MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_ENUM),
 				),
 				$this->adjustSensorFormat(
 					$block,
 					$description,
-					array_map(function (string $item): string {
-						return Utils\Strings::trim($item);
-					}, $normalValueParts)
+					array_map(static fn (string $item): string => Utils\Strings::trim($item), $normalValueParts),
 				),
-				$invalidValue
+				$invalidValue,
 			);
 		}
 
@@ -576,61 +539,54 @@ final class Gen1Parser
 			$this->adjustSensorDataType(
 				$block,
 				$description,
-				MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_UNKNOWN)
+				MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UNKNOWN),
 			),
 			$this->adjustSensorFormat($block, $description, null),
 			null,
 		);
 	}
 
-	/**
-	 * @param string $block
-	 * @param string $description
-	 * @param MetadataTypes\DataTypeType $dataType
-	 *
-	 * @return MetadataTypes\DataTypeType
-	 */
 	private function adjustSensorDataType(
 		string $block,
 		string $description,
-		MetadataTypes\DataTypeType $dataType
-	): MetadataTypes\DataTypeType {
+		MetadataTypes\DataType $dataType,
+	): MetadataTypes\DataType
+	{
 		if (Utils\Strings::startsWith($block, 'relay') && Utils\Strings::lower($description) === 'output') {
-			return MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH);
+			return MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_SWITCH);
 		}
 
 		if (Utils\Strings::startsWith($block, 'light') && Utils\Strings::lower($description) === 'output') {
-			return MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH);
+			return MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_SWITCH);
 		}
 
 		return $dataType;
 	}
 
 	/**
-	 * @param string $block
-	 * @param string $description
-	 * @param string[]|int[]|float[]|null $format
+	 * @param Array<string>|Array<int>|Array<float>|null $format
 	 *
-	 * @return string[]|int[]|float[]|Array<int, Array<int, string|null>>|Array<int, int|null>|Array<int, float|null>|Array<int, MetadataTypes\SwitchPayloadType|string|Types\RelayPayload|null>|null
+	 * @return Array<string>|Array<int>|Array<float>|Array<int, Array<int, (string|null)>>|Array<int, (int|null)>|Array<int, (float|null)>|Array<int, (MetadataTypes\SwitchPayload|string|Types\RelayPayload|null)>|null
 	 */
 	private function adjustSensorFormat(
 		string $block,
 		string $description,
-		array|null $format
-	): ?array {
+		array|null $format,
+	): array|null
+	{
 		if (Utils\Strings::startsWith($block, 'relay') && Utils\Strings::lower($description) === 'output') {
 			return [
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_ON, '1', Types\RelayPayload::PAYLOAD_ON],
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_OFF, '0', Types\RelayPayload::PAYLOAD_OFF],
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_TOGGLE, null, Types\RelayPayload::PAYLOAD_TOGGLE],
+				[MetadataTypes\SwitchPayload::PAYLOAD_ON, '1', Types\RelayPayload::PAYLOAD_ON],
+				[MetadataTypes\SwitchPayload::PAYLOAD_OFF, '0', Types\RelayPayload::PAYLOAD_OFF],
+				[MetadataTypes\SwitchPayload::PAYLOAD_TOGGLE, null, Types\RelayPayload::PAYLOAD_TOGGLE],
 			];
 		}
 
 		if (Utils\Strings::startsWith($block, 'light') && Utils\Strings::lower($description) === 'output') {
 			return [
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_ON, '1', Types\LightSwitchPayload::PAYLOAD_ON],
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_OFF, '0', Types\LightSwitchPayload::PAYLOAD_OFF],
-				[MetadataTypes\SwitchPayloadType::PAYLOAD_TOGGLE, null, Types\LightSwitchPayload::PAYLOAD_TOGGLE],
+				[MetadataTypes\SwitchPayload::PAYLOAD_ON, '1', Types\LightSwitchPayload::PAYLOAD_ON],
+				[MetadataTypes\SwitchPayload::PAYLOAD_OFF, '0', Types\LightSwitchPayload::PAYLOAD_OFF],
+				[MetadataTypes\SwitchPayload::PAYLOAD_TOGGLE, null, Types\LightSwitchPayload::PAYLOAD_TOGGLE],
 			];
 		}
 

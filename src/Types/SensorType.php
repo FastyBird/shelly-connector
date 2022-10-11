@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * Sensor type types
@@ -32,22 +33,31 @@ class SensorType extends Consistence\Enum\Enum
 	 * Define device states
 	 */
 	public const TYPE_ALARM = 'A';
+
 	public const TYPE_BATTERY_LEVEL = 'B';
+
 	public const TYPE_CONCENTRATION = 'C';
+
 	public const TYPE_ENERGY = 'E';
+
 	public const TYPE_EVENT = 'EV';
+
 	public const TYPE_EVENT_COUNTER = 'EVC';
+
 	public const TYPE_HUMIDITY = 'H';
+
 	public const TYPE_CURRENT = 'I';
+
 	public const TYPE_LUMINOSITY = 'L';
+
 	public const TYPE_POWER = 'P';
+
 	public const TYPE_STATUS = 'S';
+
 	public const TYPE_TEMPERATURE = 'T';
+
 	public const TYPE_VOLTAGE = 'V';
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

@@ -17,9 +17,11 @@ namespace FastyBird\ShellyConnector\Helpers;
 
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\ShellyConnector\Types;
 use Nette;
 use Ramsey\Uuid;
+use function strval;
 
 /**
  * Useful connector helpers
@@ -34,33 +36,27 @@ final class Connector
 
 	use Nette\SmartObject;
 
-	/** @var DevicesModuleModels\DataStorage\IConnectorPropertiesRepository */
-	private DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesRepository;
-
-	/**
-	 * @param DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesRepository
-	 */
 	public function __construct(
-		DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesRepository
-	) {
-		$this->propertiesRepository = $propertiesRepository;
+		private readonly DevicesModuleModels\DataStorage\ConnectorPropertiesRepository $propertiesRepository,
+	)
+	{
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
-	 * @param Types\ConnectorPropertyIdentifier $type
-	 *
-	 * @return float|bool|int|string|null
+	 * @throws MetadataExceptions\FileNotFound
 	 */
 	public function getConfiguration(
 		Uuid\UuidInterface $connectorId,
-		Types\ConnectorPropertyIdentifier $type
-	): float|bool|int|string|null {
+		Types\ConnectorPropertyIdentifier $type,
+	): float|bool|int|string|null
+	{
 		$configuration = $this->propertiesRepository->findByIdentifier($connectorId, strval($type->getValue()));
 
-		if ($configuration instanceof MetadataEntities\Modules\DevicesModule\IConnectorStaticPropertyEntity) {
+		if ($configuration instanceof MetadataEntities\DevicesModule\ConnectorVariableProperty) {
 			if ($type->getValue() === Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_VERSION) {
-				return Types\ClientVersion::isValidValue($configuration->getValue()) ? $configuration->getValue() : null;
+				return Types\ClientVersion::isValidValue(
+					$configuration->getValue(),
+				) ? $configuration->getValue() : null;
 			}
 
 			if ($type->getValue() === Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_MODE) {

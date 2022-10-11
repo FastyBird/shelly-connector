@@ -29,6 +29,10 @@ use Psr\Log;
 use React\Datagram;
 use React\Dns;
 use React\EventLoop;
+use function count;
+use function is_array;
+use function is_string;
+use function preg_match;
 
 /**
  * mDNS client
@@ -44,52 +48,28 @@ final class Mdns
 	use Nette\SmartObject;
 
 	private const DNS_ADDRESS = '224.0.0.251';
-	private const DNS_PORT = 5353;
+
+	private const DNS_PORT = 5_353;
 
 	private const MATCH_NAME = '/^(?P<devtype>shelly.+)-(?P<id>[0-9A-Fa-f]+)._(http|shelly)._tcp.local$/';
 
-	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
-
-	/** @var MdnsResultStorage */
 	private MdnsResultStorage $searchResult;
 
-	/** @var Consumers\Messages */
-	private Consumers\Messages $consumer;
-
-	/** @var Dns\Protocol\Parser */
 	private Dns\Protocol\Parser $parser;
 
-	/** @var Dns\Protocol\BinaryDumper */
 	private Dns\Protocol\BinaryDumper $dumper;
 
-	/** @var EventLoop\LoopInterface */
-	private EventLoop\LoopInterface $eventLoop;
+	private Datagram\SocketInterface|null $server = null;
 
-	/** @var Datagram\SocketInterface|null */
-	private ?Datagram\SocketInterface $server = null;
-
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 * @param Consumers\Messages $consumer
-	 * @param EventLoop\LoopInterface $eventLoop
-	 * @param Log\LoggerInterface|null $logger
-	 */
 	public function __construct(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		Consumers\Messages $consumer,
-		EventLoop\LoopInterface $eventLoop,
-		?Log\LoggerInterface $logger = null
-	) {
-		$this->connector = $connector;
-
-		$this->consumer = $consumer;
-
-		$this->eventLoop = $eventLoop;
-
+		private readonly MetadataEntities\DevicesModule\Connector $connector,
+		private readonly Consumers\Messages $consumer,
+		private readonly EventLoop\LoopInterface $eventLoop,
+		Log\LoggerInterface|null $logger = null,
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		$this->searchResult = new MdnsResultStorage();
@@ -98,9 +78,6 @@ final class Mdns
 		$this->dumper = new Dns\Protocol\BinaryDumper();
 	}
 
-	/**
-	 * @return void
-	 */
 	public function connect(): void
 	{
 		$factory = new Multicast\Factory($this->eventLoop);
@@ -115,12 +92,12 @@ final class Mdns
 				$this->logger->warning(
 					'Invalid DNS question response received',
 					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'mdns-client',
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type' => 'mdns-client',
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
-					]
+					],
 				);
 
 				return;
@@ -130,12 +107,12 @@ final class Mdns
 				$this->logger->warning(
 					'The server set the truncated bit although we issued a TCP request',
 					[
-						'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-						'type'      => 'mdns-client',
+						'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+						'type' => 'mdns-client',
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
-					]
+					],
 				);
 
 				return;
@@ -180,7 +157,7 @@ final class Mdns
 							$this->connector->getId(),
 							Utils\Strings::lower($matches['id']),
 							Utils\Strings::lower($matches['devtype']),
-							$results[1]
+							$results[1],
 						));
 					}
 				}
@@ -191,7 +168,7 @@ final class Mdns
 			$query = new Dns\Query\Query(
 				'_http._tcp.local',
 				Dns\Model\Message::TYPE_PTR,
-				Dns\Model\Message::CLASS_IN
+				Dns\Model\Message::CLASS_IN,
 			);
 
 			$request = $this->dumper->toBinary(Dns\Model\Message::createRequestForQuery($query));
@@ -200,9 +177,6 @@ final class Mdns
 		});
 	}
 
-	/**
-	 * @return void
-	 */
 	public function disconnect(): void
 	{
 		$this->server?->close();

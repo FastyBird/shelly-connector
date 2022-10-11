@@ -16,6 +16,7 @@
 namespace FastyBird\ShellyConnector\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * Connector client modes types
@@ -32,11 +33,9 @@ class ClientMode extends Consistence\Enum\Enum
 	 * Define versions
 	 */
 	public const TYPE_GEN_1_CLASSIC = 'gen1_classic';
+
 	public const TYPE_GEN_1_MQTT = 'gen1_mqtt';
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

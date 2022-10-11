@@ -33,6 +33,8 @@ use Nette\DI;
 use Nette\Schema;
 use React\EventLoop;
 use stdClass;
+use function assert;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * Shelly connector
@@ -45,59 +47,43 @@ use stdClass;
 class ShellyConnectorExtension extends DI\CompilerExtension
 {
 
-	/**
-	 * @param Nette\Configurator $config
-	 * @param string $extensionName
-	 *
-	 * @return void
-	 */
+	public const NAME = 'fbShellyConnector';
+
 	public static function register(
 		Nette\Configurator $config,
-		string $extensionName = 'fbShellyConnector'
-	): void {
-		$config->onCompile[] = function (
+		string $extensionName = self::NAME,
+	): void
+	{
+		$config->onCompile[] = static function (
 			Nette\Configurator $config,
-			DI\Compiler $compiler
+			DI\Compiler $compiler,
 		) use ($extensionName): void {
 			$compiler->addExtension($extensionName, new ShellyConnectorExtension());
 		};
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getConfigSchema(): Schema\Schema
 	{
 		return Schema\Expect::structure([
-			'loop' => Schema\Expect::anyOf(Schema\Expect::string(), Schema\Expect::type(DI\Definitions\Statement::class))
+			'loop' => Schema\Expect::anyOf(
+				Schema\Expect::string(),
+				Schema\Expect::type(DI\Definitions\Statement::class),
+			)
 				->nullable(),
 		]);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
-		/** @var stdClass $configuration */
 		$configuration = $this->getConfig();
+		assert($configuration instanceof stdClass);
 
 		if ($configuration->loop === null && $builder->getByType(EventLoop\LoopInterface::class) === null) {
 			$builder->addDefinition($this->prefix('client.loop'), new DI\Definitions\ServiceDefinition())
 				->setType(EventLoop\LoopInterface::class)
 				->setFactory('React\EventLoop\Factory::create');
 		}
-
-		// Service factory
-		$builder->addFactoryDefinition($this->prefix('executor.factory'))
-			->setImplement(Connector\ConnectorFactory::class)
-			->addTag(
-				DevicesModuleDI\DevicesModuleExtension::CONNECTOR_TYPE_TAG,
-				Entities\ShellyConnector::CONNECTOR_TYPE
-			)
-			->getResultDefinition()
-			->setType(Connector\Connector::class);
 
 		// Clients
 		$builder->addFactoryDefinition($this->prefix('client.gen1'))
@@ -136,20 +122,32 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 			->setType(API\Gen1Transformer::class);
 
 		// Consumers
-		$builder->addDefinition($this->prefix('consumer.messages'), new DI\Definitions\ServiceDefinition())
-			->setType(Consumers\Messages::class);
-
-		$builder->addDefinition($this->prefix('consumer.messages.device.description'), new DI\Definitions\ServiceDefinition())
+		$builder->addDefinition(
+			$this->prefix('consumer.messages.device.description'),
+			new DI\Definitions\ServiceDefinition(),
+		)
 			->setType(Consumers\Messages\Description::class);
 
-		$builder->addDefinition($this->prefix('consumer.messages.device.status'), new DI\Definitions\ServiceDefinition())
+		$builder->addDefinition(
+			$this->prefix('consumer.messages.device.status'),
+			new DI\Definitions\ServiceDefinition(),
+		)
 			->setType(Consumers\Messages\Status::class);
 
 		$builder->addDefinition($this->prefix('consumer.messages.device.info'), new DI\Definitions\ServiceDefinition())
 			->setType(Consumers\Messages\Info::class);
 
-		$builder->addDefinition($this->prefix('consumer.messages.device.discovery'), new DI\Definitions\ServiceDefinition())
+		$builder->addDefinition(
+			$this->prefix('consumer.messages.device.discovery'),
+			new DI\Definitions\ServiceDefinition(),
+		)
 			->setType(Consumers\Messages\Discovery::class);
+
+		$builder->addDefinition($this->prefix('consumer.messages'), new DI\Definitions\ServiceDefinition())
+			->setType(Consumers\Messages::class)
+			->setArguments([
+				'consumers' => $builder->findByType(Consumers\Consumer::class),
+			]);
 
 		// Events subscribers
 		$builder->addDefinition($this->prefix('subscribers.properties'), new DI\Definitions\ServiceDefinition())
@@ -186,20 +184,33 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('mappers.sensor'), new DI\Definitions\ServiceDefinition())
 			->setType(Mappers\Sensor::class);
 
+		// Service factory
+		$builder->addFactoryDefinition($this->prefix('executor.factory'))
+			->setImplement(Connector\ConnectorFactory::class)
+			->addTag(
+				DevicesModuleDI\DevicesModuleExtension::CONNECTOR_TYPE_TAG,
+				Entities\ShellyConnector::CONNECTOR_TYPE,
+			)
+			->getResultDefinition()
+			->setType(Connector\Connector::class)
+			->setArguments([
+				'clientsFactories' => $builder->findByType(Clients\ClientFactory::class),
+			]);
+
 		// Console commands
 		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
 			->setType(Commands\Initialize::class);
 
 		$builder->addDefinition($this->prefix('commands.discovery'), new DI\Definitions\ServiceDefinition())
-			->setType(Commands\Discovery::class);
+			->setType(Commands\Discovery::class)
+			->setArguments([
+				'clientsFactories' => $builder->findByType(Clients\ClientFactory::class),
+			]);
 
 		$builder->addDefinition($this->prefix('commands.execute'), new DI\Definitions\ServiceDefinition())
 			->setType(Commands\Execute::class);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function beforeCompile(): void
 	{
 		parent::beforeCompile();
@@ -213,10 +224,15 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 		$ormAnnotationDriverService = $builder->getDefinition('nettrineOrmAnnotations.annotationDriver');
 
 		if ($ormAnnotationDriverService instanceof DI\Definitions\ServiceDefinition) {
-			$ormAnnotationDriverService->addSetup('addPaths', [[__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Entities']]);
+			$ormAnnotationDriverService->addSetup(
+				'addPaths',
+				[[__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Entities']],
+			);
 		}
 
-		$ormAnnotationDriverChainService = $builder->getDefinitionByType(Persistence\Mapping\Driver\MappingDriverChain::class);
+		$ormAnnotationDriverChainService = $builder->getDefinitionByType(
+			Persistence\Mapping\Driver\MappingDriverChain::class,
+		);
 
 		if ($ormAnnotationDriverChainService instanceof DI\Definitions\ServiceDefinition) {
 			$ormAnnotationDriverChainService->addSetup('addDriver', [

@@ -20,6 +20,15 @@ use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\Metadata\ValueObjects as MetadataValueObjects;
 use Nette;
 use Nette\Utils;
+use function array_filter;
+use function array_values;
+use function boolval;
+use function count;
+use function floatval;
+use function intval;
+use function is_bool;
+use function is_scalar;
+use function strval;
 
 /**
  * Generation 1 devices data transformers
@@ -34,27 +43,21 @@ final class Gen1Transformer
 
 	use Nette\SmartObject;
 
-	/**
-	 * @param MetadataTypes\DataTypeType $dataType
-	 * @param MetadataValueObjects\StringEnumFormat|MetadataValueObjects\NumberRangeFormat|MetadataValueObjects\CombinedEnumFormat|null $format
-	 * @param string|int|float|bool|null $value
-	 *
-	 * @return float|int|string|bool|MetadataTypes\SwitchPayloadType|null
-	 */
 	public function transformValueFromDevice(
-		MetadataTypes\DataTypeType $dataType,
+		MetadataTypes\DataType $dataType,
 		MetadataValueObjects\StringEnumFormat|MetadataValueObjects\NumberRangeFormat|MetadataValueObjects\CombinedEnumFormat|null $format,
-		string|int|float|bool|null $value
-	): float|int|string|bool|MetadataTypes\SwitchPayloadType|null {
+		string|int|float|bool|null $value,
+	): float|int|string|bool|MetadataTypes\SwitchPayload|null
+	{
 		if ($value === null) {
 			return null;
 		}
 
-		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_BOOLEAN)) {
+		if ($dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_BOOLEAN)) {
 			return is_bool($value) ? $value : boolval($value);
 		}
 
-		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_FLOAT)) {
+		if ($dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_FLOAT)) {
 			$floatValue = floatval($value);
 
 			if ($format instanceof MetadataValueObjects\NumberRangeFormat) {
@@ -71,12 +74,12 @@ final class Gen1Transformer
 		}
 
 		if (
-			$dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_UCHAR)
-			|| $dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_CHAR)
-			|| $dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_USHORT)
-			|| $dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SHORT)
-			|| $dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_UINT)
-			|| $dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_INT)
+			$dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_UCHAR)
+			|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_CHAR)
+			|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_USHORT)
+			|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_SHORT)
+			|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_UINT)
+			|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_INT)
 		) {
 			$intValue = intval($value);
 
@@ -93,48 +96,51 @@ final class Gen1Transformer
 			return $intValue;
 		}
 
-		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)) {
+		if ($dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_SWITCH)) {
 			if ($format instanceof MetadataValueObjects\StringEnumFormat) {
 				$filtered = array_values(array_filter(
 					$format->getItems(),
-					function (string $item) use ($value): bool {
-						return Utils\Strings::lower(strval($value)) === $item;
-					}
+					static fn (string $item): bool => Utils\Strings::lower(strval($value)) === $item,
 				));
 
 				if (count($filtered) === 1) {
-					return MetadataTypes\SwitchPayloadType::isValidValue(strval($value)) ? MetadataTypes\SwitchPayloadType::get(strval($value)) : null;
+					return MetadataTypes\SwitchPayload::isValidValue(strval($value))
+						? MetadataTypes\SwitchPayload::get(
+							strval($value),
+						)
+						: null;
 				}
 
 				return null;
-
 			} elseif ($format instanceof MetadataValueObjects\CombinedEnumFormat) {
 				$filtered = array_values(array_filter(
 					$format->getItems(),
-					function (array $item) use ($value): bool {
-						return $item[1] !== null
-							&& Utils\Strings::lower(strval($item[1]->getValue())) === Utils\Strings::lower(strval($value));
-					}
+					static fn (array $item): bool => $item[1] !== null
+							&& Utils\Strings::lower(strval($item[1]->getValue())) === Utils\Strings::lower(
+								strval($value),
+							),
 				));
 
 				if (
 					count($filtered) === 1
 					&& $filtered[0][0] instanceof MetadataValueObjects\CombinedEnumFormatItem
 				) {
-					return MetadataTypes\SwitchPayloadType::isValidValue(strval($filtered[0][0]->getValue())) ? MetadataTypes\SwitchPayloadType::get(strval($filtered[0][0]->getValue())) : null;
+					return MetadataTypes\SwitchPayload::isValidValue(strval($filtered[0][0]->getValue()))
+						? MetadataTypes\SwitchPayload::get(
+							strval($filtered[0][0]->getValue()),
+						)
+						: null;
 				}
 
 				return null;
 			}
 		}
 
-		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)) {
+		if ($dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_ENUM)) {
 			if ($format instanceof MetadataValueObjects\StringEnumFormat) {
 				$filtered = array_values(array_filter(
 					$format->getItems(),
-					function (string $item) use ($value): bool {
-						return Utils\Strings::lower(strval($value)) === $item;
-					}
+					static fn (string $item): bool => Utils\Strings::lower(strval($value)) === $item,
 				));
 
 				if (count($filtered) === 1) {
@@ -142,14 +148,13 @@ final class Gen1Transformer
 				}
 
 				return null;
-
 			} elseif ($format instanceof MetadataValueObjects\CombinedEnumFormat) {
 				$filtered = array_values(array_filter(
 					$format->getItems(),
-					function (array $item) use ($value): bool {
-						return $item[1] !== null
-							&& Utils\Strings::lower(strval($item[1]->getValue())) === Utils\Strings::lower(strval($value));
-					}
+					static fn (array $item): bool => $item[1] !== null
+							&& Utils\Strings::lower(strval($item[1]->getValue())) === Utils\Strings::lower(
+								strval($value),
+							),
 				));
 
 				if (
@@ -166,23 +171,17 @@ final class Gen1Transformer
 		return null;
 	}
 
-	/**
-	 * @param MetadataTypes\DataTypeType $dataType
-	 * @param MetadataValueObjects\StringEnumFormat|MetadataValueObjects\NumberRangeFormat|MetadataValueObjects\CombinedEnumFormat|null $format
-	 * @param bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value
-	 *
-	 * @return string|int|float|bool|null
-	 */
 	public function transformValueToDevice(
-		MetadataTypes\DataTypeType $dataType,
+		MetadataTypes\DataType $dataType,
 		MetadataValueObjects\StringEnumFormat|MetadataValueObjects\NumberRangeFormat|MetadataValueObjects\CombinedEnumFormat|null $format,
-		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value
-	): string|int|float|bool|null {
+		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null $value,
+	): string|int|float|bool|null
+	{
 		if ($value === null) {
 			return null;
 		}
 
-		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_BOOLEAN)) {
+		if ($dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_BOOLEAN)) {
 			if (is_bool($value)) {
 				return $value ? 1 : 0;
 			}
@@ -190,13 +189,11 @@ final class Gen1Transformer
 			return null;
 		}
 
-		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)) {
+		if ($dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_SWITCH)) {
 			if ($format instanceof MetadataValueObjects\StringEnumFormat) {
 				$filtered = array_values(array_filter(
 					$format->getItems(),
-					function (string $item) use ($value): bool {
-						return Utils\Strings::lower(strval($value)) === $item;
-					}
+					static fn (string $item): bool => Utils\Strings::lower(strval($value)) === $item,
 				));
 
 				if (count($filtered) === 1) {
@@ -204,14 +201,13 @@ final class Gen1Transformer
 				}
 
 				return null;
-
 			} elseif ($format instanceof MetadataValueObjects\CombinedEnumFormat) {
 				$filtered = array_values(array_filter(
 					$format->getItems(),
-					function (array $item) use ($value): bool {
-						return $item[0] !== null
-							&& Utils\Strings::lower(strval($item[0]->getValue())) === Utils\Strings::lower(strval($value));
-					}
+					static fn (array $item): bool => $item[0] !== null
+							&& Utils\Strings::lower(strval($item[0]->getValue())) === Utils\Strings::lower(
+								strval($value),
+							),
 				));
 
 				if (
@@ -225,13 +221,11 @@ final class Gen1Transformer
 			}
 		}
 
-		if ($dataType->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)) {
+		if ($dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_ENUM)) {
 			if ($format instanceof MetadataValueObjects\StringEnumFormat) {
 				$filtered = array_values(array_filter(
 					$format->getItems(),
-					function (string $item) use ($value): bool {
-						return Utils\Strings::lower(strval($value)) === $item;
-					}
+					static fn (string $item): bool => Utils\Strings::lower(strval($value)) === $item,
 				));
 
 				if (count($filtered) === 1) {
@@ -239,14 +233,13 @@ final class Gen1Transformer
 				}
 
 				return null;
-
 			} elseif ($format instanceof MetadataValueObjects\CombinedEnumFormat) {
 				$filtered = array_values(array_filter(
 					$format->getItems(),
-					function (array $item) use ($value): bool {
-						return $item[0] !== null
-							&& Utils\Strings::lower(strval($item[0]->getValue())) === Utils\Strings::lower(strval($value));
-					}
+					static fn (array $item): bool => $item[0] !== null
+							&& Utils\Strings::lower(strval($item[0]->getValue())) === Utils\Strings::lower(
+								strval($value),
+							),
 				));
 
 				if (

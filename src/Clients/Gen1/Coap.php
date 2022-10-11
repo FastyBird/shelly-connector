@@ -27,7 +27,16 @@ use Psr\Log;
 use React\Datagram;
 use React\EventLoop;
 use Throwable;
+use function count;
+use function explode;
+use function in_array;
+use function is_array;
+use function mb_convert_encoding;
+use function pack;
 use function React\Async\async;
+use function sprintf;
+use function str_replace;
+use function unpack;
 
 /**
  * CoAP client
@@ -43,67 +52,35 @@ final class Coap
 	use Nette\SmartObject;
 
 	private const COAP_ADDRESS = '224.0.1.187';
-	private const COAP_PORT = 5683;
+
+	private const COAP_PORT = 5_683;
 
 	private const STATUS_MESSAGE_CODE = 30;
+
 	private const DESCRIPTION_MESSAGE_CODE = 69;
 
 	private const AUTOMATIC_DISCOVERY_DELAY = 5;
 
 	private bool $onlyDiscovery = false;
 
-	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
+	private Datagram\SocketInterface|null $server = null;
 
-	/** @var API\Gen1Validator */
-	private API\Gen1Validator $validator;
-
-	/** @var API\Gen1Parser */
-	private API\Gen1Parser $parser;
-
-	/** @var Consumers\Messages */
-	private Consumers\Messages $consumer;
-
-	/** @var EventLoop\LoopInterface */
-	private EventLoop\LoopInterface $eventLoop;
-
-	/** @var Datagram\SocketInterface|null */
-	private ?Datagram\SocketInterface $server = null;
-
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 * @param API\Gen1Validator $validator
-	 * @param API\Gen1Parser $parser
-	 * @param Consumers\Messages $consumer
-	 * @param EventLoop\LoopInterface $eventLoop
-	 * @param Log\LoggerInterface|null $logger
-	 */
 	public function __construct(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		API\Gen1Validator $validator,
-		API\Gen1Parser $parser,
-		Consumers\Messages $consumer,
-		EventLoop\LoopInterface $eventLoop,
-		?Log\LoggerInterface $logger = null
-	) {
-		$this->connector = $connector;
-
-		$this->validator = $validator;
-		$this->parser = $parser;
-		$this->consumer = $consumer;
-
-		$this->eventLoop = $eventLoop;
-
+		private readonly MetadataEntities\DevicesModule\Connector $connector,
+		private readonly API\Gen1Validator $validator,
+		private readonly API\Gen1Parser $parser,
+		private readonly Consumers\Messages $consumer,
+		private readonly EventLoop\LoopInterface $eventLoop,
+		Log\LoggerInterface|null $logger = null,
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	/**
-	 * @return void
-	 *
-	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws DevicesModuleExceptions\Terminate
 	 */
 	public function discover(): void
 	{
@@ -111,17 +88,17 @@ final class Coap
 			$this->logger->warning(
 				'Client is not running, discovery process could not be processed',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'coap-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'coap-client',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 
 			if ($this->onlyDiscovery) {
-				throw new DevicesModuleExceptions\TerminateException(
-					'Discovery client is not created, discovery could not be performed'
+				throw new DevicesModuleExceptions\Terminate(
+					'Discovery client is not created, discovery could not be performed',
 				);
 			}
 
@@ -133,22 +110,17 @@ final class Coap
 		$this->logger->debug(
 			'Sending discover devices packet',
 			[
-				'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-				'type'      => 'coap-client',
+				'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+				'type' => 'coap-client',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
 				],
-			]
+			],
 		);
 
 		$this->server->send($message, self::COAP_ADDRESS . ':' . self::COAP_PORT);
 	}
 
-	/**
-	 * @param bool $onlyDiscovery
-	 *
-	 * @return void
-	 */
 	public function connect(bool $onlyDiscovery = false): void
 	{
 		$this->onlyDiscovery = $onlyDiscovery;
@@ -165,22 +137,22 @@ final class Coap
 			$this->logger->error(
 				'An error occurred during handling requests',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'coap-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'coap-client',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 
-			throw new DevicesModuleExceptions\TerminateException(
+			throw new DevicesModuleExceptions\Terminate(
 				'Devices state listener client was terminated',
 				$ex->getCode(),
-				$ex
+				$ex,
 			);
 		});
 
@@ -188,12 +160,12 @@ final class Coap
 			$this->logger->info(
 				'Client connection was successfully closed',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'coap-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'coap-client',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 		});
 
@@ -207,25 +179,16 @@ final class Coap
 				self::AUTOMATIC_DISCOVERY_DELAY,
 				async(function (): void {
 					$this->discover();
-				})
+				}),
 			);
 		}
 	}
 
-	/**
-	 * @return void
-	 */
 	public function disconnect(): void
 	{
 		$this->server?->close();
 	}
 
-	/**
-	 * @param string $packet
-	 * @param string $address
-	 *
-	 * @return void
-	 */
 	private function handlePacket(string $packet, string $address): void
 	{
 		$buffer = unpack('C*', $packet);
@@ -250,7 +213,7 @@ final class Coap
 
 		$pos = $pos + 4 + $tkl;
 
-		if (in_array($code, [self::STATUS_MESSAGE_CODE, self::DESCRIPTION_MESSAGE_CODE])) {
+		if (in_array($code, [self::STATUS_MESSAGE_CODE, self::DESCRIPTION_MESSAGE_CODE], true)) {
 			$byte = $buffer[$pos];
 			$totDelta = 0;
 
@@ -288,7 +251,7 @@ final class Coap
 
 				$pos = $pos + $length + 1;
 
-				if ($totDelta === 3332) {
+				if ($totDelta === 3_332) {
 					[
 						$deviceType,
 						$deviceIdentifier,
@@ -315,12 +278,12 @@ final class Coap
 					str_replace(' ', '', $message),
 				),
 				[
-					'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-					'type'      => 'coap-client',
+					'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+					'type' => 'coap-client',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 
 			if (
@@ -337,23 +300,23 @@ final class Coap
 							$address,
 							$deviceType,
 							$deviceIdentifier,
-							$message
-						)
+							$message,
+						),
 					);
 				} catch (Exceptions\ParseMessage $ex) {
 					$this->logger->warning(
 						'Received message could not be parsed into entity',
 						[
-							'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-							'type'      => 'coap-client',
+							'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+							'type' => 'coap-client',
 							'exception' => [
 								'message' => $ex->getMessage(),
-								'code'    => $ex->getCode(),
+								'code' => $ex->getCode(),
 							],
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
 							],
-						]
+						],
 					);
 				}
 			} elseif (
@@ -369,23 +332,23 @@ final class Coap
 							$address,
 							$deviceType,
 							$deviceIdentifier,
-							$message
-						)
+							$message,
+						),
 					);
 				} catch (Exceptions\ParseMessage $ex) {
 					$this->logger->warning(
 						'Received message could not be parsed into entity',
 						[
-							'source'    => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
-							'type'      => 'coap-client',
+							'source' => Metadata\Constants::CONNECTOR_SHELLY_SOURCE,
+							'type' => 'coap-client',
 							'exception' => [
 								'message' => $ex->getMessage(),
-								'code'    => $ex->getCode(),
+								'code' => $ex->getCode(),
 							],
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
 							],
-						]
+						],
 					);
 				}
 			}

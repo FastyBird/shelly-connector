@@ -28,11 +28,6 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 interface CoapFactory
 {
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 *
-	 * @return Coap
-	 */
-	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Coap;
+	public function create(MetadataEntities\DevicesModule\Connector $connector): Coap;
 
 }
