@@ -105,7 +105,6 @@ final class Discovery implements Consumer
 					return $deviceEntity;
 				},
 			);
-			assert($deviceEntity instanceof Entities\ShellyDevice);
 
 			$this->logger->info(
 				'Creating new device',

@@ -114,13 +114,13 @@ class Initialize extends Console\Command\Command
 
 		$io->note('This action will create|update connector configuration.');
 
-		if (!$input->getOption('no-confirm')) {
+		if ($input->getOption('no-confirm') === false) {
 			$question = new Console\Question\ConfirmationQuestion(
 				'Would you like to continue?',
 				false,
 			);
 
-			$continue = $io->askQuestion($question);
+			$continue = (bool) $io->askQuestion($question);
 
 			if (!$continue) {
 				return Console\Command\Command::SUCCESS;
@@ -331,7 +331,7 @@ class Initialize extends Console\Command\Command
 			}
 
 			$connectors[$connector->getIdentifier()] = $connector->getIdentifier()
-				. ($connector->getName() ? ' [' . $connector->getName() . ']' : '');
+				. ($connector->getName() !== null ? ' [' . $connector->getName() . ']' : '');
 		}
 
 		if (count($connectors) === 0) {
@@ -342,7 +342,7 @@ class Initialize extends Console\Command\Command
 				false,
 			);
 
-			$continue = $io->askQuestion($question);
+			$continue = (bool) $io->askQuestion($question);
 
 			if ($continue) {
 				$this->createNewConfiguration($io);
@@ -408,7 +408,7 @@ class Initialize extends Console\Command\Command
 				false,
 			);
 
-			$changeGeneration = $io->askQuestion($question);
+			$changeGeneration = (bool) $io->askQuestion($question);
 		}
 
 		$generation = null;
@@ -445,7 +445,7 @@ class Initialize extends Console\Command\Command
 					false,
 				);
 
-				$changeClientMode = $io->askQuestion($question);
+				$changeClientMode = (bool) $io->askQuestion($question);
 			}
 
 			if ($clientModeProperty === null || $changeClientMode) {
@@ -488,7 +488,7 @@ class Initialize extends Console\Command\Command
 					false,
 				);
 
-				$changeCloudAuthKey = $io->askQuestion($question);
+				$changeCloudAuthKey = (bool) $io->askQuestion($question);
 			}
 
 			if ($cloudAuthKeyProperty === null || $changeCloudAuthKey) {
@@ -511,7 +511,7 @@ class Initialize extends Console\Command\Command
 					false,
 				);
 
-				$changeCloudServer = $io->askQuestion($question);
+				$changeCloudServer = (bool) $io->askQuestion($question);
 			}
 
 			if ($cloudServerProperty === null || $changeCloudServer) {
@@ -529,7 +529,7 @@ class Initialize extends Console\Command\Command
 				false,
 			);
 
-			if ($io->askQuestion($question)) {
+			if ($io->askQuestion($question) === true) {
 				$enabled = false;
 			}
 		} else {
@@ -538,7 +538,7 @@ class Initialize extends Console\Command\Command
 				false,
 			);
 
-			if ($io->askQuestion($question)) {
+			if ($io->askQuestion($question) === true) {
 				$enabled = true;
 			}
 		}
@@ -675,7 +675,7 @@ class Initialize extends Console\Command\Command
 			}
 
 			$connectors[$connector->getIdentifier()] = $connector->getIdentifier()
-				. ($connector->getName() ? ' [' . $connector->getName() . ']' : '');
+				. ($connector->getName() !== null ? ' [' . $connector->getName() . ']' : '');
 		}
 
 		if (count($connectors) === 0) {
@@ -731,9 +731,9 @@ class Initialize extends Console\Command\Command
 			false,
 		);
 
-		$continue = $io->askQuestion($question);
+		$continue = (bool) $io->askQuestion($question);
 
-		if (!$continue) {
+		if ($continue) {
 			return;
 		}
 

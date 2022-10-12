@@ -39,11 +39,9 @@ use function array_key_exists;
 use function array_key_first;
 use function array_search;
 use function array_values;
-use function assert;
 use function count;
 use function intval;
 use function is_string;
-use function method_exists;
 use function React\Async\async;
 use function sprintf;
 use const SIGINT;
@@ -129,13 +127,13 @@ class Discovery extends Console\Command\Command
 
 		$io->note('This action will run connector devices discovery.');
 
-		if (!$input->getOption('no-confirm')) {
+		if ($input->getOption('no-confirm') === false) {
 			$question = new Console\Question\ConfirmationQuestion(
 				'Would you like to continue?',
 				false,
 			);
 
-			$continue = $io->askQuestion($question);
+			$continue = (bool) $io->askQuestion($question);
 
 			if (!$continue) {
 				return Console\Command\Command::SUCCESS;
@@ -166,9 +164,8 @@ class Discovery extends Console\Command\Command
 					continue;
 				}
 
-				$connectors[$connector->getIdentifier()] = $connector->getIdentifier() . $connector->getName()
-					? ' [' . $connector->getName() . ']'
-					: '';
+				$connectors[$connector->getIdentifier()] = $connector->getIdentifier()
+					. ($connector->getName() !== null ? ' [' . $connector->getName() . ']' : '');
 			}
 
 			if (count($connectors) === 0) {
@@ -188,7 +185,7 @@ class Discovery extends Console\Command\Command
 					return Console\Command\Command::FAILURE;
 				}
 
-				if (!$input->getOption('no-confirm')) {
+				if ($input->getOption('no-confirm') === false) {
 					$question = new Console\Question\ConfirmationQuestion(
 						sprintf(
 							'Would you like to discover devices with "%s" connector',
@@ -197,7 +194,7 @@ class Discovery extends Console\Command\Command
 						false,
 					);
 
-					if (!$io->askQuestion($question)) {
+					if ($io->askQuestion($question) === false) {
 						return Console\Command\Command::SUCCESS;
 					}
 				}
@@ -268,10 +265,8 @@ class Discovery extends Console\Command\Command
 			if (
 				array_key_exists(Clients\ClientFactory::VERSION_CONSTANT_NAME, $constants)
 				&& $constants[Clients\ClientFactory::VERSION_CONSTANT_NAME] === $version
-				&& method_exists($clientFactory, 'create')
 			) {
 				$client = $clientFactory->create($connector);
-				assert($client instanceof Clients\Client);
 
 				$progressBar = new Console\Helper\ProgressBar(
 					$output,

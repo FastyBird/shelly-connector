@@ -255,7 +255,6 @@ final class Description implements Consumer
 								]),
 							),
 						);
-						assert($propertyEntity instanceof DevicesModuleEntities\Channels\Properties\Property);
 
 						$this->logger->debug(
 							'Device sensor was updated',
