@@ -3,6 +3,7 @@
 [![Build Status](https://badgen.net/github/checks/FastyBird/shelly-connector/master?cache=300&style=flat-square)](https://github.com/FastyBird/shelly-connector/actions)
 [![Licence](https://badgen.net/github/license/FastyBird/shelly-connector?cache=300&style=flat-square)](https://github.com/FastyBird/shelly-connector/blob/master/LICENSE.md)
 [![Code coverage](https://badgen.net/coveralls/c/github/FastyBird/shelly-connector?cache=300&style=flat-square)](https://coveralls.io/r/FastyBird/shelly-connector)
+[![Mutation testing](https://img.shields.io/endpoint?style=flat-square&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2FFastyBird%2Fshelly-connector%2Fmain)](https://dashboard.stryker-mutator.io/reports/github.com/FastyBird/shelly-connector/main)
 
 ![PHP](https://badgen.net/packagist/php/FastyBird/shelly-connector?cache=300&style=flat-square)
 [![PHP latest stable](https://badgen.net/packagist/v/FastyBird/shelly-connector/latest?cache=300&style=flat-square)](https://packagist.org/packages/FastyBird/shelly-connector)

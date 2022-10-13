@@ -18,6 +18,7 @@ namespace FastyBird\ShellyConnector\Connector;
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\ShellyConnector\Clients;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Helpers;
@@ -62,6 +63,7 @@ final class Connector implements DevicesModuleConnectors\Connector
 
 	/**
 	 * @throws DevicesModuleExceptions\Terminate
+	 * @throws MetadataExceptions\FileNotFound
 	 */
 	public function execute(): void
 	{

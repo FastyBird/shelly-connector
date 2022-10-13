@@ -15,6 +15,7 @@
 
 namespace FastyBird\ShellyConnector\API;
 
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Schemas as MetadataSchemas;
 use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\ShellyConnector;
@@ -61,6 +62,9 @@ final class Gen1Parser
 	{
 	}
 
+	/**
+	 * @throws Exceptions\ParseMessage
+	 */
 	public function parseCoapDescriptionMessage(
 		Uuid\UuidInterface $connector,
 		string $address,
@@ -99,6 +103,10 @@ final class Gen1Parser
 		);
 	}
 
+	/**
+	 * @throws Exceptions\ParseMessage
+	 * @throws MetadataExceptions\FileNotFound
+	 */
 	public function parseCoapStatusMessage(
 		Uuid\UuidInterface $connector,
 		string $address,
@@ -174,6 +182,9 @@ final class Gen1Parser
 		);
 	}
 
+	/**
+	 * @throws Exceptions\ParseMessage
+	 */
 	public function parseHttpShellyMessage(
 		Uuid\UuidInterface $connector,
 		string $identifier,
@@ -217,6 +228,9 @@ final class Gen1Parser
 		);
 	}
 
+	/**
+	 * @throws Exceptions\ParseMessage
+	 */
 	public function parseHttpDescriptionMessage(
 		Uuid\UuidInterface $connector,
 		string $identifier,

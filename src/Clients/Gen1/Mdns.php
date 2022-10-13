@@ -15,6 +15,7 @@
 
 namespace FastyBird\ShellyConnector\Clients\Gen1;
 
+use BadMethodCallException;
 use Clue\React\Multicast;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
@@ -29,6 +30,7 @@ use Psr\Log;
 use React\Datagram;
 use React\Dns;
 use React\EventLoop;
+use RuntimeException;
 use function count;
 use function is_array;
 use function is_string;
@@ -78,6 +80,10 @@ final class Mdns
 		$this->dumper = new Dns\Protocol\BinaryDumper();
 	}
 
+	/**
+	 * @throws BadMethodCallException
+	 * @throws RuntimeException
+	 */
 	public function connect(): void
 	{
 		$factory = new Multicast\Factory($this->eventLoop);

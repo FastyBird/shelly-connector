@@ -15,10 +15,12 @@
 
 namespace FastyBird\ShellyConnector\Clients\Gen1;
 
+use BadMethodCallException;
 use Clue\React\Multicast;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\ShellyConnector\API;
 use FastyBird\ShellyConnector\Consumers;
 use FastyBird\ShellyConnector\Exceptions;
@@ -26,6 +28,7 @@ use Nette;
 use Psr\Log;
 use React\Datagram;
 use React\EventLoop;
+use RuntimeException;
 use Throwable;
 use function count;
 use function explode;
@@ -121,6 +124,10 @@ final class Coap
 		$this->server->send($message, self::COAP_ADDRESS . ':' . self::COAP_PORT);
 	}
 
+	/**
+	 * @throws BadMethodCallException
+	 * @throws RuntimeException
+	 */
 	public function connect(bool $onlyDiscovery = false): void
 	{
 		$this->onlyDiscovery = $onlyDiscovery;
@@ -189,6 +196,9 @@ final class Coap
 		$this->server?->close();
 	}
 
+	/**
+	 * @throws MetadataExceptions\FileNotFound
+	 */
 	private function handlePacket(string $packet, string $address): void
 	{
 		$buffer = unpack('C*', $packet);

@@ -37,7 +37,7 @@ class ShellyDevice extends DevicesModuleEntities\Devices\Device
 		return self::DEVICE_TYPE;
 	}
 
-	public function getSource(): MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource
+	public function getSource(): MetadataTypes\ConnectorSource
 	{
 		return MetadataTypes\ConnectorSource::get(MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_SHELLY);
 	}

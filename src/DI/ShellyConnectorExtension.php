@@ -188,6 +188,9 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 			->setType(Commands\Execute::class);
 	}
 
+	/**
+	 * @throws DI\MissingServiceException
+	 */
 	public function beforeCompile(): void
 	{
 		parent::beforeCompile();

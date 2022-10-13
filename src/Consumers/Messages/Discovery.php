@@ -22,6 +22,7 @@ use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Metadata;
 use FastyBird\ShellyConnector\Consumers\Consumer;
 use FastyBird\ShellyConnector\Entities;
+use FastyBird\ShellyConnector\Exceptions;
 use FastyBird\ShellyConnector\Helpers;
 use FastyBird\ShellyConnector\Types;
 use Nette;
@@ -66,6 +67,8 @@ final class Discovery implements Consumer
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function consume(Entities\Messages\Entity $entity): bool

@@ -55,6 +55,9 @@ class Execute extends Console\Command\Command
 		parent::__construct($name);
 	}
 
+	/**
+	 * @throws Console\Exception\InvalidArgumentException
+	 */
 	protected function configure(): void
 	{
 		$this
