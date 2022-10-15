@@ -121,6 +121,7 @@ final class Gen1 implements Client
 	}
 
 	/**
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws DevicesModuleExceptions\Terminate
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */

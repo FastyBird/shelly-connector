@@ -15,6 +15,7 @@
 
 namespace FastyBird\ShellyConnector\Consumers\Messages;
 
+use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Utilities as DevicesModuleUtilities;
 use FastyBird\Metadata;
@@ -22,6 +23,7 @@ use FastyBird\ShellyConnector\Consumers\Consumer;
 use FastyBird\ShellyConnector\Entities;
 use FastyBird\ShellyConnector\Helpers;
 use FastyBird\ShellyConnector\Mappers;
+use IPub\DoctrineOrmQuery\Exceptions as DoctrineOrmQueryExceptions;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
@@ -53,6 +55,9 @@ final class Status implements Consumer
 	}
 
 	/**
+	 * @throws DevicesModuleExceptions\InvalidState
+	 * @throws DoctrineOrmQueryExceptions\InvalidStateException
+	 * @throws DoctrineOrmQueryExceptions\QueryException
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function consume(Entities\Messages\Entity $entity): bool

@@ -197,6 +197,7 @@ final class Coap
 	}
 
 	/**
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws MetadataExceptions\FileNotFound
 	 */
 	private function handlePacket(string $packet, string $address): void

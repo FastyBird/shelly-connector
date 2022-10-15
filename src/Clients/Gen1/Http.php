@@ -759,6 +759,7 @@ final class Http
 	}
 
 	/**
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws MetadataExceptions\FileNotFound
 	 */
 	private function buildDeviceAddress(MetadataEntities\DevicesModule\Device $device): string|null

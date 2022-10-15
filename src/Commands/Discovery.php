@@ -121,6 +121,7 @@ class Discovery extends Console\Command\Command
 
 	/**
 	 * @throws Console\Exception\InvalidArgumentException
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int

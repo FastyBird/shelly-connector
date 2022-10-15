@@ -17,6 +17,7 @@ namespace FastyBird\ShellyConnector\Consumers\Messages;
 
 use Doctrine\DBAL;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
+use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Metadata;
@@ -75,6 +76,7 @@ final class Description implements Consumer
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound

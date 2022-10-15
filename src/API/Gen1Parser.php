@@ -15,6 +15,7 @@
 
 namespace FastyBird\ShellyConnector\API;
 
+use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Schemas as MetadataSchemas;
 use FastyBird\Metadata\Types as MetadataTypes;
@@ -104,6 +105,7 @@ final class Gen1Parser
 	}
 
 	/**
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\ParseMessage
 	 * @throws MetadataExceptions\FileNotFound
 	 */
