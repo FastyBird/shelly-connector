@@ -13,7 +13,7 @@
  * @date           14.07.22
  */
 
-namespace FastyBird\ShellyConnector\Entities\Clients;
+namespace FastyBird\Connector\Shelly\Entities\Clients;
 
 use Nette;
 

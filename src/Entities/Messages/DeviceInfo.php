@@ -13,9 +13,9 @@
  * @date           19.07.22
  */
 
-namespace FastyBird\ShellyConnector\Entities\Messages;
+namespace FastyBird\Connector\Shelly\Entities\Messages;
 
-use FastyBird\ShellyConnector\Types;
+use FastyBird\Connector\Shelly\Types;
 use Ramsey\Uuid;
 use function array_merge;
 

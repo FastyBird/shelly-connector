@@ -13,7 +13,7 @@
  * @date           23.02.20
  */
 
-namespace FastyBird\ShellyConnector\Clients;
+namespace FastyBird\Connector\Shelly\Clients;
 
 /**
  * Shelly device client interface

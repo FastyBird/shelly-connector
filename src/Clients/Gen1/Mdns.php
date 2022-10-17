@@ -13,16 +13,16 @@
  * @date           14.07.22
  */
 
-namespace FastyBird\ShellyConnector\Clients\Gen1;
+namespace FastyBird\Connector\Shelly\Clients\Gen1;
 
 use BadMethodCallException;
 use Clue\React\Multicast;
+use FastyBird\Connector\Shelly\Consumers;
+use FastyBird\Connector\Shelly\Entities;
+use FastyBird\Connector\Shelly\Entities\Clients\MdnsResult;
+use FastyBird\Connector\Shelly\Types;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
-use FastyBird\ShellyConnector\Consumers;
-use FastyBird\ShellyConnector\Entities;
-use FastyBird\ShellyConnector\Entities\Clients\MdnsResult;
-use FastyBird\ShellyConnector\Types;
 use InvalidArgumentException;
 use Nette;
 use Nette\Utils;

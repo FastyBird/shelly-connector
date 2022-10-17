@@ -13,19 +13,20 @@
  * @date           31.08.22
  */
 
-namespace FastyBird\ShellyConnector\Consumers\Messages;
+namespace FastyBird\Connector\Shelly\Consumers\Messages;
 
 use Doctrine\DBAL;
+use FastyBird\Connector\Shelly\Entities;
+use FastyBird\Connector\Shelly\Exceptions;
+use FastyBird\Connector\Shelly\Helpers;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Types as MetadataTypes;
-use FastyBird\ShellyConnector\Entities;
-use FastyBird\ShellyConnector\Exceptions;
-use FastyBird\ShellyConnector\Helpers;
 use Nette\Utils;
 use Psr\Log;
 use Ramsey\Uuid;
@@ -54,7 +55,12 @@ trait TConsumeDeviceProperty
 	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function setDeviceProperty(
 		Uuid\UuidInterface $deviceId,

@@ -13,12 +13,12 @@
  * @date           22.07.22
  */
 
-namespace FastyBird\ShellyConnector\Helpers;
+namespace FastyBird\Connector\Shelly\Helpers;
 
 use Doctrine\DBAL;
 use Doctrine\ORM;
 use Doctrine\Persistence;
-use FastyBird\ShellyConnector\Exceptions;
+use FastyBird\Connector\Shelly\Exceptions;
 use Nette;
 use Throwable;
 use function gc_collect_cycles;

@@ -13,17 +13,17 @@
  * @date           14.07.22
  */
 
-namespace FastyBird\ShellyConnector\Clients\Gen1;
+namespace FastyBird\Connector\Shelly\Clients\Gen1;
 
 use BadMethodCallException;
 use Clue\React\Multicast;
+use FastyBird\Connector\Shelly\API;
+use FastyBird\Connector\Shelly\Consumers;
+use FastyBird\Connector\Shelly\Exceptions;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
-use FastyBird\ShellyConnector\API;
-use FastyBird\ShellyConnector\Consumers;
-use FastyBird\ShellyConnector\Exceptions;
 use Nette;
 use Psr\Log;
 use React\Datagram;
@@ -199,6 +199,11 @@ final class Coap
 	/**
 	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function handlePacket(string $packet, string $address): void
 	{

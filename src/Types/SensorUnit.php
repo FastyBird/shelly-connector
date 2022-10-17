@@ -13,7 +13,7 @@
  * @date           17.07.22
  */
 
-namespace FastyBird\ShellyConnector\Types;
+namespace FastyBird\Connector\Shelly\Types;
 
 use Consistence;
 use function strval;

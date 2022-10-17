@@ -13,14 +13,15 @@
  * @date           17.07.22
  */
 
-namespace FastyBird\ShellyConnector\Clients;
+namespace FastyBird\Connector\Shelly\Clients;
 
+use FastyBird\Connector\Shelly\Clients;
+use FastyBird\Connector\Shelly\Helpers;
+use FastyBird\Connector\Shelly\Types;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
-use FastyBird\ShellyConnector\Clients;
-use FastyBird\ShellyConnector\Helpers;
-use FastyBird\ShellyConnector\Types;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use Nette;
 use Psr\Log;
 use Throwable;
@@ -123,7 +124,12 @@ final class Gen1 implements Client
 	/**
 	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws DevicesModuleExceptions\Terminate
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function connect(): void
 	{

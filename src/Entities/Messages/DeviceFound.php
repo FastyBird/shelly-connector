@@ -13,7 +13,7 @@
  * @date           17.07.22
  */
 
-namespace FastyBird\ShellyConnector\Entities\Messages;
+namespace FastyBird\Connector\Shelly\Entities\Messages;
 
 /**
  * Device was found via client entity

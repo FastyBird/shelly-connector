@@ -13,15 +13,15 @@
  * @date           04.08.22
  */
 
-namespace FastyBird\ShellyConnector\Subscribers;
+namespace FastyBird\Connector\Shelly\Subscribers;
 
 use Doctrine\Common;
 use Doctrine\ORM;
+use FastyBird\Connector\Shelly\Entities;
+use FastyBird\Connector\Shelly\Types;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Metadata\Types as MetadataTypes;
-use FastyBird\ShellyConnector\Entities;
-use FastyBird\ShellyConnector\Types;
 use Nette;
 use Nette\Utils;
 

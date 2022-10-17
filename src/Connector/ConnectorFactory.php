@@ -13,11 +13,11 @@
  * @date           14.07.22
  */
 
-namespace FastyBird\ShellyConnector\Connector;
+namespace FastyBird\Connector\Shelly\Connector;
 
+use FastyBird\Connector\Shelly\Connector;
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
 use FastyBird\Metadata\Entities as MetadataEntities;
-use FastyBird\ShellyConnector\Connector;
 
 /**
  * Connector service executor factory

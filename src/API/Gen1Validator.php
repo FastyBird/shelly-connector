@@ -13,11 +13,11 @@
  * @date           17.07.22
  */
 
-namespace FastyBird\ShellyConnector\API;
+namespace FastyBird\Connector\Shelly\API;
 
+use FastyBird\Connector\Shelly;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Schemas as MetadataSchemas;
-use FastyBird\ShellyConnector;
 use Nette;
 use Nette\Utils;
 use const DIRECTORY_SEPARATOR;
@@ -53,7 +53,7 @@ final class Gen1Validator
 
 	public function isValidCoapDescriptionMessage(string $message): bool
 	{
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
+		$filePath = Shelly\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
 
 		try {
 			$schema = Utils\FileSystem::read($filePath);
@@ -73,7 +73,7 @@ final class Gen1Validator
 
 	public function isValidCoapStatusMessage(string $message): bool
 	{
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::COAP_STATUS_MESSAGE_SCHEMA_FILENAME;
+		$filePath = Shelly\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::COAP_STATUS_MESSAGE_SCHEMA_FILENAME;
 
 		try {
 			$schema = Utils\FileSystem::read($filePath);
@@ -93,7 +93,7 @@ final class Gen1Validator
 
 	public function isValidHttpShellyMessage(string $message): bool
 	{
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::HTTP_SHELLY_INFO_MESSAGE_SCHEMA_FILENAME;
+		$filePath = Shelly\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::HTTP_SHELLY_INFO_MESSAGE_SCHEMA_FILENAME;
 
 		try {
 			$schema = Utils\FileSystem::read($filePath);
@@ -113,7 +113,7 @@ final class Gen1Validator
 
 	public function isValidHttpDescriptionMessage(string $message): bool
 	{
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
+		$filePath = Shelly\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . self::HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
 
 		try {
 			$schema = Utils\FileSystem::read($filePath);

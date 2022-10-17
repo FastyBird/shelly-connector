@@ -13,11 +13,11 @@
  * @date           22.01.22
  */
 
-namespace FastyBird\ShellyConnector\Schemas;
+namespace FastyBird\Connector\Shelly\Schemas;
 
+use FastyBird\Connector\Shelly\Entities;
 use FastyBird\DevicesModule\Schemas as DevicesModuleSchemas;
 use FastyBird\Metadata\Types as MetadataTypes;
-use FastyBird\ShellyConnector\Entities;
 
 /**
  * Shelly connector entity schema

@@ -13,20 +13,21 @@
  * @date           20.07.22
  */
 
-namespace FastyBird\ShellyConnector\Consumers\Messages;
+namespace FastyBird\Connector\Shelly\Consumers\Messages;
 
 use Doctrine\DBAL;
+use FastyBird\Connector\Shelly\Consumers\Consumer;
+use FastyBird\Connector\Shelly\Entities;
+use FastyBird\Connector\Shelly\Exceptions;
+use FastyBird\Connector\Shelly\Helpers;
+use FastyBird\Connector\Shelly\Mappers;
+use FastyBird\Connector\Shelly\Types;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Metadata;
-use FastyBird\ShellyConnector\Consumers\Consumer;
-use FastyBird\ShellyConnector\Entities;
-use FastyBird\ShellyConnector\Exceptions;
-use FastyBird\ShellyConnector\Helpers;
-use FastyBird\ShellyConnector\Mappers;
-use FastyBird\ShellyConnector\Types;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
@@ -79,7 +80,12 @@ final class Description implements Consumer
 	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function consume(Entities\Messages\Entity $entity): bool
 	{

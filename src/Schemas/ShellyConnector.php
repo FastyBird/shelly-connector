@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * ShellyConnector.php
+ * Shelly.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -13,11 +13,11 @@
  * @date           22.01.22
  */
 
-namespace FastyBird\ShellyConnector\Schemas;
+namespace FastyBird\Connector\Shelly\Schemas;
 
+use FastyBird\Connector\Shelly\Entities;
 use FastyBird\DevicesModule\Schemas as DevicesModuleSchemas;
 use FastyBird\Metadata\Types as MetadataTypes;
-use FastyBird\ShellyConnector\Entities;
 
 /**
  * Shelly connector entity schema

@@ -13,13 +13,13 @@
  * @date           04.08.22
  */
 
-namespace FastyBird\ShellyConnector\Helpers;
+namespace FastyBird\Connector\Shelly\Helpers;
 
+use FastyBird\Connector\Shelly\Types;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
-use FastyBird\ShellyConnector\Types;
 use Nette;
 use Ramsey\Uuid;
 use function is_bool;
@@ -48,6 +48,11 @@ final class Device
 	/**
 	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function getConfiguration(
 		Uuid\UuidInterface $deviceId,

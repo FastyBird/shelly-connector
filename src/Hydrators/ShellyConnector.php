@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * ShellyConnector.php
+ * Shelly.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -13,10 +13,10 @@
  * @date           22.01.22
  */
 
-namespace FastyBird\ShellyConnector\Hydrators;
+namespace FastyBird\Connector\Shelly\Hydrators;
 
+use FastyBird\Connector\Shelly\Entities;
 use FastyBird\DevicesModule\Hydrators as DevicesModuleHydrators;
-use FastyBird\ShellyConnector\Entities;
 
 /**
  * Shelly connector entity hydrator

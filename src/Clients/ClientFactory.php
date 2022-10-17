@@ -13,7 +13,7 @@
  * @date           14.07.22
  */
 
-namespace FastyBird\ShellyConnector\Clients;
+namespace FastyBird\Connector\Shelly\Clients;
 
 use FastyBird\Metadata\Entities as MetadataEntities;
 

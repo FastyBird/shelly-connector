@@ -13,10 +13,10 @@
  * @date           17.07.22
  */
 
-namespace FastyBird\ShellyConnector\Entities\Messages;
+namespace FastyBird\Connector\Shelly\Entities\Messages;
 
+use FastyBird\Connector\Shelly\Types;
 use FastyBird\Metadata\Types as MetadataTypes;
-use FastyBird\ShellyConnector\Types;
 use Nette;
 
 /**

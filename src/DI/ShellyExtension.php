@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * ShellyConnectorExtension.php
+ * ShellyExtension.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -13,21 +13,21 @@
  * @date           22.01.22
  */
 
-namespace FastyBird\ShellyConnector\DI;
+namespace FastyBird\Connector\Shelly\DI;
 
 use Doctrine\Persistence;
+use FastyBird\Connector\Shelly\API;
+use FastyBird\Connector\Shelly\Clients;
+use FastyBird\Connector\Shelly\Commands;
+use FastyBird\Connector\Shelly\Connector;
+use FastyBird\Connector\Shelly\Consumers;
+use FastyBird\Connector\Shelly\Entities;
+use FastyBird\Connector\Shelly\Helpers;
+use FastyBird\Connector\Shelly\Hydrators;
+use FastyBird\Connector\Shelly\Mappers;
+use FastyBird\Connector\Shelly\Schemas;
+use FastyBird\Connector\Shelly\Subscribers;
 use FastyBird\DevicesModule\DI as DevicesModuleDI;
-use FastyBird\ShellyConnector\API;
-use FastyBird\ShellyConnector\Clients;
-use FastyBird\ShellyConnector\Commands;
-use FastyBird\ShellyConnector\Connector;
-use FastyBird\ShellyConnector\Consumers;
-use FastyBird\ShellyConnector\Entities;
-use FastyBird\ShellyConnector\Helpers;
-use FastyBird\ShellyConnector\Hydrators;
-use FastyBird\ShellyConnector\Mappers;
-use FastyBird\ShellyConnector\Schemas;
-use FastyBird\ShellyConnector\Subscribers;
 use Nette;
 use Nette\DI;
 use const DIRECTORY_SEPARATOR;
@@ -40,7 +40,7 @@ use const DIRECTORY_SEPARATOR;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class ShellyConnectorExtension extends DI\CompilerExtension
+class ShellyExtension extends DI\CompilerExtension
 {
 
 	public const NAME = 'fbShellyConnector';
@@ -54,7 +54,7 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 			Nette\Configurator $config,
 			DI\Compiler $compiler,
 		) use ($extensionName): void {
-			$compiler->addExtension($extensionName, new ShellyConnectorExtension());
+			$compiler->addExtension($extensionName, new ShellyExtension());
 		};
 	}
 
@@ -217,7 +217,7 @@ class ShellyConnectorExtension extends DI\CompilerExtension
 		if ($ormAnnotationDriverChainService instanceof DI\Definitions\ServiceDefinition) {
 			$ormAnnotationDriverChainService->addSetup('addDriver', [
 				$ormAnnotationDriverService,
-				'FastyBird\ShellyConnector\Entities',
+				'FastyBird\Connector\Shelly\Entities',
 			]);
 		}
 	}

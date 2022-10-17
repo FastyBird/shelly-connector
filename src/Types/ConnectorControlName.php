@@ -13,7 +13,7 @@
  * @date           30.07.22
  */
 
-namespace FastyBird\ShellyConnector\Types;
+namespace FastyBird\Connector\Shelly\Types;
 
 use Consistence;
 use FastyBird\Metadata\Types as MetadataTypes;

@@ -13,16 +13,18 @@
  * @date           20.07.22
  */
 
-namespace FastyBird\ShellyConnector\Consumers\Messages;
+namespace FastyBird\Connector\Shelly\Consumers\Messages;
 
+use FastyBird\Connector\Shelly\Consumers\Consumer;
+use FastyBird\Connector\Shelly\Entities;
+use FastyBird\Connector\Shelly\Helpers;
+use FastyBird\Connector\Shelly\Mappers;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Utilities as DevicesModuleUtilities;
 use FastyBird\Metadata;
-use FastyBird\ShellyConnector\Consumers\Consumer;
-use FastyBird\ShellyConnector\Entities;
-use FastyBird\ShellyConnector\Helpers;
-use FastyBird\ShellyConnector\Mappers;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Metadata\Types as MetadataTypes;
 use IPub\DoctrineOrmQuery\Exceptions as DoctrineOrmQueryExceptions;
 use Nette;
 use Nette\Utils;
@@ -58,7 +60,12 @@ final class Status implements Consumer
 	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws DoctrineOrmQueryExceptions\InvalidStateException
 	 * @throws DoctrineOrmQueryExceptions\QueryException
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function consume(Entities\Messages\Entity $entity): bool
 	{
@@ -78,12 +85,12 @@ final class Status implements Consumer
 		// Check device state...
 		if (
 			!$this->deviceConnectionStateManager->getState($deviceItem)
-				->equalsValue(Metadata\Types\ConnectionState::STATE_CONNECTED)
+				->equalsValue(MetadataTypes\ConnectionState::STATE_CONNECTED)
 		) {
 			// ... and if it is not ready, set it to ready
 			$this->deviceConnectionStateManager->setState(
 				$deviceItem,
-				Metadata\Types\ConnectionState::get(Metadata\Types\ConnectionState::STATE_CONNECTED),
+				MetadataTypes\ConnectionState::get(MetadataTypes\ConnectionState::STATE_CONNECTED),
 			);
 		}
 

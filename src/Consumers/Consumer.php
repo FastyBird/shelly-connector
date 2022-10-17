@@ -13,9 +13,9 @@
  * @date           16.07.22
  */
 
-namespace FastyBird\ShellyConnector\Consumers;
+namespace FastyBird\Connector\Shelly\Consumers;
 
-use FastyBird\ShellyConnector\Entities;
+use FastyBird\Connector\Shelly\Entities;
 
 /**
  * Clients messages consumer interface

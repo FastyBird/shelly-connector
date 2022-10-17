@@ -13,7 +13,7 @@
  * @date           17.07.22
  */
 
-namespace FastyBird\ShellyConnector;
+namespace FastyBird\Connector\Shelly;
 
 /**
  * Connector constants

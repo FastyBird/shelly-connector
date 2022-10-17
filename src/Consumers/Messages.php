@@ -13,10 +13,10 @@
  * @date           16.07.22
  */
 
-namespace FastyBird\ShellyConnector\Consumers;
+namespace FastyBird\Connector\Shelly\Consumers;
 
+use FastyBird\Connector\Shelly\Entities;
 use FastyBird\Metadata;
-use FastyBird\ShellyConnector\Entities;
 use Nette;
 use Psr\Log;
 use SplObjectStorage;

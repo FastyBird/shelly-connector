@@ -13,7 +13,7 @@
  * @date           17.07.22
  */
 
-namespace FastyBird\ShellyConnector\Exceptions;
+namespace FastyBird\Connector\Shelly\Exceptions;
 
 interface Exception
 {

@@ -13,16 +13,16 @@
  * @date           14.07.22
  */
 
-namespace FastyBird\ShellyConnector\Connector;
+namespace FastyBird\Connector\Shelly\Connector;
 
+use FastyBird\Connector\Shelly\Clients;
+use FastyBird\Connector\Shelly\Consumers;
+use FastyBird\Connector\Shelly\Helpers;
+use FastyBird\Connector\Shelly\Types;
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
-use FastyBird\ShellyConnector\Clients;
-use FastyBird\ShellyConnector\Consumers;
-use FastyBird\ShellyConnector\Helpers;
-use FastyBird\ShellyConnector\Types;
 use Nette;
 use React\EventLoop;
 use ReflectionClass;
@@ -65,6 +65,11 @@ final class Connector implements DevicesModuleConnectors\Connector
 	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws DevicesModuleExceptions\Terminate
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function execute(): void
 	{

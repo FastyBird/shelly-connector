@@ -13,7 +13,7 @@
  * @date           22.01.22
  */
 
-namespace FastyBird\ShellyConnector\Entities;
+namespace FastyBird\Connector\Shelly\Entities;
 
 use Doctrine\ORM\Mapping as ORM;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;

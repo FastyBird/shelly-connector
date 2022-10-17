@@ -13,13 +13,13 @@
  * @date           21.07.22
  */
 
-namespace FastyBird\ShellyConnector\Mappers;
+namespace FastyBird\Connector\Shelly\Mappers;
 
+use FastyBird\Connector\Shelly;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
-use FastyBird\ShellyConnector;
 use Nette;
 use Ramsey\Uuid;
 use function array_key_exists;
@@ -53,6 +53,11 @@ final class Sensor
 	/**
 	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function findProperty(
 		Uuid\UuidInterface $connector,
@@ -82,6 +87,11 @@ final class Sensor
 	/**
 	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function loadProperty(
 		Uuid\UuidInterface $connector,
@@ -103,7 +113,7 @@ final class Sensor
 			foreach ($properties as $property) {
 				if (
 					preg_match(
-						ShellyConnector\Constants::GEN_1_PROPERTY_SENSOR,
+						Shelly\Constants::GEN_1_PROPERTY_SENSOR,
 						$property->getIdentifier(),
 						$propertyMatches,
 					) === 1

@@ -13,9 +13,10 @@
  * @date           17.07.22
  */
 
-namespace FastyBird\ShellyConnector\API;
+namespace FastyBird\Connector\Shelly\API;
 
 use DateTimeInterface;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\Metadata\ValueObjects as MetadataValueObjects;
 use Nette;
@@ -43,6 +44,9 @@ final class Gen1Transformer
 
 	use Nette\SmartObject;
 
+	/**
+	 * @throws MetadataExceptions\InvalidState
+	 */
 	public function transformValueFromDevice(
 		MetadataTypes\DataType $dataType,
 		MetadataValueObjects\StringEnumFormat|MetadataValueObjects\NumberRangeFormat|MetadataValueObjects\CombinedEnumFormat|null $format,
@@ -171,6 +175,9 @@ final class Gen1Transformer
 		return null;
 	}
 
+	/**
+	 * @throws MetadataExceptions\InvalidState
+	 */
 	public function transformValueToDevice(
 		MetadataTypes\DataType $dataType,
 		MetadataValueObjects\StringEnumFormat|MetadataValueObjects\NumberRangeFormat|MetadataValueObjects\CombinedEnumFormat|null $format,

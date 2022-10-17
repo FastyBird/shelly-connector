@@ -13,9 +13,9 @@
  * @date           14.07.22
  */
 
-namespace FastyBird\ShellyConnector\Clients\Gen1;
+namespace FastyBird\Connector\Shelly\Clients\Gen1;
 
-use FastyBird\ShellyConnector\Entities\Clients\MdnsResult;
+use FastyBird\Connector\Shelly\Entities\Clients\MdnsResult;
 use Nette;
 use SplObjectStorage;
 use function serialize;

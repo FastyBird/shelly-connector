@@ -13,10 +13,10 @@
  * @date           17.07.22
  */
 
-namespace FastyBird\ShellyConnector\Clients;
+namespace FastyBird\Connector\Shelly\Clients;
 
+use FastyBird\Connector\Shelly\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
-use FastyBird\ShellyConnector\Types;
 
 /**
  * Generation 1 devices client factory

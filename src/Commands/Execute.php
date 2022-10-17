@@ -13,11 +13,12 @@
  * @date           30.07.22
  */
 
-namespace FastyBird\ShellyConnector\Commands;
+namespace FastyBird\Connector\Shelly\Commands;
 
+use FastyBird\Connector\Shelly\Entities;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Metadata;
-use FastyBird\ShellyConnector\Entities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use Psr\Log;
 use Ramsey\Uuid;
 use Symfony\Component\Console;
@@ -84,7 +85,12 @@ class Execute extends Console\Command\Command
 
 	/**
 	 * @throws Console\Exception\ExceptionInterface
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int
 	{

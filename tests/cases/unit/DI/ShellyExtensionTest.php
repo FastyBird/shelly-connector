@@ -1,13 +1,13 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit\DI;
+namespace FastyBird\Connector\Shelly\Tests\Cases\Unit\DI;
 
-use FastyBird\ShellyConnector\Hydrators;
-use FastyBird\ShellyConnector\Schemas;
+use FastyBird\Connector\Shelly\Hydrators;
+use FastyBird\Connector\Shelly\Schemas;
+use FastyBird\Connector\Shelly\Tests\Cases\Unit\BaseTestCase;
 use Nette;
-use Tests\Cases\Unit\BaseTestCase;
 
-final class ServicesTest extends BaseTestCase
+final class ShellyExtensionTest extends BaseTestCase
 {
 
 	/**

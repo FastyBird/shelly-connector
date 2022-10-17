@@ -13,17 +13,17 @@
  * @date           17.07.22
  */
 
-namespace FastyBird\ShellyConnector\API;
+namespace FastyBird\Connector\Shelly\API;
 
+use FastyBird\Connector\Shelly;
+use FastyBird\Connector\Shelly\Entities;
+use FastyBird\Connector\Shelly\Exceptions;
+use FastyBird\Connector\Shelly\Mappers;
+use FastyBird\Connector\Shelly\Types;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Schemas as MetadataSchemas;
 use FastyBird\Metadata\Types as MetadataTypes;
-use FastyBird\ShellyConnector;
-use FastyBird\ShellyConnector\Entities;
-use FastyBird\ShellyConnector\Exceptions;
-use FastyBird\ShellyConnector\Mappers;
-use FastyBird\ShellyConnector\Types;
 use Nette;
 use Nette\Utils;
 use Ramsey\Uuid;
@@ -65,6 +65,9 @@ final class Gen1Parser
 
 	/**
 	 * @throws Exceptions\ParseMessage
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function parseCoapDescriptionMessage(
 		Uuid\UuidInterface $connector,
@@ -78,7 +81,7 @@ final class Gen1Parser
 			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
 
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
+		$filePath = Shelly\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::COAP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
 
 		try {
 			$schema = Utils\FileSystem::read($filePath);
@@ -108,6 +111,11 @@ final class Gen1Parser
 	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\ParseMessage
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function parseCoapStatusMessage(
 		Uuid\UuidInterface $connector,
@@ -121,7 +129,7 @@ final class Gen1Parser
 			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
 
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::COAP_STATUS_MESSAGE_SCHEMA_FILENAME;
+		$filePath = Shelly\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::COAP_STATUS_MESSAGE_SCHEMA_FILENAME;
 
 		try {
 			$schema = Utils\FileSystem::read($filePath);
@@ -186,6 +194,9 @@ final class Gen1Parser
 
 	/**
 	 * @throws Exceptions\ParseMessage
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function parseHttpShellyMessage(
 		Uuid\UuidInterface $connector,
@@ -198,7 +209,7 @@ final class Gen1Parser
 			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
 
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::HTTP_SHELLY_INFO_MESSAGE_SCHEMA_FILENAME;
+		$filePath = Shelly\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::HTTP_SHELLY_INFO_MESSAGE_SCHEMA_FILENAME;
 
 		try {
 			$schema = Utils\FileSystem::read($filePath);
@@ -232,6 +243,9 @@ final class Gen1Parser
 
 	/**
 	 * @throws Exceptions\ParseMessage
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function parseHttpDescriptionMessage(
 		Uuid\UuidInterface $connector,
@@ -244,7 +258,7 @@ final class Gen1Parser
 			throw new Exceptions\ParseMessage('Provided description message is not valid');
 		}
 
-		$filePath = ShellyConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
+		$filePath = Shelly\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . Gen1Validator::HTTP_DESCRIPTION_MESSAGE_SCHEMA_FILENAME;
 
 		try {
 			$schema = Utils\FileSystem::read($filePath);

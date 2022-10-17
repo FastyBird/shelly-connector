@@ -13,19 +13,20 @@
  * @date           30.07.22
  */
 
-namespace FastyBird\ShellyConnector\Commands;
+namespace FastyBird\Connector\Shelly\Commands;
 
 use DateTimeInterface;
+use FastyBird\Connector\Shelly\Clients;
+use FastyBird\Connector\Shelly\Consumers;
+use FastyBird\Connector\Shelly\Entities;
+use FastyBird\Connector\Shelly\Helpers;
+use FastyBird\Connector\Shelly\Types;
 use FastyBird\DateTimeFactory;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Metadata;
-use FastyBird\ShellyConnector\Clients;
-use FastyBird\ShellyConnector\Consumers;
-use FastyBird\ShellyConnector\Entities;
-use FastyBird\ShellyConnector\Helpers;
-use FastyBird\ShellyConnector\Types;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use Psr\Log;
 use Ramsey\Uuid;
 use React\EventLoop;
@@ -122,7 +123,12 @@ class Discovery extends Console\Command\Command
 	/**
 	 * @throws Console\Exception\InvalidArgumentException
 	 * @throws DevicesModuleExceptions\InvalidState
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int
 	{
