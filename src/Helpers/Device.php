@@ -51,32 +51,6 @@ final class Device
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
-	 */
-	public function getStateReadingDelay(MetadataDocuments\DevicesModule\Device $device): float
-	{
-		$findPropertyQuery = new DevicesQueries\Configuration\FindDeviceVariableProperties();
-		$findPropertyQuery->forDevice($device);
-		$findPropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::STATE_READING_DELAY);
-
-		$property = $this->devicesPropertiesConfigurationRepository->findOneBy(
-			$findPropertyQuery,
-			MetadataDocuments\DevicesModule\DeviceVariableProperty::class,
-		);
-
-		$value = $property?->getValue();
-
-		if (!is_numeric($value)) {
-			return Entities\ShellyDevice::STATE_READING_DELAY;
-		}
-
-		return floatval($value);
-	}
-
-	/**
-	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
@@ -225,6 +199,32 @@ final class Device
 		assert(is_string($value) || $value === null);
 
 		return $value;
+	}
+
+	/**
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
+	 */
+	public function getStateReadingDelay(MetadataDocuments\DevicesModule\Device $device): float
+	{
+		$findPropertyQuery = new DevicesQueries\Configuration\FindDeviceVariableProperties();
+		$findPropertyQuery->forDevice($device);
+		$findPropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::STATE_READING_DELAY);
+
+		$property = $this->devicesPropertiesConfigurationRepository->findOneBy(
+			$findPropertyQuery,
+			MetadataDocuments\DevicesModule\DeviceVariableProperty::class,
+		);
+
+		$value = $property?->getValue();
+
+		if (!is_numeric($value)) {
+			return Entities\ShellyDevice::STATE_READING_DELAY;
+		}
+
+		return floatval($value);
 	}
 
 }
