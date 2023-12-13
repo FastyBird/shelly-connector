@@ -74,6 +74,7 @@ class Install extends Console\Command\Command
 		private readonly DevicesModels\Entities\Devices\DevicesManager $devicesManager,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
 		private readonly Persistence\ManagerRegistry $managerRegistry,
+		private readonly BootstrapHelpers\Database $databaseHelper,
 		private readonly Localization\Translator $translator,
 		string|null $name = null,
 	)
@@ -239,6 +240,8 @@ class Install extends Console\Command\Command
 
 			// Commit all changes into database
 			$this->getOrmConnection()->commit();
+
+			$this->databaseHelper->clear();
 
 			$io->success(
 				$this->translator->translate(
@@ -468,6 +471,8 @@ class Install extends Console\Command\Command
 			// Commit all changes into database
 			$this->getOrmConnection()->commit();
 
+			$this->databaseHelper->clear();
+
 			$io->success(
 				$this->translator->translate(
 					'//shelly-connector.cmd.install.messages.update.connector.success',
@@ -538,6 +543,8 @@ class Install extends Console\Command\Command
 			// Commit all changes into database
 			$this->getOrmConnection()->commit();
 
+			$this->databaseHelper->clear();
+
 			$io->success(
 				$this->translator->translate(
 					'//shelly-connector.cmd.install.messages.remove.connector.success',
@@ -589,6 +596,9 @@ class Install extends Console\Command\Command
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidState
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
 	 */
 	private function listConnectors(Style\SymfonyStyle $io): void
 	{
@@ -610,6 +620,7 @@ class Install extends Console\Command\Command
 		$table->setHeaders([
 			'#',
 			$this->translator->translate('//shelly-connector.cmd.install.data.name'),
+			$this->translator->translate('//shelly-connector.cmd.install.data.mode'),
 			$this->translator->translate('//shelly-connector.cmd.install.data.devicesCnt'),
 		]);
 
@@ -622,6 +633,9 @@ class Install extends Console\Command\Command
 			$table->addRow([
 				$index + 1,
 				$connector->getName() ?? $connector->getIdentifier(),
+				$this->translator->translate(
+					'//shelly-connector.cmd.base.mode.' . $connector->getClientMode()->getValue(),
+				),
 				count($devices),
 			]);
 		}
@@ -660,6 +674,8 @@ class Install extends Console\Command\Command
 			// Commit all changes into database
 			$this->getOrmConnection()->commit();
 
+			$this->databaseHelper->clear();
+
 			$io->success(
 				$this->translator->translate(
 					'//shelly-connector.cmd.install.messages.update.device.success',
@@ -671,7 +687,7 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_MODBUS,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_SHELLY,
 					'type' => 'install-cmd',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
@@ -730,6 +746,8 @@ class Install extends Console\Command\Command
 			// Commit all changes into database
 			$this->getOrmConnection()->commit();
 
+			$this->databaseHelper->clear();
+
 			$io->success(
 				$this->translator->translate(
 					'//shelly-connector.cmd.install.messages.remove.device.success',
@@ -741,7 +759,7 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_MODBUS,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_SHELLY,
 					'type' => 'install-cmd',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
@@ -784,8 +802,8 @@ class Install extends Console\Command\Command
 			'#',
 			$this->translator->translate('//shelly-connector.cmd.install.data.name'),
 			$this->translator->translate('//shelly-connector.cmd.install.data.generation'),
-			$this->translator->translate('//shelly-connector.cmd.install.data.address'),
 			$this->translator->translate('//shelly-connector.cmd.install.data.model'),
+			$this->translator->translate('//shelly-connector.cmd.install.data.address'),
 		]);
 
 		foreach ($devices as $index => $device) {
@@ -795,8 +813,8 @@ class Install extends Console\Command\Command
 				$this->translator->translate(
 					'//shelly-connector.cmd.install.answers.generation.' . $device->getGeneration()->getValue(),
 				),
-				$device->getLocalAddress(),
 				$device->getModel(),
+				$device->getLocalAddress(),
 			]);
 		}
 
@@ -836,7 +854,7 @@ class Install extends Console\Command\Command
 		]), $this->output);
 
 		if ($result !== Console\Command\Command::SUCCESS) {
-			$io->error($this->translator->translate('//shelly-connector.cmd.execute.messages.discover.error'));
+			$io->error($this->translator->translate('//shelly-connector.cmd.install.messages.discover.error'));
 
 			return;
 		}
@@ -848,8 +866,9 @@ class Install extends Console\Command\Command
 			'#',
 			$this->translator->translate('//shelly-connector.cmd.install.data.id'),
 			$this->translator->translate('//shelly-connector.cmd.install.data.name'),
+			$this->translator->translate('//shelly-connector.cmd.install.data.generation'),
 			$this->translator->translate('//shelly-connector.cmd.install.data.model'),
-			$this->translator->translate('//shelly-connector.cmd.discovery.data.address'),
+			$this->translator->translate('//shelly-connector.cmd.install.data.address'),
 		]);
 
 		$foundDevices = 0;
@@ -872,6 +891,9 @@ class Install extends Console\Command\Command
 					$foundDevices,
 					$device->getId()->toString(),
 					$device->getName() ?? $device->getIdentifier(),
+					$this->translator->translate(
+						'//shelly-connector.cmd.install.answers.generation.' . $device->getGeneration()->getValue(),
+					),
 					$device->getModel() ?? 'N/A',
 					$device->getLocalAddress() ?? 'N/A',
 				]);
